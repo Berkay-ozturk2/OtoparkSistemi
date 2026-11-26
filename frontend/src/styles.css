@@ -301,6 +301,29 @@ body {
 .parking-map-scroll { overflow: auto; -webkit-overflow-scrolling: touch; border-radius: 18px; }
 .parking-map-scroll.pm-zoomed { max-height: 78vh; cursor: grab; border: 1px solid #dbe3ee; }
 .parking-map-scroll.pm-zoomed:active { cursor: grabbing; }
+
+.pm-site-surface { stroke: #a7a999; stroke-width: 3; stroke-linejoin: round; }
+.pm-site-walkway { fill: #ba846d; stroke: #f8e7da; stroke-width: 2; stroke-linejoin: round; }
+.pm-site-island { fill: #aebe87; stroke: #e9efd9; stroke-width: 4; stroke-linejoin: round; }
+.pm-site-landmark { fill: #34462d; font-size: 17px; font-weight: 700; }
+.pm-site-access rect { fill: #254c46; stroke: #f1f7f2; stroke-width: 2; }
+.pm-site-access text { fill: #fff; font-weight: 700; }
+.parking-map-site .pm-road rect { fill: #465b62; }
+.parking-map-site .pm-free:not(.pm-disabled) .pm-slot-rect { fill: #237a62; }
+.pm-site-reference {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 0.9rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid #dbe7df;
+  border-radius: 0.75rem;
+  background: #f5faf7;
+  font-size: 0.875rem;
+}
+.pm-site-source { color: #1c6152; font-weight: 650; }
 .parking-map svg { width: 100%; height: auto; display: block; user-select: none; }
 .pm-zone { fill: rgba(255, 255, 255, 0.35); stroke: #cbd5e1; stroke-width: 2; }
 .pm-zone-rec {

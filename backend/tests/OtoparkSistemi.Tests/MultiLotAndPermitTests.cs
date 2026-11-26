@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OtoparkSistemi.Api.BackgroundServices;
+using OtoparkSistemi.Api.Data;
 using OtoparkSistemi.Api.Domain;
 using OtoparkSistemi.Api.Dtos;
 using OtoparkSistemi.Api.Services;
@@ -38,20 +39,22 @@ public class MultiLotAndPermitTests : IDisposable
     // ======================= Seed =======================
 
     [Fact]
-    public async Task Seed_dort_otopark_cep_ve_engelli_sayilari_dogru()
+    public async Task Seed_otoparklarinin_cep_ve_engelli_sayilari_dogru()
     {
         var lots = await _t.Db.ParkingLots.AsNoTracking()
             .Include(l => l.Zones).ThenInclude(z => z.Slots)
             .ToListAsync();
-        Assert.Equal(4, lots.Count);
-
         var expected = new Dictionary<string, (int Total, int Disabled)>
         {
             ["GAZI"] = (28, 2),
             ["MERKEZ"] = (96, 9),
             ["AVM"] = (144, 10),
-            ["HASTANE"] = (60, 10)
+            ["HASTANE"] = (60, 10),
+            ["AKARBASI"] = (40, 1),
+            ["MAHMUDIYE"] = (46, 0),
+            ["ERTUGRULGAZI"] = (43, 0)
         };
+        Assert.Equal(expected.Count, lots.Count);
 
         foreach (var lot in lots)
         {
@@ -67,10 +70,37 @@ public class MultiLotAndPermitTests : IDisposable
         }
 
         var summaries = await _t.Parking.GetLotsAsync();
-        Assert.Equal(new[] { "GAZI", "MERKEZ", "AVM", "HASTANE" }, summaries.Select(l => l.Code).ToArray());
+        Assert.Equal(expected.Keys.ToArray(), summaries.Select(l => l.Code).ToArray());
         Assert.Equal(26, summaries.Single(l => l.Code == "GAZI").FreeSlots); // normal araçlar için boş
         Assert.Equal(2, summaries.Single(l => l.Code == "GAZI").DisabledFree);
         Assert.Equal(3, summaries.Single(l => l.Code == "MERKEZ").Floors.Count);
+    }
+
+    [Fact]
+    public async Task Saha_krokileri_mevcut_veriler_korunarak_bir_kez_eklenir()
+    {
+        var lots = await _t.Db.ParkingLots.ToListAsync();
+        var gazi = lots.Single(l => l.Code == "GAZI");
+        gazi.Name = "Güncellenmiş pilot";
+        _t.Db.ParkingLots.RemoveRange(lots.Where(l => l.Code is "AKARBASI" or "MAHMUDIYE" or "ERTUGRULGAZI"));
+        await _t.Db.SaveChangesAsync();
+
+        await DbSeeder.SeedAsync(_t.Db);
+        await DbSeeder.SeedAsync(_t.Db);
+
+        var summaries = await _t.Parking.GetLotsAsync();
+        Assert.Equal("Güncellenmiş pilot", summaries.Single(l => l.Code == "GAZI").Name);
+        Assert.Null(summaries.Single(l => l.Code == "GAZI").SiteReference);
+        var referenceLots = summaries.Where(l => l.SiteReference != null).ToList();
+        Assert.Equal(3, referenceLots.Count);
+        foreach (var lot in referenceLots)
+        {
+            var layout = await _t.Parking.GetLayoutAsync(lot.Code);
+            Assert.Equal(lot.SiteReference, layout.Lot.SiteReference);
+            Assert.Equal(lot.TotalSlots, layout.Slots.Count);
+            Assert.Contains(layout.Lot.Decor, d => d.Type == "surface");
+            Assert.Contains(layout.Lot.Decor, d => d.Type == "access");
+        }
     }
 
     [Fact]

@@ -47,8 +47,7 @@ Veritabanını sıfırlamak için uygulamayı durdurup `otopark.db` dosyasını 
 | operator@otopark.local | Operator123! | Operator |
 | surucu@otopark.local | Surucu123! | Driver (araçları: 06ABC123, 06ENG061) |
 
-Seed ayrıca 4 otopark (kroki koordinatları ve süsleriyle), 5 tarife dilimi, varsayılan sistem ayarları ve örnek
-engelli izinlerini ekler:
+Seed ayrıca dört temel otoparkı, üç saha krokisini, beş tarife dilimini, varsayılan sistem ayarlarını ve örnek engelli izinlerini ekler.
 
 | Kod | Ad | Bölgeler | Cep | Engelli | Tuval |
 |---|---|---|---|---|---|
@@ -56,6 +55,11 @@ engelli izinlerini ekler:
 | `MERKEZ` | Merkez Katlı Otopark | B1 (Kat -1), ZM (Zemin), K1 (Kat 1); her kat 32 | 96 | her katta 3 | 1400×700 |
 | `AVM` | Çarşı AVM Açık Otopark | A…F, her biri 24 | 144 | 10 (A ve B'nin binaya bakan uçları) | 1600×1000 |
 | `HASTANE` | Şehir Hastanesi Otoparkı | P(20) A(12) Z(28) | 60 | P01–P06, A01–A04 | 1200×800 |
+| `AKARBASI` | Akarbaşı Açık Otoparkı · Eskişehir | A(20) B(20) | 40 | A01 (demo) | 1200×578 |
+| `MAHMUDIYE` | Mahmudiye Mahalle Otoparkı · İnegöl | A(25) B(21) | 46 | — | 1200×710 |
+| `ERTUGRULGAZI` | Ertuğrulgazi Mahalle Otoparkı · İnegöl | A(20) B(23) | 43 | — | 1390×636 |
+
+Saha krokileri ilgili belediyelerin hava fotoğraflarına ve açıkladıkları kapasitelere dayanır. Fotoğraflar ile kaynak açıklamalarına uygulamadaki kroki bağlantısından erişilir. Cep ve geçiş konumları yaklaşık çizilmiştir. Saha krokileri güncel şemalı mevcut veritabanına kod bazında eklenir.
 
 Kroki koordinatları `Data/DbSeeder.cs` içindeki `LotLayouts.Row(...)` yardımcısıyla programatik üretilir (engelli cep
 %40 daha geniş, sonraki ceplerin x'i kayar); üretim sırasında her cebin tuvale sığdığı denetlenir.
@@ -149,7 +153,7 @@ Kapsam: ücret hesabı (ücretsiz süre, dilimler, günlük tavan, çok günlü)
 sahte ödeme sağlayıcısı (test kartları, Luhn), giriş/çıkış senaryoları (çift giriş reddi, ödeme gerekli → ödeme → çıkış,
 grace aşımı fark ücreti, düşük güven → onay kuyruğu, dolu otopark reddi, rezervasyonlu giriş ve ön ödeme düşümü),
 rezervasyon kapasitesi, rezervasyon süre aşımı ve KVKK anonimleştirme.
-Çoklu otopark / engelli yerleri: seed (4 otopark, cep ve engelli sayıları, tuvale sığma, aynı katta çakışmama),
+Çoklu otopark / engelli yerleri: seed (cep ve engelli sayıları, tuvale sığma, aynı katta çakışmama),
 izinsiz aracın yalnızca engelli yer boşken reddi, izinli araca engelli cep önerisi, izinsiz engelli rezervasyonu → 403,
 ihlalin açılması/kapanması, izinli araç içerideyken ihlal açılmaması, izin başvurusu/onayı/iptali.
 

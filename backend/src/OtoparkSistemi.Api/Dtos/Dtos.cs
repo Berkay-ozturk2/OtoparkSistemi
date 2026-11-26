@@ -94,11 +94,16 @@ public record LocateDto(
 // ---------- Çoklu otopark (v2) ----------
 public record FloorDto(int Floor, string Name);
 
+public record MapPointDto(int X, int Y);
+
 /// <summary>
-/// Krokide çizilecek süs: type = road | entry | exit | building | elevator | label | green.
 /// Floor: katlı otoparkta yalnızca o katta çizilir; null ise tüm katlarda çizilir.
+/// Points: yüzey ve kaldırım gibi düzensiz şekiller için isteğe bağlı köşeler.
 /// </summary>
-public record MapDecorDto(string Type, int X, int Y, int W, int H, string? Text, int? Floor = null);
+public record MapDecorDto(string Type, int X, int Y, int W, int H, string? Text, int? Floor = null,
+    List<MapPointDto>? Points = null);
+
+public record ParkingSiteReferenceDto(string SourceName, string SourceUrl);
 
 public record ParkingLotDto(
     int Id,
@@ -110,7 +115,8 @@ public record ParkingLotDto(
     int MapHeight,
     List<FloorDto> Floors,
     List<MapDecorDto> Decor,
-    bool IsActive);
+    bool IsActive,
+    ParkingSiteReferenceDto? SiteReference = null);
 
 /// <summary>/api/parking/lots öğesi. FreeSlots = normal araçlar için boş (Standard) cep sayısı.</summary>
 public record LotSummaryDto(
@@ -127,7 +133,8 @@ public record LotSummaryDto(
     double OccupancyRate,
     bool IsActive,
     int MapWidth,
-    int MapHeight);
+    int MapHeight,
+    ParkingSiteReferenceDto? SiteReference = null);
 
 public record LayoutZoneDto(int Id, string Code, string Name, int Floor);
 

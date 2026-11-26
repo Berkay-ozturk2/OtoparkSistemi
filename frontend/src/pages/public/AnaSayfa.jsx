@@ -142,8 +142,8 @@ export default function AnaSayfa() {
                 <i className="bi bi-map me-2 text-accent" />
                 Otopark Krokisi
               </span>
-              <div className="d-flex align-items-center gap-2">
-                <LotSelector />
+              <div className="d-flex flex-wrap align-items-center gap-2 mw-100">
+                <LotSelector className="mw-100" />
                 <LiveBadge status={hubStatus} />
               </div>
             </div>

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { formatDateTime } from '../utils/format';
 
 // Sözleşme bölüm 10 (eski tek otopark): 1000×600 tuval; A y=60, B y=260, C y=460; cep 80×120, x = 60 + (i-1)×88
@@ -57,7 +57,7 @@ export function WheelchairIcon({ cx, cy, size, color = '#fff' }) {
 }
 
 /** Kroki süsü: yol, giriş/çıkış, bina, asansör, bölge etiketi, yeşil alan */
-function Decor({ d, idx, viewW, viewH }) {
+function Decor({ d, idx, viewW, viewH, pavingId }) {
   const x = Number(d.x) || 0;
   const y = Number(d.y) || 0;
   const w = Math.max(1, Number(d.w) || 0);
@@ -67,6 +67,36 @@ function Decor({ d, idx, viewW, viewH }) {
   const cy = y + h / 2;
 
   switch (d.type) {
+    case 'surface':
+    case 'island':
+    case 'walkway': {
+      const className = `pm-site-${d.type}`;
+      const fill = d.type === 'surface' ? `url(#${pavingId})` : undefined;
+      const points = d.points?.map((point) => `${point.x},${point.y}`).join(' ');
+      return (
+        <g>
+          {points ? (
+            <polygon points={points} className={className} fill={fill} />
+          ) : (
+            <rect x={x} y={y} width={w} height={h} rx={d.type === 'surface' ? 30 : 8} className={className} fill={fill} />
+          )}
+          {d.text && (
+            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" className="pm-site-landmark">
+              {d.text}
+            </text>
+          )}
+        </g>
+      );
+    }
+    case 'access':
+      return (
+        <g className="pm-site-access">
+          <rect x={x} y={y} width={w} height={h} rx={h / 2} />
+          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" fontSize={clamp(h * 0.47, 11, 15)}>
+            {d.text}
+          </text>
+        </g>
+      );
     case 'road': {
       const horizontal = w >= h;
       const lineW = clamp(short * 0.05, 2, 5);
@@ -291,6 +321,8 @@ export default function ParkingMap({
 }) {
   const viewW = Number(lot?.mapWidth) > 0 ? Number(lot.mapWidth) : DEFAULT_W;
   const viewH = Number(lot?.mapHeight) > 0 ? Number(lot.mapHeight) : DEFAULT_H;
+  const pavingId = useId();
+  const siteReference = lot?.siteReference;
   const rootRef = useRef(null);
   const scrollRef = useRef(null);
   const [zoom, setZoom] = useState(1);
@@ -483,7 +515,7 @@ export default function ParkingMap({
   const currentFloorName = floors.find((f) => f.floor === activeFloor)?.name;
 
   return (
-    <div className={`parking-map ${className}`} ref={rootRef}>
+    <div className={`parking-map ${siteReference ? 'parking-map-site' : ''} ${className}`} ref={rootRef}>
       {(multiFloor || showControls) && (
         <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
           {multiFloor && (
@@ -552,6 +584,12 @@ export default function ParkingMap({
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
+            {siteReference && (
+              <pattern id={pavingId} width="22" height="16" patternUnits="userSpaceOnUse">
+                <rect width="22" height="16" fill="#e7e4d9" />
+                <path d="M0 0H22 M0 8H22 M5 0V8 M16 8V16" fill="none" stroke="#d7d4ca" strokeWidth="0.8" />
+              </pattern>
+            )}
             <pattern id="pm-asphalt" width="12" height="12" patternUnits="userSpaceOnUse">
               <rect width="12" height="12" fill="#e9eef5" />
               <circle cx="3" cy="3" r="0.8" fill="#dbe3ee" />
@@ -563,11 +601,11 @@ export default function ParkingMap({
             </pattern>
           </defs>
 
-          <rect x="0" y="0" width={viewW} height={viewH} rx="18" fill="url(#pm-asphalt)" />
+          <rect x="0" y="0" width={viewW} height={viewH} rx="18" fill={siteReference ? '#edf1ec' : 'url(#pm-asphalt)'} />
 
           {/* 1) Süsler: yollar, binalar, yeşil alanlar, giriş/çıkış, asansör, etiketler */}
           {decor.map((d, i) => (
-            <Decor key={`decor-${i}`} d={d} idx={i} viewW={viewW} viewH={viewH} />
+            <Decor key={`decor-${i}`} d={d} idx={i} viewW={viewW} viewH={viewH} pavingId={pavingId} />
           ))}
 
           {/* 2) Vurgulanan bölge alanları */}
@@ -792,6 +830,19 @@ export default function ParkingMap({
               <span className="legend-dot rec" /> Önerilen bölge
             </span>
           )}
+        </div>
+      )}
+      {siteReference && (
+        <div className="pm-site-reference">
+          <div>
+            <div className="fw-semibold">Belediye fotoğrafından çizilen demo krokisi</div>
+            <p className="mb-0 text-secondary">
+              Cep yerleri, erişim ve engelli işaretleri yaklaşık. Doluluk ve rezervasyon uygulamadaki demo verisini gösterir.
+            </p>
+          </div>
+          <a href={siteReference.sourceUrl} target="_blank" rel="noreferrer" className="pm-site-source">
+            {siteReference.sourceName} <i className="bi bi-box-arrow-up-right" aria-hidden="true" />
+          </a>
         </div>
       )}
     </div>

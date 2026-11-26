@@ -246,7 +246,7 @@ public class ParkingService(AppDbContext db, TimeProvider clock)
         var lot = snap.Lot;
         return new LotSummaryDto(lot.Id, lot.Code, lot.Name, lot.Address, lot.Description, LotJson.Floors(lot),
             snap.Total, snap.Standard.Free, snap.Disabled.Total, snap.Disabled.Free, snap.OccupancyRate,
-            lot.IsActive, lot.MapWidth, lot.MapHeight);
+            lot.IsActive, lot.MapWidth, lot.MapHeight, LotLayouts.SiteReference(lot.Code));
     }
 
     /// <summary>Krokiyi çizmek için tek çağrı: otopark + bölgeler + cepler.</summary>

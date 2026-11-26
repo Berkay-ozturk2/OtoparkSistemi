@@ -8,7 +8,7 @@ namespace OtoparkSistemi.Api.Data;
 /// <summary>
 /// Başlangıç verisi: 3 kullanıcı, 4 otopark (GAZI, MERKEZ, AVM, HASTANE — sözleşme 11.6), 5 tarife dilimi,
 /// sistem ayarları ve örnek engelli izinleri.
-/// Her bölüm yalnızca ilgili tablo boşsa eklenir (idempotent). Demo oturum verisi BURADA üretilmez.
+/// Saha referansı krokileri kod bazında eklenir. Demo oturum verisi burada üretilmez.
 /// Kroki koordinatları ve süsler (yol, giriş/çıkış, bina, asansör, etiket) programatik üretilir ve
 /// her cebin kendi otoparkının tuvaline sığdığı üretim sırasında denetlenir.
 /// </summary>
@@ -68,6 +68,18 @@ public static class DbSeeder
                 db.ParkingLots.Add(lot);
                 await db.SaveChangesAsync(ct);
             }
+        }
+
+        var existingLotCodes = (await db.ParkingLots.Select(lot => lot.Code).ToListAsync(ct))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var missingReferenceLots = LotLayouts.ReferenceLots
+            .Where(lot => !existingLotCodes.Contains(lot.Code))
+            .Select(lot => lot.Build(now))
+            .ToList();
+        if (missingReferenceLots.Count > 0)
+        {
+            db.ParkingLots.AddRange(missingReferenceLots);
+            await db.SaveChangesAsync(ct);
         }
 
         if (!await db.Tariffs.AnyAsync(ct))
@@ -131,7 +143,7 @@ public static class DbSeeder
 /// Sıralar yollara bakar (sıra çiftleri arasında yol); engelli cepler normal cepten %40 daha geniştir
 /// (GAZI hariç: görüntü servisi ve eski kroki uyumu için eski koordinatlar AYNEN korunur).
 /// </summary>
-public static class LotLayouts
+public static partial class LotLayouts
 {
     /// <summary>Sıradaki cepler arası boşluk (px).</summary>
     public const int SlotGap = 6;
@@ -218,6 +230,9 @@ public static class LotLayouts
         {
             if (d.X < 0 || d.Y < 0 || d.X + d.W > lot.MapWidth || d.Y + d.H > lot.MapHeight)
                 throw new InvalidOperationException($"Seed kroki hatası: {lot.Code} süsü ({d.Type} {d.Text}) tuvalin dışına taşıyor.");
+            if (d.Points is { } points && (points.Count < 3 || points.Any(p =>
+                    p.X < 0 || p.X > lot.MapWidth || p.Y < 0 || p.Y > lot.MapHeight)))
+                throw new InvalidOperationException($"Seed kroki hatası: {lot.Code}/{d.Type} çokgeni geçersiz.");
         }
         lot.DecorJson = LotJson.Serialize(decor);
         return lot;

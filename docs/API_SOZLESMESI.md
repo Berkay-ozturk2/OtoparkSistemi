@@ -233,7 +233,7 @@ Bu bölüm önceki bölümleri **genişletir**. Çelişki olursa bu bölüm geç
 - **Engelli izni (DisabledPermit):** `{id, plate, holderName, userId, userEmail, documentNo, status:"Pending"|"Approved"|"Rejected"|"Revoked", validUntil, note, createdAt, reviewedAt, reviewedBy}`.
   Yalnızca `Approved` ve süresi dolmamış (`validUntil` boş ya da gelecekte) izin geçerlidir. Plaka normalize edilerek eşleşir.
 - **İhlal (Violation):** `{id, lotCode, lotName, slotCode, zoneCode, floor, detectedAt, resolvedAt, status:"Open"|"Resolved"|"FalseAlarm", note, resolvedBy}`.
-- **MapDecor** (krokide çizilecek süsler): `{type:"road"|"entry"|"exit"|"building"|"elevator"|"label"|"green", x, y, w, h, text}` (aynı tuval koordinatları).
+- **MapDecor** (krokide çizilecek öğeler) `{type, x, y, w, h, text, floor?, points?}` biçimindedir. Mevcut `road`, `entry`, `exit`, `building`, `elevator`, `label` ve `green` türlerine ek olarak `access` araç erişim noktasını gösterir. `surface`, `island` ve `walkway` için isteğe bağlı `points: [{x,y}]` dizisi, tuval koordinatlarında bir çokgen tanımlar.
 
 ### 11.2 Engelli yeri kuralları ("normal araçlar park edemez")
 1. **Kapasite ayrımı:** Bir otoparkta normal araçlar için boş yer = boş **Standard** cepler. Engelli izinli araçlar için boş yer = boş Standard + boş Disabled cepler.
@@ -261,6 +261,8 @@ Herkese açık:
 | GET | /api/parking/locate/{plate} | önceki alanlara ek `lotCode, lotName` (otopark parametresi gerekmez; aktif oturum hangi otoparktaysa) |
 
 `Slot` (genişletilmiş): `{id, code, lotCode, zoneCode, floor, type:"Standard"|"Disabled", isOccupied, isReserved, hasViolation, isActive, updatedAt, mapX, mapY, mapW, mapH}`.
+
+Otopark listesinde ve kroki yanıtının `lot` nesnesinde `siteReference` alanı belediye kaynağına dayanan demo krokileri için `{sourceName, sourceUrl}` bilgisini taşır. Bu krokilerde kapasite yayımlanan toplamı, cep numaraları ve doluluk ise uygulamadaki demo verisini gösterir.
 
 Sürücü:
 | Yöntem | Yol | Açıklama |
