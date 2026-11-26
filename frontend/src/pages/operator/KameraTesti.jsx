@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   agentSnapshotUrl,
   agentStreamUrl,
@@ -30,15 +30,30 @@ function isRunning(agent) {
 }
 
 /** Canlı önizleme: varsayılan MJPEG akışı (akıcı), kapatılırsa tek kare */
-function SnapshotPreview({ agentId }) {
+function SnapshotPreview({ agentId, running }) {
   const [stamp, setStamp] = useState(Date.now());
   const [auto, setAuto] = useState(true);
   const [failed, setFailed] = useState(false);
+  const imgRef = useRef(null);
+  // Akış yalnızca ajan ÇALIŞIRKEN açılır; duran ajan için tek kare gösterilir
+  const live = auto && running;
 
   useEffect(() => {
     setFailed(false);
     setStamp(Date.now());
-  }, [agentId]);
+  }, [agentId, running]);
+
+  // Görüntü adresini elle yönet: kamera değişince / durunca / sayfadan çıkınca eski akış
+  // bağlantısı src boşaltılarak KESİLİR (aksi hâlde açık kalıp tarayıcıyı kilitliyordu).
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!img || !agentId) return undefined;
+    img.src = live ? agentStreamUrl(agentId, stamp) : agentSnapshotUrl(agentId, stamp);
+    return () => {
+      img.removeAttribute('src');
+      img.src = '';
+    };
+  }, [agentId, live, stamp]);
 
   if (!agentId) {
     return (
@@ -61,11 +76,10 @@ function SnapshotPreview({ agentId }) {
           </span>
         ) : null}
         <img
-          key={`${agentId}-${auto ? 'live' : 'still'}-${stamp}`}
-          src={auto ? agentStreamUrl(agentId, stamp) : agentSnapshotUrl(agentId, stamp)}
+          ref={imgRef}
           alt={`${agentId} son kare`}
           style={failed ? { display: 'none' } : undefined}
-          onError={() => setFailed(true)}
+          onError={(e) => { if (e.currentTarget.getAttribute('src')) setFailed(true); }}
           onLoad={() => setFailed(false)}
         />
       </div>
@@ -546,7 +560,10 @@ export default function KameraTesti() {
               Canlı Kare {selected ? `— ${selected}` : ''}
             </div>
             <div className="card-body">
-              <SnapshotPreview agentId={selected} />
+              <SnapshotPreview
+                agentId={selected}
+                running={isRunning(agents.find((a) => a.id === selected) || {})}
+              />
             </div>
           </div>
         </div>

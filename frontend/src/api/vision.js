@@ -21,9 +21,24 @@ export function stopAgent(id) {
   return request(`/agents/${encodeURIComponent(id)}/stop`, { ...opts, method: 'POST' });
 }
 
+/**
+ * Canlı akış için temel adres. Akış uzun süre açık kalan bir bağlantıdır; Vite proxy'si (/vision) üzerinden
+ * gitseydi tarayıcının aynı adrese açabildiği ~6 bağlantıdan birini sürekli tutar ve API isteklerini
+ * bekletebilirdi. Bu yüzden geliştirmede akış doğrudan görüntü servisine (:8000) bağlanır.
+ * VITE_VISION_STREAM_URL ile değiştirilebilir.
+ */
+function streamBase() {
+  const env = import.meta.env.VITE_VISION_STREAM_URL;
+  if (env) return env.replace(/\/$/, '');
+  if (VISION_URL.startsWith('/') && typeof window !== 'undefined' && window.location.port === '5173') {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  return VISION_URL;
+}
+
 /** <img> için canlı MJPEG akış adresi (akıcı önizleme) */
 export function agentStreamUrl(id, stamp = Date.now(), fps = 15) {
-  return `${VISION_URL}/agents/${encodeURIComponent(id)}/stream?fps=${fps}&t=${stamp}`;
+  return `${streamBase()}/agents/${encodeURIComponent(id)}/stream?fps=${fps}&t=${stamp}`;
 }
 
 /** <img> için son işlenmiş kare adresi (önbelleği kırmak için zaman damgası eklenir) */

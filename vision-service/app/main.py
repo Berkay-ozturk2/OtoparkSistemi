@@ -160,22 +160,42 @@ def agent_snapshot(agent_id: str):
 
 
 @app.get("/agents/{agent_id}/stream")
-async def agent_stream(agent_id: str, fps: float = Query(15.0, ge=1, le=30, description="Akış kare hızı")):
-    """Canlı MJPEG akışı (<img src> ile doğrudan izlenir). Kareler yalnızca bellekten okunur, kaydedilmez."""
+async def agent_stream(agent_id: str, request: Request,
+                       fps: float = Query(15.0, ge=1, le=30, description="Akış kare hızı")):
+    """Canlı MJPEG akışı (<img src> ile doğrudan izlenir). Kareler yalnızca bellekten okunur, kaydedilmez.
+
+    Akış şu durumlarda KENDİLİĞİNDEN biter (bağlantılar birikip tarayıcıyı kilitlemesin diye):
+      * tarayıcı ayrıldığında (sekme kapandı, başka kameraya geçildi)
+      * ajan durdurulduğunda (2 sn sonra)
+      * en fazla 30 dakika sonra (tarayıcı otomatik yeniden bağlanabilir)
+    Yeni kare olmasa bile her saniye son kare yeniden gönderilir; böylece kopan bağlantı fark edilir.
+    """
     agent = _agent_or_404(agent_id)
     interval = 1.0 / fps
 
     async def frames():
         last = None
+        last_sent = 0.0
+        stopped_since = None
+        started = time.monotonic()
         try:
             while True:
+                now = time.monotonic()
+                if await request.is_disconnected() or now - started > 1800:
+                    break
+                if not agent.running:
+                    stopped_since = stopped_since or now
+                    if now - stopped_since > 2.0:
+                        break
+                else:
+                    stopped_since = None
                 data = agent.snapshot()
-                if data is not None and data is not last:
-                    last = data
+                if data is not None and (data is not last or now - last_sent >= 1.0):
+                    last, last_sent = data, now
                     yield (b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: "
                            + str(len(data)).encode() + b"\r\n\r\n" + data + b"\r\n")
                 await asyncio.sleep(interval)
-        except asyncio.CancelledError:  # tarayıcı sekmeyi kapattı
+        except (asyncio.CancelledError, ConnectionError):  # tarayıcı bağlantıyı kapattı
             return
 
     return StreamingResponse(frames(), media_type="multipart/x-mixed-replace; boundary=frame",
