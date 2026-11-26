@@ -24,7 +24,7 @@ public static class DbSeeder
             ["GAZI"] = (39.93830, 32.82230),     // Gazi Üni. Teknoloji Fakültesi, Emniyet Mah., Yenimahalle
             ["MERKEZ"] = (39.92080, 32.85410),   // Kızılay Meydanı yanı, Çankaya
             ["AVM"] = (39.91050, 32.78400),      // Eskişehir Yolu üzeri (Çarşı AVM — kurgusal)
-            ["HASTANE"] = (39.92200, 32.74400)   // Ankara Bilkent Şehir Hastanesi, Çankaya
+            ["HASTANE"] = (39.90098, 32.75704)   // Ankara Bilkent Şehir Hastanesi, Çankaya
         };
 
     public static async Task SeedAsync(AppDbContext db, CancellationToken ct = default)
