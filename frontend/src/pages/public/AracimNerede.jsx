@@ -170,6 +170,12 @@ export default function AracimNerede() {
                       <div className="fw-bold fs-5">{formatCurrency(result.currentFee)}</div>
                     </div>
                   </div>
+                  {result.lotCode && (
+                    <Link to={`/yol-tarifi?lot=${result.lotCode}`} className="btn btn-outline-primary mt-3 me-2">
+                      <i className="bi bi-signpost-split me-1" />
+                      Otoparka yol tarifi
+                    </Link>
+                  )}
                   {!result.isPaid && Number(result.currentFee) > 0 && (
                     <Link to={`/ucret-ode?plaka=${normalizePlate(result.plate)}`} className="btn btn-accent mt-3">
                       <i className="bi bi-credit-card me-2" />

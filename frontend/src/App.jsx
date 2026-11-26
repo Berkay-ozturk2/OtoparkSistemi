@@ -10,6 +10,7 @@ import UcretOde from './pages/public/UcretOde';
 import Giris from './pages/public/Giris';
 import KayitOl from './pages/public/KayitOl';
 import KvkkAydinlatma from './pages/public/KvkkAydinlatma';
+import YolTarifi from './pages/public/YolTarifi';
 
 // Sürücü
 import SurucuPanel from './pages/driver/Panel';
@@ -57,6 +58,7 @@ export default function App() {
         <Route index element={<AnaSayfa />} />
         <Route path="aracim-nerede" element={<AracimNerede />} />
         <Route path="ucret-ode" element={<UcretOde />} />
+        <Route path="yol-tarifi" element={<YolTarifi />} />
         <Route path="giris" element={<Giris />} />
         <Route path="kayit" element={<KayitOl />} />
         <Route path="kvkk" element={<KvkkAydinlatma />} />

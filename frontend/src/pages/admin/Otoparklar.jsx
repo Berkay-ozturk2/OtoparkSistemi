@@ -125,13 +125,20 @@ function SlotPanel({ slot, zoneName, floorName, onClose, onSaved }) {
 /** Otopark bilgisi düzenleme penceresi */
 function LotEditModal({ lot, onClose, onSaved }) {
   const toast = useToast();
-  const [form, setForm] = useState({ name: '', address: '', description: '', isActive: true });
+  const [form, setForm] = useState({ name: '', address: '', description: '', isActive: true, latitude: '', longitude: '' });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
 
   useEffect(() => {
     if (lot) {
-      setForm({ name: lot.name || '', address: lot.address || '', description: lot.description || '', isActive: lot.isActive !== false });
+      setForm({
+        name: lot.name || '',
+        address: lot.address || '',
+        description: lot.description || '',
+        isActive: lot.isActive !== false,
+        latitude: lot.latitude ?? '',
+        longitude: lot.longitude ?? '',
+      });
       setErr(null);
     }
   }, [lot]);
@@ -141,7 +148,16 @@ function LotEditModal({ lot, onClose, onSaved }) {
     if (form.name.trim().length < 3) return setErr('Otopark adı en az 3 karakter olmalıdır.');
     setBusy(true);
     try {
+      const lat = String(form.latitude).trim().replace(',', '.');
+      const lng = String(form.longitude).trim().replace(',', '.');
       const body = { name: form.name.trim(), address: form.address.trim(), description: form.description.trim(), isActive: form.isActive };
+      if (lat !== '' || lng !== '') {
+        if (lat === '' || lng === '' || Number.isNaN(Number(lat)) || Number.isNaN(Number(lng))) {
+          throw new Error('Konum için enlem ve boylamı birlikte, sayı olarak girin (ör. 39.9208 ve 32.8541).');
+        }
+        body.latitude = Number(lat);
+        body.longitude = Number(lng);
+      }
       const res = await updateLot(lot.code, body);
       toast.success('Otopark bilgileri güncellendi.');
       onSaved({ ...lot, ...body, ...(res && typeof res === 'object' && res.code ? res : {}) });
@@ -183,6 +199,23 @@ function LotEditModal({ lot, onClose, onSaved }) {
             Adres
           </label>
           <input id="le-addr" className="form-control" maxLength={250} value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
+        </div>
+        <div className="row g-2 mb-2">
+          <div className="col-6">
+            <label htmlFor="le-lat" className="form-label small fw-semibold">
+              Enlem
+            </label>
+            <input id="le-lat" className="form-control" inputMode="decimal" placeholder="39.9208" value={form.latitude} onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))} />
+          </div>
+          <div className="col-6">
+            <label htmlFor="le-lng" className="form-label small fw-semibold">
+              Boylam
+            </label>
+            <input id="le-lng" className="form-control" inputMode="decimal" placeholder="32.8541" value={form.longitude} onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))} />
+          </div>
+          <div className="col-12 form-text mt-0">
+            Yol tarifi için otopark girişinin konumu. Google Haritalar&apos;da girişe sağ tıklayıp koordinatı kopyalayabilirsiniz.
+          </div>
         </div>
         <div className="mb-3">
           <label htmlFor="le-desc" className="form-label small fw-semibold">

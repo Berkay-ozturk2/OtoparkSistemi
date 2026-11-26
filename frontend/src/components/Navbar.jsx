@@ -74,6 +74,7 @@ function CountBadge({ count, variant = 'danger', className = '' }) {
 const PUBLIC_LINKS = [
   { to: '/', label: 'Ana Sayfa', icon: 'bi-house-door', end: true },
   { to: '/aracim-nerede', label: 'Aracım Nerede?', icon: 'bi-geo-alt' },
+  { to: '/yol-tarifi', label: 'Yol Tarifi', icon: 'bi-signpost-split' },
   { to: '/ucret-ode', label: 'Ücret Öde', icon: 'bi-credit-card' },
 ];
 
