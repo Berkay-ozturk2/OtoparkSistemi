@@ -8,6 +8,9 @@
 #   source   : "0" / "1" = bilgisayara bağlı webcam indeksi
 #              "rtsp://kullanici:parola@192.168.1.20:554/stream1" = IP kamera
 #              "samples/giris.mp4" = video dosyası (bitince başa sarar; demo için ideal)
+#              "samples/otopark.jpg" = tek fotoğraf (doluluk testi için; sürekli aynı kare)
+#              Aynı webcam numarasını birden çok kamera kullanabilir: kamera bir kez açılır, görüntü
+#              paylaşılır. Aynı webcam'deki giriş ve çıkıştan birini başlatmak diğerini durdurur.
 #   enabled  : true ise servis açılırken otomatik başlar (AUTOSTART_AGENTS=true iken)
 #              false olanlar arayüzden / POST /agents/{id}/start ile başlatılabilir
 #   lotCode  : kameranın bağlı olduğu otopark kodu (GAZI, MERKEZ, AVM, HASTANE — vars. GAZI)
@@ -47,7 +50,8 @@ cameras:
     name: "Ana çıkış kamerası"
     type: Gate
     gate: Exit
-    source: "1"              # ikinci webcam ya da "samples/cikis.mp4"
+    source: "0"              # TEST: giriş ile AYNI webcam (paylaşılır). Giriş/çıkıştan birini başlatmak
+                             # diğerini durdurur. İkinci kamera/telefon varsa "1" ya da "http://...:8080/video"
     fps: 15
     enabled: false
 
@@ -55,7 +59,8 @@ cameras:
     lotCode: GAZI
     name: "Pilot alan doluluk kamerası"
     type: Occupancy
-    source: "samples/otopark.mp4"   # kendi çekiminizi samples/ klasörüne koyun
+    source: "0"              # TEST: aynı webcam (oyuncak araç / basılı kroki ile). Gerçek kullanım için
+                             # otopark videosu "samples/otopark.mp4" ya da fotoğrafı "samples/otopark.jpg"
     fps: 1
     enabled: false
     slotsFile: config/slots.json

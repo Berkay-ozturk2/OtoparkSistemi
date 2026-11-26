@@ -361,8 +361,17 @@ export default function KameraTesti() {
         await stopAgent(agent.id);
         toast.info(`${agent.id} durduruldu.`);
       } else {
+        // Aynı webcam'i kullanan diğer giriş/çıkış ajanı servis tarafından durdurulur (tek kamerayla test)
+        const stopped = String(agent.type) === 'Gate'
+          ? agents.filter((o) => o.id !== agent.id && String(o.type) === 'Gate' && o.source === agent.source && isRunning(o))
+          : [];
         await startAgent(agent.id);
-        toast.success(`${agent.id} başlatıldı.`);
+        setSelected(agent.id); // önizlemeyi başlatılan kameraya geçir
+        toast.success(
+          stopped.length
+            ? `${agent.id} başlatıldı. Aynı kamerayı kullanan ${stopped.map((o) => o.id).join(', ')} durduruldu.`
+            : `${agent.id} başlatıldı.`,
+        );
       }
       const a = await getVisionAgents();
       setAgents(Array.isArray(a) ? a : Array.isArray(a?.agents) ? a.agents : []);

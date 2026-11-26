@@ -138,7 +138,7 @@ def list_agents():
 @app.post("/agents/{agent_id}/start", response_model=AgentInfo, response_model_by_alias=True)
 def start_agent(agent_id: str):
     agent = _agent_or_404(agent_id)
-    agent.start()
+    manager.start(agent_id)  # aynı webcam'i kullanan diğer giriş/çıkış ajanı durdurulur
     return agent.info()
 
 

@@ -266,3 +266,12 @@ park ettirerek ihlal senaryosu üretir:
 ```
 python tools/simulator.py --lots GAZI,AVM --violation-rate 0.2
 ```
+
+## Tek webcam ile giriş + çıkış + doluluk testi
+
+`config/cameras.yaml` içinde üç kamera da varsayılan olarak `source: "0"` (dizüstü kamerası) kullanır.
+Webcam bir kez açılır ve görüntüsü ajanlar arasında paylaşılır (`app/agents/shared_camera.py`).
+Aynı webcam'i kullanan **giriş ve çıkış aynı anda çalışmaz**: Kamera Testi'nde birini başlatmak
+diğerini durdurur. Böylece aynı basılı plakayı önce "giriş"te, sonra "çıkış"ta okutabilirsiniz.
+Doluluk kamerası webcam ile birlikte çalışabilir; ya da `source: "samples/otopark.jpg"` ile tek bir
+otopark fotoğrafından test edilebilir. Kamera numarasını bulmak için: `scripts\5_kamera_bul.bat`.

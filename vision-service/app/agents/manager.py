@@ -96,9 +96,17 @@ class AgentManager:
 
     # ------------------------------------------------------------------
     def start_enabled(self) -> None:
+        started_webcam_gates = set()
         for agent in self.agents.values():
-            if agent.enabled:
-                agent.start()
+            if not agent.enabled:
+                continue
+            if agent.agent_type == "Gate" and isinstance(agent.source, int):
+                if agent.source in started_webcam_gates:
+                    log.warning("[%s] aynı webcam'i (%s) kullanan başka bir giriş/çıkış ajanı zaten açık; "
+                                "bu ajan otomatik başlatılmadı (Kamera Testi'nden geçiş yapın)", agent.id, agent.source)
+                    continue
+                started_webcam_gates.add(agent.source)
+            agent.start()
 
     def start_heartbeat(self) -> None:
         if self.backend is None or (self._hb_thread and self._hb_thread.is_alive()):
@@ -127,8 +135,22 @@ class AgentManager:
     def start(self, agent_id: str) -> Optional[BaseCameraAgent]:
         agent = self.agents.get(agent_id)
         if agent:
+            self._stop_conflicting_gates(agent)
             agent.start()
         return agent
+
+    def _stop_conflicting_gates(self, agent: BaseCameraAgent) -> None:
+        """Aynı webcam'i kullanan giriş ve çıkış ajanı aynı anda çalışırsa her plaka hem giriş hem çıkış
+        sayılır. Bu yüzden tek kamerayla test ederken birini başlatmak diğerini durdurur."""
+        if agent.agent_type != "Gate" or not isinstance(agent.source, int):
+            return
+        for other in self.agents.values():
+            if other is agent or other.agent_type != "Gate" or other.source != agent.source:
+                continue
+            if other.running:
+                log.info("[%s] aynı kamerayı (%s) kullandığı için durduruldu; şimdi %s çalışıyor",
+                         other.id, agent.source, agent.id)
+                other.stop()
 
     def stop(self, agent_id: str) -> Optional[BaseCameraAgent]:
         agent = self.agents.get(agent_id)
