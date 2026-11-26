@@ -78,10 +78,12 @@ class AgentManager:
                 full_report_seconds=float(cfg.get("fullReportSeconds", s.OCCUPANCY_FULL_REPORT_SECONDS)),
                 vehicle_conf=float(cfg.get("vehicleConfidence", s.VEHICLE_CONFIDENCE)),
                 footprint=float(cfg.get("footprint", s.OCCUPANCY_FOOTPRINT)),
+                detector=str(cfg.get("detector", "yolo")),
                 target_fps=float(cfg.get("fps", 1)), **common)
         raise ValueError(f"Bilinmeyen ajan türü: {cfg.get('type')} (Gate | Occupancy)")
 
     def load(self) -> None:
+        log.info("Kamera yapılandırması: %s", self.settings.cameras_file)
         for cfg in load_camera_config(self.settings.cameras_file):
             try:
                 agent = self.build_agent(cfg)

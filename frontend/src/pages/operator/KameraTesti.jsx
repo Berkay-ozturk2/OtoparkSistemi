@@ -15,6 +15,7 @@ import ErrorAlert from '../../components/ErrorAlert';
 import EmptyState from '../../components/EmptyState';
 import Loading from '../../components/Loading';
 import { useToast } from '../../components/Toast';
+import { useLot } from '../../lot/LotContext';
 import { decisionInfo, formatPercent, gateLabel, toImageSrc } from '../../utils/format';
 
 function statusVariant(status) {
@@ -123,6 +124,7 @@ function FilePicker({ id, file, onChange }) {
 }
 
 function RecognizeTest() {
+  const { lotCode, lotName } = useLot();
   const [file, setFile] = useState(null);
   const [gate, setGate] = useState('Entry');
   const [forward, setForward] = useState(false);
@@ -137,7 +139,7 @@ function RecognizeTest() {
     setError(null);
     setResult(null);
     try {
-      setResult(await recognizePlate(file, { gate, forward }));
+      setResult(await recognizePlate(file, { gate, forward, lot: lotCode }));
     } catch (err) {
       setError(err);
     } finally {
@@ -177,7 +179,8 @@ function RecognizeTest() {
           {forward && (
             <div className="alert alert-warning small mt-2 mb-0 py-2">
               <i className="bi bi-exclamation-triangle me-1" />
-              Gerçek bir {gateLabel(gate).toLocaleLowerCase('tr-TR')} olayı oluşturulur (oturum açılır/kapanır).
+              <strong>{lotName(lotCode)}</strong> otoparkında gerçek bir {gateLabel(gate).toLocaleLowerCase('tr-TR')} olayı
+              oluşturulur (oturum açılır/kapanır). Otoparkı üst menüden değiştirebilirsiniz.
             </div>
           )}
           <button type="submit" className="btn btn-primary w-100 mt-3" disabled={!file || busy}>
@@ -253,6 +256,7 @@ function RecognizeTest() {
 }
 
 function OccupancyTest() {
+  const { lotCode, lotName } = useLot();
   const [file, setFile] = useState(null);
   const [forward, setForward] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -266,7 +270,7 @@ function OccupancyTest() {
     setError(null);
     setResult(null);
     try {
-      setResult(await analyzeOccupancy(file, { forward }));
+      setResult(await analyzeOccupancy(file, { forward, lot: lotCode }));
     } catch (err) {
       setError(err);
     } finally {
@@ -289,7 +293,7 @@ function OccupancyTest() {
           <div className="form-check form-switch mt-2">
             <input id="occ-fwd" type="checkbox" className="form-check-input" checked={forward} onChange={(e) => setForward(e.target.checked)} />
             <label className="form-check-label" htmlFor="occ-fwd">
-              Sonucu backend&apos;e gönder (kroki güncellenir)
+              Sonucu backend&apos;e gönder ({lotName(lotCode)} krokisi güncellenir)
             </label>
           </div>
           <button type="submit" className="btn btn-primary w-100 mt-3" disabled={!file || busy}>

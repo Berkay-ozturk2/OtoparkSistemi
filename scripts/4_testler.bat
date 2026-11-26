@@ -5,7 +5,8 @@ set ROOT=%~dp0..
 echo.
 echo ===== Backend testleri (dotnet test) =====
 cd /d "%ROOT%\backend"
-dotnet test --nologo --logger "console;verbosity=normal"
+REM Derleme ciktisi ayri klasore yazilir: sistem aciksa calisan backend dosyalari kilitler
+dotnet test --nologo --artifacts-path "%ROOT%\backend\.test-artifacts" --logger "console;verbosity=normal"
 set B=%errorlevel%
 if %B%==0 (echo BACKEND TESTLERI GECTI) else (echo BACKEND TESTLERINDE HATA VAR)
 echo.

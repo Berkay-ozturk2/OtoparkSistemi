@@ -50,10 +50,10 @@ export function agentSnapshotUrl(id, stamp = Date.now()) {
  * POST /recognize?gate=Entry&forward=false (multipart "file")
  * → { plates: [{ plate, rawText, confidence, formatValid, bbox }], backendResponse, elapsedMs, annotatedImageBase64 }
  */
-export function recognizePlate(file, { gate = 'Entry', forward = false } = {}) {
+export function recognizePlate(file, { gate = 'Entry', forward = false, lot } = {}) {
   const fd = new FormData();
   fd.append('file', file);
-  return request(`/recognize${qs({ gate, forward: forward ? 'true' : 'false' })}`, {
+  return request(`/recognize${qs({ gate, forward: forward ? 'true' : 'false', lot })}`, {
     ...opts,
     method: 'POST',
     body: fd,
@@ -64,10 +64,10 @@ export function recognizePlate(file, { gate = 'Entry', forward = false } = {}) {
  * POST /occupancy/analyze?forward=false (multipart "file")
  * → { slots: [{ code, occupied, confidence }], vehicles, annotatedImageBase64, elapsedMs }
  */
-export function analyzeOccupancy(file, { forward = false } = {}) {
+export function analyzeOccupancy(file, { forward = false, lot } = {}) {
   const fd = new FormData();
   fd.append('file', file);
-  return request(`/occupancy/analyze${qs({ forward: forward ? 'true' : 'false' })}`, {
+  return request(`/occupancy/analyze${qs({ forward: forward ? 'true' : 'false', lot })}`, {
     ...opts,
     method: 'POST',
     body: fd,

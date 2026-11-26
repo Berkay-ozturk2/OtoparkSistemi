@@ -13,6 +13,8 @@ Yalnızca Python standart kütüphanesi kullanılır; numpy/opencv bile gerekmez
     python tools/simulator.py
     python tools/simulator.py --backend http://localhost:5080 --interval 3 --low-confidence-rate 0.15
     python tools/simulator.py --count 20 --seed 42
+    python tools/simulator.py --scenario full-demo            # adım adım, doğrulamalı uçtan uca senaryo
+    python tools/simulator.py --scenario full-demo --lot HASTANE --step-delay 0
 """
 from __future__ import annotations
 
@@ -78,12 +80,15 @@ class Http:
         self.api_key = api_key
         self.timeout = timeout
 
-    def request(self, method: str, path: str, body: Optional[dict] = None, auth: bool = True) -> Tuple[int, Any]:
+    def request(self, method: str, path: str, body: Optional[dict] = None, auth: bool = True,
+                token: Optional[str] = None) -> Tuple[int, Any]:
         data = json.dumps(body).encode("utf-8") if body is not None else None
         req = urllib.request.Request(self.base + path, data=data, method=method)
         req.add_header("Content-Type", "application/json")
         if auth:
             req.add_header("X-Api-Key", self.api_key)
+        if token:
+            req.add_header("Authorization", f"Bearer {token}")
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 raw = resp.read()
@@ -341,6 +346,283 @@ class Simulator:
         self.log(f"Bitti. Özet: {self.stats} — içeride {len(self.all_inside())} araç")
 
 
+class FullDemoScenario:
+    """Uçtan uca, DOĞRULAMALI demo senaryosu (--scenario full-demo).
+
+    Görüntü servisinin yapacağı istekleri (plaka olayı, doluluk) gönderir; her adımın sonucunu backend'in
+    operatör/herkese açık uç noktalarından KONTROL eder ve [OK]/[HATA] yazar. Böylece hem sunumda canlı
+    gösterim hem de "kamera -> backend -> harita" zincirinin uçtan uca testi olarak kullanılır.
+    Senaryo otoparkın ayarlarını geçici değiştirir (ücretsiz süre 0) ve bitince eski hâline döndürür.
+    """
+
+    def __init__(self, args):
+        self.a = args
+        self.http = Http(args.backend, args.api_key)
+        self.lot = args.lot.upper()
+        self.rng = random.Random(args.seed)
+        self.ok = 0
+        self.fail = 0
+        self.op_token: Optional[str] = None
+        self.admin_token: Optional[str] = None
+        self.saved_settings: Optional[dict] = None
+        self.parked: Dict[str, str] = {}   # plaka -> cep
+        self.extra_slots: List[str] = []   # plakasız doldurulan cepler (ihlal senaryosu)
+
+    # --- yardımcılar -------------------------------------------------------
+    def log(self, msg: str) -> None:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
+
+    def step(self, n: int, title: str) -> None:
+        print(flush=True)
+        self.log(f"===== ADIM {n}: {title} =====")
+        if self.a.step_delay > 0:
+            time.sleep(self.a.step_delay)
+
+    def check(self, cond: bool, what: str, detail: Any = "") -> bool:
+        if cond:
+            self.ok += 1
+            self.log(f"  [OK]   {what}")
+        else:
+            self.fail += 1
+            self.log(f"  [HATA] {what}  ->  {detail}")
+        return cond
+
+    def login(self, email: str, password: str) -> Optional[str]:
+        st, body = self.http.request("POST", "/api/auth/login", {"email": email, "password": password}, auth=False)
+        return body.get("token") if st == 200 and isinstance(body, dict) else None
+
+    def plate_event(self, gate: str, plate: str, conf: float = 0.93, valid: bool = True) -> dict:
+        body = {"cameraId": f"senaryo-{'giris' if gate == 'Entry' else 'cikis'}", "lotCode": self.lot,
+                "gate": gate, "plate": plate, "confidence": conf, "formatValid": valid, "timestamp": now_iso()}
+        st, resp = self.http.request("POST", "/api/vision/plate-events", body)
+        resp = resp if isinstance(resp, dict) else {"message": resp}
+        resp["_status"] = st
+        label = "GİRİŞ" if gate == "Entry" else "ÇIKIŞ"
+        self.log(f"  {label} {format_display(plate):<12} güven={conf:.2f} -> {resp.get('decision')}: {resp.get('message')}")
+        return resp
+
+    def occupancy(self, changes: Dict[str, bool]) -> int:
+        slots = [{"code": c, "occupied": o, "confidence": 0.95} for c, o in changes.items()]
+        st, _ = self.http.request("POST", "/api/vision/occupancy", {"cameraId": "senaryo-doluluk", "lotCode": self.lot,
+                                                                   "timestamp": now_iso(), "slots": slots})
+        self.log("  DOLULUK " + ", ".join(f"{c}={'dolu' if o else 'boş'}" for c, o in changes.items()) + f" (HTTP {st})")
+        return st
+
+    def slots(self) -> Dict[str, dict]:
+        st, body = self.http.request("GET", f"/api/parking/slots?lot={self.lot}", auth=False)
+        return {s["code"]: s for s in body} if st == 200 and isinstance(body, list) else {}
+
+    def active_plates(self) -> Dict[str, dict]:
+        st, body = self.http.request("GET", f"/api/operator/sessions/active?lot={self.lot}", auth=False,
+                                     token=self.op_token)
+        return {s["plate"]: s for s in body} if st == 200 and isinstance(body, list) else {}
+
+    def open_violations(self) -> List[dict]:
+        st, body = self.http.request("GET", f"/api/operator/violations?lot={self.lot}&status=Open", auth=False,
+                                     token=self.op_token)
+        return body if st == 200 and isinstance(body, list) else []
+
+    def new_plate(self) -> str:
+        while True:
+            p = f"{self.rng.choice(['06', '34', '35', '16'])}DMO{self.rng.randint(100, 999)}"
+            if is_valid(p):
+                return p
+
+    def free_slot(self, slots: Dict[str, dict], prefer: Optional[str], slot_type: str = "Standard") -> Optional[str]:
+        if prefer and prefer in slots and not slots[prefer]["isOccupied"]:
+            return prefer
+        for code, sl in slots.items():
+            if sl.get("type", "Standard") == slot_type and not sl["isOccupied"] and sl.get("isActive", True) \
+                    and not sl.get("isReserved"):
+                return code
+        return None
+
+    def enter_and_park(self, plate: str, conf: float = 0.93) -> Optional[dict]:
+        r = self.plate_event("Entry", plate, conf)
+        if r.get("decision") != "Allowed":
+            return r
+        slot = self.free_slot(self.slots(), r.get("suggestedSlot"), r.get("slotType") or "Standard")
+        if slot:
+            self.occupancy({slot: True})
+            self.parked[plate] = slot
+        return r
+
+    def leave(self, plate: str) -> None:
+        slot = self.parked.pop(plate, None)
+        if slot:
+            self.occupancy({slot: False})
+
+    # --- senaryo -----------------------------------------------------------
+    def run(self) -> int:
+        a = self.a
+        self.log(f"UÇTAN UCA DEMO SENARYOSU -> {a.backend} (otopark {self.lot})")
+        self.log("İpucu: tarayıcıda Operatör > Canlı İzleme'yi açıp otopark olarak "
+                 f"{self.lot} seçin; adımlar canlı görünecek.")
+        try:
+            self._run_steps()
+        except KeyboardInterrupt:
+            self.log("Kullanıcı durdurdu.")
+        finally:
+            self._cleanup()
+        print(flush=True)
+        total = self.ok + self.fail
+        if self.fail == 0:
+            self.log(f"SONUÇ: TÜM KONTROLLER BAŞARILI ({self.ok}/{total})")
+            return 0
+        self.log(f"SONUÇ: {self.fail} KONTROL BAŞARISIZ ({self.ok}/{total} başarılı) — yukarıdaki [HATA] satırlarına bakın")
+        return 1
+
+    def _run_steps(self) -> None:
+        a = self.a
+        # 0) Hazırlık
+        self.step(0, "Hazırlık: backend, giriş, ayarlar")
+        st, summary = self.http.request("GET", f"/api/parking/summary?lot={self.lot}", auth=False)
+        if not self.check(st == 200, f"backend'e ulaşıldı ve {self.lot} otoparkı var", f"HTTP {st}: {summary}"):
+            raise KeyboardInterrupt
+        self.op_token = self.login(a.operator_email, a.operator_password)
+        self.check(bool(self.op_token), "operatör girişi")
+        self.admin_token = self.login(a.admin_email, a.admin_password)
+        self.check(bool(self.admin_token), "yönetici girişi (ücretsiz süreyi geçici kapatmak için)")
+        st, agents = self.http.request("GET", f"/api/operator/agents?lot={self.lot}", auth=False, token=self.op_token)
+        busy = [x.get("id") for x in (agents or []) if isinstance(x, dict) and x.get("type") == "Occupancy"
+                and x.get("status") == "Running" and x.get("isOnline", True) and not str(x.get("id", "")).startswith("senaryo")]
+        if busy:
+            self.log(f"  UYARI: {self.lot} otoparkında çalışan doluluk kamerası var ({', '.join(busy)}); cepleri "
+                     f"değiştirip kontrolleri bozabilir. Gerekirse --lot HASTANE ile çalıştırın.")
+        if self.admin_token:
+            st, cur = self.http.request("GET", "/api/admin/settings", auth=False, token=self.admin_token)
+            if st == 200 and isinstance(cur, dict):
+                self.saved_settings = {"freeMinutes": cur.get("freeMinutes"), "gracePeriodMinutes": cur.get("gracePeriodMinutes")}
+                st, _ = self.http.request("PUT", "/api/admin/settings", {"freeMinutes": 0}, auth=False, token=self.admin_token)
+                self.check(st == 200, "ücretsiz süre demo için geçici olarak 0 dk yapıldı (sonunda geri alınır)")
+
+        p1, p2, p3 = self.new_plate(), self.new_plate(), self.new_plate()
+        while len({p1, p2, p3}) < 3:
+            p3 = self.new_plate()
+
+        # 1) Plakayla giriş
+        self.step(1, f"Plakayla giriş: {format_display(p1)} (bariyer açılır, aktif araç kaydı)")
+        r = self.enter_and_park(p1)
+        self.check(r and r.get("decision") == "Allowed", "giriş onaylandı (bariyer AÇIK)", r)
+        self.check(p1 in self.active_plates(), "aktif araçlar listesinde")
+        self.check(bool(r and r.get("suggestedSlot")), f"önerilen cep: {r.get('suggestedSlot') if r else '-'}")
+
+        # 2) Doluluk -> harita
+        self.step(2, "Doluluk kamerası: araç cebe park etti -> harita güncellenir")
+        slot1 = self.parked.get(p1)
+        sl = self.slots().get(slot1 or "", {})
+        self.check(bool(slot1) and sl.get("isOccupied") is True, f"{slot1} haritada DOLU", sl)
+
+        # 3) İkinci araç
+        self.step(3, f"İkinci araç: {format_display(p2)}")
+        r = self.enter_and_park(p2)
+        self.check(r and r.get("decision") == "Allowed", "giriş onaylandı", r)
+
+        # 4) Düşük güvenli okuma -> onay kuyruğu -> operatör düzeltir
+        self.step(4, f"Düşük güvenli okuma: {format_display(p3)} kamera tarafından hatalı okunur")
+        bad = garble(p3, self.rng)
+        r = self.plate_event("Entry", bad, conf=0.45, valid=is_valid(bad))
+        self.check(r.get("decision") == "PendingReview", "okuma operatör onay kuyruğuna düştü", r)
+        st, queue = self.http.request("GET", f"/api/operator/review-queue?lot={self.lot}", auth=False, token=self.op_token)
+        item = next((q for q in (queue or []) if isinstance(q, dict) and q.get("plateRead") == bad), None) \
+            or next((q for q in (queue or []) if isinstance(q, dict)), None)
+        self.check(item is not None, "onay kuyruğunda görünüyor", queue)
+        if item:
+            st, res = self.http.request("POST", f"/api/operator/review-queue/{item['id']}/resolve",
+                                        {"correctedPlate": p3, "approve": True}, auth=False, token=self.op_token)
+            self.log(f"  OPERATÖR plakayı {format_display(p3)} olarak düzeltip onayladı -> "
+                     f"{(res or {}).get('decision') if isinstance(res, dict) else res}")
+            ok = st == 200 and isinstance(res, dict) and res.get("decision") == "Allowed"
+            self.check(ok, "düzeltilen plaka ile giriş onaylandı", res)
+            if ok:
+                slot = self.free_slot(self.slots(), res.get("suggestedSlot"))
+                if slot:
+                    self.occupancy({slot: True})
+                    self.parked[p3] = slot
+
+        # 5) Ödemesiz çıkış reddi
+        self.step(5, f"Ödeme yapmadan çıkış denemesi: {format_display(p1)}")
+        time.sleep(1.5)
+        r = self.plate_event("Exit", p1)
+        self.check(r.get("decision") == "Denied" and float(r.get("fee") or 0) > 0,
+                   f"çıkış REDDEDİLDİ, ücret {r.get('fee')} TL (bariyer KAPALI)", r)
+
+        # 6) Kartla ödeme + çıkış
+        self.step(6, f"Kartla ödeme (sanal POS test kartı) ve çıkış: {format_display(p1)}")
+        st, quote = self.http.request("GET", f"/api/payments/quote/{p1}", auth=False)
+        self.check(st == 200 and float((quote or {}).get("amount") or 0) > 0, f"ücret sorgulandı: {(quote or {}).get('amount')} TL", quote)
+        if st == 200 and isinstance(quote, dict):
+            st, pay = self.http.request("POST", "/api/payments/pay",
+                                        {"sessionId": quote.get("sessionId"), "reservationId": None, "card": TEST_CARD},
+                                        auth=False)
+            self.check(st == 200 and (pay or {}).get("status") == "Success", f"ödeme başarılı ({(pay or {}).get('amount')} TL)", pay)
+        r = self.plate_event("Exit", p1)
+        self.check(r.get("decision") == "Allowed", "ödeme sonrası çıkış onaylandı (bariyer AÇIK)", r)
+        self.leave(p1)
+        self.check(p1 not in self.active_plates(), "araç aktif listeden düştü")
+        self.check(self.slots().get(slot1 or "", {}).get("isOccupied") is False, f"{slot1} haritada tekrar BOŞ")
+
+        # 7) Gişede nakit ödeme + çıkış
+        self.step(7, f"Gişede nakit ödeme ve çıkış: {format_display(p2)}")
+        sess = self.active_plates().get(p2)
+        if self.check(sess is not None, "aktif oturum bulundu"):
+            st, cash = self.http.request("POST", f"/api/operator/sessions/{sess['id']}/cash-payment", {}, auth=False,
+                                         token=self.op_token)
+            self.check(st == 200 and (cash or {}).get("status") == "Success", f"nakit ödeme alındı ({(cash or {}).get('amount')} TL)", cash)
+        r = self.plate_event("Exit", p2)
+        self.check(r.get("decision") == "Allowed", "çıkış onaylandı", r)
+        self.leave(p2)
+
+        # 8) Engelli izinli araç
+        permit = a.permit_plate
+        self.step(8, f"Engelli izinli araç: {format_display(permit)} -> engelli cebe yönlendirilir")
+        if permit in self.active_plates():
+            self.log("  (araç zaten içeride; bu adım atlandı)")
+        else:
+            r = self.enter_and_park(permit)
+            self.check(r and r.get("decision") == "Allowed" and r.get("isDisabledPermit") is True,
+                       "izinli araç girişi (♿)", r)
+            self.check(bool(r) and r.get("slotType") == "Disabled", f"engelli cep önerildi: {r.get('suggestedSlot') if r else '-'}")
+            self.check(not any(v.get("slotCode") == self.parked.get(permit) for v in self.open_violations()),
+                       "izinli araç engelli cebe park etti -> ihlal YOK")
+
+        # 9) İhlal: izinsiz araç engelli cebe park eder
+        self.step(9, "İhlal: plakası okunmayan izinsiz bir araç engelli cebe park eder")
+        slots = self.slots()
+        target = self.free_slot(slots, None, "Disabled")
+        if not target:
+            self.log("  (boş engelli cep yok; ihlal adımı atlandı)")
+        else:
+            self.occupancy({target: True})
+            self.extra_slots.append(target)
+            time.sleep(0.5)
+            v = next((x for x in self.open_violations() if x.get("slotCode") == target), None)
+            self.check(v is not None, f"{target} için İHLAL açıldı (operatör ekranında uyarı)", self.open_violations())
+            self.step(10, "İzinsiz araç ayrılır -> ihlal kendiliğinden kapanır")
+            self.occupancy({target: False})
+            self.extra_slots.remove(target)
+            time.sleep(0.5)
+            self.check(not any(x.get("slotCode") == target for x in self.open_violations()), f"{target} ihlali kapandı")
+
+    def _cleanup(self) -> None:
+        self.log("Temizlik: senaryo araçları çıkarılıyor, ayarlar geri alınıyor...")
+        for slot in list(self.extra_slots):
+            self.occupancy({slot: False})
+        active = self.active_plates() if self.op_token else {}
+        for plate in list(self.parked):
+            sess = active.get(plate)
+            if sess and self.op_token:
+                self.http.request("POST", f"/api/operator/sessions/{sess['id']}/cash-payment", {}, auth=False,
+                                  token=self.op_token)
+                self.http.request("POST", "/api/operator/manual-exit", {"plate": plate, "lotCode": self.lot},
+                                  auth=False, token=self.op_token)
+            self.leave(plate)
+        if self.saved_settings and self.admin_token:
+            body = {k: v for k, v in self.saved_settings.items() if v is not None}
+            st, _ = self.http.request("PUT", "/api/admin/settings", body, auth=False, token=self.admin_token)
+            self.log(f"  ayarlar geri alındı: {body} (HTTP {st})")
+
+
 def parse_args(argv=None):
     ap = argparse.ArgumentParser(description="Akıllı Otopark demo simülatörü (kamera/ML gerektirmez)")
     ap.add_argument("--backend", default="http://localhost:5080", help="Backend adresi (vars. http://localhost:5080)")
@@ -357,8 +639,20 @@ def parse_args(argv=None):
                     help="Doluluk olaylarında izinsiz aracın engelli cebe park etme olasılığı (vars. 0.15)")
     ap.add_argument("--count", type=int, default=0, help="Gönderilecek olay sayısı (0 = sonsuz)")
     ap.add_argument("--seed", type=int, default=None, help="Tekrarlanabilir demo için rastgelelik tohumu")
+    ap.add_argument("--scenario", choices=["random", "full-demo"], default="random",
+                    help="random: sürekli rastgele trafik (vars.) | full-demo: adım adım, doğrulamalı uçtan uca senaryo")
+    ap.add_argument("--lot", default="GAZI", help="full-demo için otopark kodu (vars. GAZI)")
+    ap.add_argument("--step-delay", type=float, default=2.0, help="full-demo adımları arası bekleme, sn (vars. 2)")
+    ap.add_argument("--permit-plate", default=PERMIT_PLATE, help="Engelli izinli plaka (seed: 06ENG061)")
+    ap.add_argument("--operator-email", default="operator@otopark.local")
+    ap.add_argument("--operator-password", default="Operator123!")
+    ap.add_argument("--admin-email", default="admin@otopark.local")
+    ap.add_argument("--admin-password", default="Admin123!")
     return ap.parse_args(argv)
 
 
 if __name__ == "__main__":
-    Simulator(parse_args()).run()
+    _args = parse_args()
+    if _args.scenario == "full-demo":
+        sys.exit(FullDemoScenario(_args).run())
+    Simulator(_args).run()
