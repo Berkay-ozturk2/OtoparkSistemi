@@ -127,7 +127,9 @@ export default function useParkingHub(handlers = {}, { withAuth = false, enabled
       }
     }
 
-    start();
+    // Başlatmayı bir sonraki tura erteler: React StrictMode (geliştirme) efekti hemen kapatıp yeniden
+    // açtığında ilk bağlantı hiç başlamaz; konsolda "stopped during negotiation" hatası oluşmaz.
+    retryTimer = setTimeout(start, 0);
 
     return () => {
       disposed = true;

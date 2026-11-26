@@ -337,7 +337,7 @@ Varsayılan konumlar (seed, yaklaşık; yönetici panelinden düzeltilebilir):
 | GAZI | Gazi Üni. Teknoloji Fakültesi, Emniyet Mah., Yenimahalle | 39.93830, 32.82230 |
 | MERKEZ | Kızılay Meydanı yanı, Çankaya | 39.92080, 32.85410 |
 | AVM | Eskişehir Yolu üzeri (Çarşı AVM — kurgusal) | 39.91050, 32.78400 |
-| HASTANE | Ankara Bilkent Şehir Hastanesi, Çankaya | 39.92200, 32.74400 |
+| HASTANE | Ankara Bilkent Şehir Hastanesi, Çankaya | 39.90098, 32.75704 |
 
 **Şema geçişi:** veri silinmez. Başlangıçta `ParkingLots.Latitude/Longitude` sütunları yoksa `ALTER TABLE ... ADD COLUMN` ile eklenir (`SchemaGuard.AddMissingColumnsAsync`). Ardından konumu boş otoparklara varsayılan konum yazılır; elle girilmiş konuma dokunulmaz.
 
