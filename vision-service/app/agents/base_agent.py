@@ -167,28 +167,70 @@ class BaseCameraAgent:
             self._fail(f"Video dosyası bulunamadı: {self.source_raw}")
             return False
         if isinstance(self.source, int):
-            # Windows'ta DirectShow daha hızlı açılır; olmazsa varsayılan arka uç
-            cap = cv2.VideoCapture(self.source, cv2.CAP_DSHOW) if hasattr(cv2, "CAP_DSHOW") and _is_windows() else cv2.VideoCapture(self.source)
+            cap = self._open_webcam(self.source)
+            if cap is None:
+                self._fail(f"Webcam {self.source} açılamadı ya da görüntü vermiyor. Kamera başka bir uygulamada "
+                           f"(Zoom, Teams, Kamera) açık olabilir, Windows gizlilik ayarlarında masaüstü uygulamalarının "
+                           f"kameraya erişimi kapalı olabilir ya da kamera indeksi farklı olabilir (cameras.yaml: source)")
+                return False
         else:
             cap = cv2.VideoCapture(self.source)
-        if not cap or not cap.isOpened():
-            self._fail(f"Kamera kaynağı açılamadı: {mask_source(self.source_raw)}")
-            if cap:
-                cap.release()
-            return False
-        try:
-            cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # canlı yayında gecikmeyi azaltır
-            if isinstance(self.source, int):
-                # Webcam: MJPG + 30 FPS iste (DirectShow varsayılanı çoğu kamerada düşük FPS'tir)
-                cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
-                cap.set(cv2.CAP_PROP_FPS, 30)
-        except Exception:
-            pass
+            if not cap or not cap.isOpened():
+                self._fail(f"Kamera kaynağı açılamadı: {mask_source(self.source_raw)}")
+                if cap:
+                    cap.release()
+                return False
+            try:
+                cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # canlı yayında gecikmeyi azaltır
+            except Exception:
+                pass
         if is_file_source(self.source):
             vfps = cap.get(cv2.CAP_PROP_FPS) or 25.0
             self._file_period = 1.0 / max(1.0, min(60.0, vfps))
         self._cap = cap
         return True
+
+    def _open_webcam(self, index: int) -> Optional[cv2.VideoCapture]:
+        """Webcam'i sırayla farklı yöntemlerle dener; ilk GERÇEKTEN kare veren yöntemi kullanır.
+        Bazı dizüstü kameraları MJPG'yi desteklemez ya da DirectShow ile siyah/boş kare verir."""
+        attempts = []
+        if _is_windows():
+            if hasattr(cv2, "CAP_DSHOW"):
+                attempts += [("DirectShow + MJPG", cv2.CAP_DSHOW, True), ("DirectShow", cv2.CAP_DSHOW, False)]
+            if hasattr(cv2, "CAP_MSMF"):
+                attempts.append(("Media Foundation", cv2.CAP_MSMF, False))
+        attempts.append(("varsayılan", None, False))
+        for name, api, mjpg in attempts:
+            if self._stop.is_set():
+                return None
+            try:
+                cap = cv2.VideoCapture(index, api) if api is not None else cv2.VideoCapture(index)
+            except Exception:
+                continue
+            if not cap or not cap.isOpened():
+                if cap:
+                    cap.release()
+                continue
+            try:
+                cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                if mjpg:
+                    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+                    cap.set(cv2.CAP_PROP_FPS, 30)
+            except Exception:
+                pass
+            ok = False
+            for _ in range(10):  # bazı kameralar ilk birkaç karede boş döner
+                ret, frame = cap.read()
+                if ret and frame is not None and frame.size > 0:
+                    ok = True
+                    break
+                time.sleep(0.05)
+            if ok:
+                log.info("[%s] webcam %d açıldı (%s)", self.id, index, name)
+                return cap
+            log.info("[%s] webcam %d '%s' yöntemiyle görüntü vermedi, başka yöntem deneniyor", self.id, index, name)
+            cap.release()
+        return None
 
     def _fail(self, message: str) -> None:
         if self.last_error != message:
