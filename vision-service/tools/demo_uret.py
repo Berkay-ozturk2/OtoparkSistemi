@@ -159,6 +159,7 @@ def make_gate_video(path: Path, plates: Sequence[str], label: str, fps: int, siz
 
 def make_plate_photos(out: Path, plates: Sequence[str], seed: int = 2) -> List[Path]:
     rng = random.Random(seed)
+    out.mkdir(parents=True, exist_ok=True)
     paths = []
     for i, plate in enumerate(plates, 1):
         img = gate_background(1280, 720, "ornek")

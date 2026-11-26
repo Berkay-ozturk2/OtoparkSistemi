@@ -34,3 +34,4 @@ vision-service/models/yolov8n.pt
 _to_delete/
 logs/
 vision-service/samples/demo/
+backend/.test-artifacts/
