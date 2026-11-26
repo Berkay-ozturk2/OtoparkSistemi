@@ -46,10 +46,12 @@ public class LotLocationTests : IDisposable
         await _t.Db.Database.ExecuteSqlRawAsync("ALTER TABLE \"ParkingLots\" DROP COLUMN \"Longitude\"");
         _t.Db.ChangeTracker.Clear();
         var usersBefore = await _t.Db.Users.CountAsync();
+        Assert.False(await SchemaGuard.ColumnExistsAsync(_t.Db, "ParkingLots", "Latitude"));
 
         await SchemaGuard.AddMissingColumnsAsync(_t.Db, NullLogger.Instance);
         await DbSeeder.SeedAsync(_t.Db);
         _t.Db.ChangeTracker.Clear();
+        Assert.True(await SchemaGuard.ColumnExistsAsync(_t.Db, "ParkingLots", "Latitude"));
 
         var lots = await _t.Db.ParkingLots.AsNoTracking().ToListAsync();
         Assert.Equal(4, lots.Count);                                   // otoparklar silinmedi

@@ -56,19 +56,19 @@ public static class SchemaGuard
         }
     }
 
-    private static async Task<bool> ColumnExistsAsync(AppDbContext db, string table, string column, CancellationToken ct)
+    /// <summary>
+    /// Sütun var mı? Şema kataloğundan bakılır. (Not: SQLite'ta SELECT "YokSutun" hata VERMEZ; bilinmeyen
+    /// çift tırnaklı ad metin sabiti sayılır. Bu yüzden deneme-sorgusu yerine katalog kullanılır.)
+    /// </summary>
+    public static async Task<bool> ColumnExistsAsync(AppDbContext db, string table, string column, CancellationToken ct = default)
     {
-        try
-        {
 #pragma warning disable EF1002
-            await db.Database.ExecuteSqlRawAsync($"SELECT \"{column}\" FROM \"{table}\" WHERE 1 = 0", ct);
+        var sql = db.Database.IsSqlite()
+            ? $"SELECT COUNT(*) AS \"Value\" FROM pragma_table_info('{table}') WHERE name = '{column}'"
+            : $"SELECT COUNT(*)::int AS \"Value\" FROM information_schema.columns WHERE table_name = '{table}' AND column_name = '{column}'";
+        var count = await db.Database.SqlQueryRaw<int>(sql).SingleAsync(ct);
 #pragma warning restore EF1002
-            return true;
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            return false;
-        }
+        return count > 0;
     }
 
     /// <summary>
