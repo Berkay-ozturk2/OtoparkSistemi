@@ -1,0 +1,21 @@
+# Eğitimde kullanılan Roboflow veri setleri (Semihocakli/turkish-plate-recognition ile aynı)
+# İndirme: python indir_veri.py            (ROBOFLOW_API_KEY ortam değişkeni gerekir)
+#          python indir_veri.py --zip indirilen.zip --hedef data/plaka_tespit   (elle indirilen zip)
+
+plaka_tespit:
+  aciklama: "Plaka tespiti (tek sınıf: plaka)"
+  workspace: guler-kandeger
+  project: plate-detection-vh2rk
+  version: 2
+  format: yolov8
+  url: https://universe.roboflow.com/guler-kandeger/plate-detection-vh2rk/dataset/2
+  hedef: data/plaka_tespit
+
+karakter_okuma:
+  aciklama: "Plaka karakter okuma (36 sınıf: 0-9, A-Z — her karakter ayrı kutu)"
+  workspace: metehan-yasar
+  project: plaka-cript
+  version: 1
+  format: yolov8
+  url: https://universe.roboflow.com/metehan-yasar/plaka-cript/dataset/1
+  hedef: data/karakter

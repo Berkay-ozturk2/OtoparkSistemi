@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+vision-service/runs/
+training/datasets/
+training/runs/
+*.mp4
+!vision-service/samples/.gitkeep
+
+# .NET
+bin/
+obj/
+*.db
+*.db-shm
+*.db-wal
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+
+# Otomatik indirilen / yerel dosyalar
+.pytest_cache/
+yolov8n.pt
+vision-service/models/yolov8n.pt
+_to_delete/
+logs/

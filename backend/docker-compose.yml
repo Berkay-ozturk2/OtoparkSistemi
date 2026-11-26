@@ -1,0 +1,19 @@
+# İsteğe bağlı: PostgreSQL 17 ile çalıştırmak için
+#   docker compose up -d
+# ardından appsettings.json içinde "Database:Provider" = "PostgreSQL" yapın.
+services:
+  postgres:
+    image: postgres:17
+    container_name: otopark-postgres
+    environment:
+      POSTGRES_DB: otopark
+      POSTGRES_USER: otopark
+      POSTGRES_PASSWORD: otopark123
+    ports:
+      - "5432:5432"
+    volumes:
+      - otopark-pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  otopark-pgdata:

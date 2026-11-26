@@ -1,0 +1,15 @@
+# Görüntü işleme servisi bağımlılıkları (Python 3.10–3.12)
+# GPU kullanacaksanız ÖNCE CUDA'lı torch'u kurun (README → GPU bölümü), sonra bu dosyayı.
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.27,<1.0
+pydantic>=2.5,<3.0
+python-multipart>=0.0.9
+requests>=2.31,<3.0
+httpx>=0.26,<1.0            # FastAPI TestClient için
+numpy>=1.24,<3.0
+opencv-python>=4.8,<5.0
+ultralytics>=8.3,<9.0       # YOLOv8 (torch'u da kurar) — AGPL-3.0
+easyocr>=1.7,<2.0           # char_reader.pt yoksa yedek OCR
+onnxruntime>=1.17,<2.0      # isteğe bağlı: torch olmadan .onnx modelleri çalıştırmak için
+pyyaml>=6.0,<7.0
+pytest>=7.4

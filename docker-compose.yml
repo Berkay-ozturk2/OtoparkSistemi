@@ -1,0 +1,65 @@
+# AkıllıPark — Docker Compose
+#  Yalnızca veritabanı:   docker compose up -d db
+#  Tüm sistem (sunucu):   docker compose --profile tam up -d --build
+#
+# Not: Görüntü işleme servisi kameralara yakın kenar biriminde (saha dizüstü) çalışacağı için
+# varsayılan olarak Docker dışında çalıştırılır (scripts\2_baslat.bat). "tam" profili sunucu demosu içindir.
+
+services:
+  db:
+    image: postgres:17
+    container_name: otopark-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: otopark
+      POSTGRES_PASSWORD: otopark123
+      POSTGRES_DB: otopark
+      TZ: Europe/Istanbul
+    ports:
+      - "5432:5432"
+    volumes:
+      - otopark-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U otopark -d otopark"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    profiles: ["tam"]
+    build: ./backend
+    container_name: otopark-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      Urls: http://+:5080
+      Database__Provider: PostgreSQL
+      ConnectionStrings__PostgreSQL: Host=db;Port=5432;Database=otopark;Username=otopark;Password=otopark123
+      Cors__Origins__0: http://localhost:5173
+    ports:
+      - "5080:5080"
+
+  vision:
+    profiles: ["tam"]
+    build: ./vision-service
+    container_name: otopark-vision
+    depends_on:
+      - backend
+    environment:
+      BACKEND_URL: http://backend:5080
+      VISION_API_KEY: dev-vision-key
+    ports:
+      - "8000:8000"
+
+  frontend:
+    profiles: ["tam"]
+    build: ./frontend
+    container_name: otopark-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  otopark-pgdata:

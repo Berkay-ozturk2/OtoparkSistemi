@@ -1,0 +1,64 @@
+# Kamera ajanları yapılandırması
+# ------------------------------------------------------------------
+# Her kamera bir "ajan" olarak ayrı bir iş parçacığında çalışır.
+#
+# Ortak alanlar:
+#   id       : benzersiz kimlik (backend'e cameraId olarak gider)
+#   type     : Gate (giriş/çıkış plaka okuma) | Occupancy (cep doluluk)
+#   source   : "0" / "1" = bilgisayara bağlı webcam indeksi
+#              "rtsp://kullanici:parola@192.168.1.20:554/stream1" = IP kamera
+#              "samples/giris.mp4" = video dosyası (bitince başa sarar; demo için ideal)
+#   enabled  : true ise servis açılırken otomatik başlar (AUTOSTART_AGENTS=true iken)
+#              false olanlar arayüzden / POST /agents/{id}/start ile başlatılabilir
+#   lotCode  : kameranın bağlı olduğu otopark kodu (GAZI, MERKEZ, AVM, HASTANE — vars. GAZI)
+#   fps      : plaka tespitinin EN FAZLA kaç kare/sn yapılacağı (0 = donanım ne kadar izin verirse).
+#              Kamera görüntüsü bundan bağımsız olarak tam hızında okunur ve önizlenir.
+#
+# Gate alanları:
+#   gate                : Entry (giriş) | Exit (çıkış)
+#   roi                 : [x1, y1, x2, y2] — yalnızca bu bölgede plaka ara (isteğe bağlı, hız kazandırır)
+#   voteWindowSeconds   : oylama penceresi (vars. 1.5 sn)
+#   voteMinReads        : karar için gereken en az okuma (vars. 3)
+#   cooldownSeconds     : aynı plaka tekrar gönderilmeden önce beklenecek süre (vars. 30 sn)
+#   sendCrop            : plaka kırpıntısı backend'e gönderilsin mi (KVKK: yalnızca plaka bölgesi)
+#
+# Occupancy alanları:
+#   slotsFile           : cep poligonları (vars. config/slots.json; tools/slot_editor.py ile çizilir)
+#   threshold           : cep alanının en az bu oranı araçla kaplıysa "dolu" (vars. 0.35)
+#   smoothing           : son N karede çoğunluk (titreme önleme, vars. 5)
+#   fullReportSeconds   : tüm ceplerin periyodik gönderim aralığı (vars. 60 sn)
+#   footprint           : araç kutusunun alttan ne kadarı sayılsın (eğik açılı kamerada 0.5 deneyin)
+
+cameras:
+  - id: giris-1
+    lotCode: GAZI
+    name: "Ana giriş kamerası"
+    type: Gate
+    gate: Entry
+    source: "0"              # dizüstü bilgisayarın kamerası
+    fps: 15
+    enabled: false
+    voteWindowSeconds: 1.5
+    voteMinReads: 3
+    cooldownSeconds: 30
+
+  - id: cikis-1
+    lotCode: GAZI
+    name: "Ana çıkış kamerası"
+    type: Gate
+    gate: Exit
+    source: "1"              # ikinci webcam ya da "samples/cikis.mp4"
+    fps: 15
+    enabled: false
+
+  - id: doluluk-1
+    lotCode: GAZI
+    name: "Pilot alan doluluk kamerası"
+    type: Occupancy
+    source: "samples/otopark.mp4"   # kendi çekiminizi samples/ klasörüne koyun
+    fps: 1
+    enabled: false
+    slotsFile: config/slots.json
+    threshold: 0.35
+    smoothing: 5
+    fullReportSeconds: 60

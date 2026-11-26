@@ -1,0 +1,29 @@
+{
+  "name": "akillipark-web",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Görüntü İşleme Destekli Akıllı Otopark Sistemi - web arayüzü (BMT-315)",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@microsoft/signalr": "^8.0.7",
+    "bootstrap": "^5.3.6",
+    "bootstrap-icons": "^1.13.1",
+    "chart.js": "^4.4.9",
+    "react": "^19.1.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.5.0",
+    "vite": "^6.3.5"
+  }
+}

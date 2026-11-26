@@ -1,0 +1,14 @@
+# Satır sonları: Windows betikleri CRLF, diğer metin dosyaları otomatik
+* text=auto
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.sh  text eol=lf
+
+# İkili dosyalar (modeller, görseller)
+*.pt   binary
+*.onnx binary
+*.engine binary
+*.png  binary
+*.jpg  binary
+*.mp4  binary

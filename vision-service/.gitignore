@@ -1,0 +1,9 @@
+samples/*
+!samples/.gitkeep
+.env
+models/yolov8n.pt
+__pycache__/
+*.pyc
+.pytest_cache/
+runs/
+annotated*.jpg

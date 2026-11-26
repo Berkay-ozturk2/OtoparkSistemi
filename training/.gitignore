@@ -1,0 +1,6 @@
+data/
+runs/
+*.zip
+__pycache__/
+char_classes.txt
+yolov8n.pt
