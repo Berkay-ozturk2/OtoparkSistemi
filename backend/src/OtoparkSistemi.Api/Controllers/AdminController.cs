@@ -265,8 +265,18 @@ public class AdminController(
         if (r.Address != null) lot.Address = string.IsNullOrWhiteSpace(r.Address) ? null : Truncate(r.Address.Trim(), 300);
         if (r.Description != null) lot.Description = string.IsNullOrWhiteSpace(r.Description) ? null : Truncate(r.Description.Trim(), 1000);
         if (r.IsActive.HasValue) lot.IsActive = r.IsActive.Value;
+        if (r.Latitude.HasValue != r.Longitude.HasValue)
+            throw AppException.BadRequest("Konum için enlem ve boylam birlikte verilmelidir.");
+        if (r.Latitude.HasValue && r.Longitude.HasValue)
+        {
+            if (r.Latitude.Value is < -90 or > 90 || r.Longitude.Value is < -180 or > 180)
+                throw AppException.BadRequest("Geçersiz konum: enlem -90..90, boylam -180..180 olmalıdır.");
+            lot.Latitude = Math.Round(r.Latitude.Value, 6);
+            lot.Longitude = Math.Round(r.Longitude.Value, 6);
+        }
         await db.SaveChangesAsync(ct);
-        await audit.LogAsync("Otopark güncellendi", $"{lot.Code}: {lot.Name}, aktif: {lot.IsActive}", ct: ct);
+        await audit.LogAsync("Otopark güncellendi",
+            $"{lot.Code}: {lot.Name}, aktif: {lot.IsActive}, konum: {lot.Latitude?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "-"}, {lot.Longitude?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "-"}", ct: ct);
 
         return Ok(ParkingService.ToLotSummary(await parking.GetLotSnapshotAsync(lot, ct)));
     }

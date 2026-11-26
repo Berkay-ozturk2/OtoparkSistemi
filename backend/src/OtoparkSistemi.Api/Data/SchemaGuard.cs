@@ -32,7 +32,43 @@ public static class SchemaGuard
         }
 
         await db.Database.EnsureCreatedAsync(ct);
+        await AddMissingColumnsAsync(db, logger, ct);
         await DbSeeder.SeedAsync(db, ct);
+    }
+
+    /// <summary>
+    /// Veri SİLMEDEN eklenebilen yeni sütunlar. EnsureCreated var olan tabloya sütun eklemediği için
+    /// sonradan eklenen alanlar burada ALTER TABLE ile eklenir (ör. otopark konumu — yol tarifi özelliği).
+    /// Sütun zaten varsa hiçbir şey yapılmaz.
+    /// </summary>
+    public static async Task AddMissingColumnsAsync(AppDbContext db, ILogger logger, CancellationToken ct = default)
+    {
+        var columns = new[] { ("ParkingLots", "Latitude"), ("ParkingLots", "Longitude") };
+        foreach (var (table, column) in columns)
+        {
+            if (await ColumnExistsAsync(db, table, column, ct)) continue;
+            var type = db.Database.IsSqlite() ? "REAL" : "double precision";
+            // Tablo/sütun adları sabit listeden gelir (kullanıcı girdisi değildir)
+#pragma warning disable EF1002
+            await db.Database.ExecuteSqlRawAsync($"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {type} NULL", ct);
+#pragma warning restore EF1002
+            logger.LogInformation("Veritabanına sütun eklendi: {Table}.{Column} (veriler korundu)", table, column);
+        }
+    }
+
+    private static async Task<bool> ColumnExistsAsync(AppDbContext db, string table, string column, CancellationToken ct)
+    {
+        try
+        {
+#pragma warning disable EF1002
+            await db.Database.ExecuteSqlRawAsync($"SELECT \"{column}\" FROM \"{table}\" WHERE 1 = 0", ct);
+#pragma warning restore EF1002
+            return true;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return false;
+        }
     }
 
     /// <summary>

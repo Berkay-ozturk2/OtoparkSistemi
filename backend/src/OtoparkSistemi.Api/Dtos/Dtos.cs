@@ -110,7 +110,9 @@ public record ParkingLotDto(
     int MapHeight,
     List<FloorDto> Floors,
     List<MapDecorDto> Decor,
-    bool IsActive);
+    bool IsActive,
+    double? Latitude = null,
+    double? Longitude = null);
 
 /// <summary>/api/parking/lots öğesi. FreeSlots = normal araçlar için boş (Standard) cep sayısı.</summary>
 public record LotSummaryDto(
@@ -127,13 +129,16 @@ public record LotSummaryDto(
     double OccupancyRate,
     bool IsActive,
     int MapWidth,
-    int MapHeight);
+    int MapHeight,
+    double? Latitude = null,
+    double? Longitude = null);
 
 public record LayoutZoneDto(int Id, string Code, string Name, int Floor);
 
 public record LotLayoutDto(ParkingLotDto Lot, List<LayoutZoneDto> Zones, List<SlotDto> Slots);
 
-public record UpdateLotRequest(string? Name, string? Address, string? Description, bool? IsActive);
+public record UpdateLotRequest(string? Name, string? Address, string? Description, bool? IsActive,
+    double? Latitude = null, double? Longitude = null);
 
 public record UpdateSlotRequest(SlotType? Type, bool? IsActive);
 
