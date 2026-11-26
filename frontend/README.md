@@ -49,6 +49,7 @@ Giriş sayfasındaki demo hesap kartlarına tıklayınca form otomatik dolar.
 |---|---|---|---|
 | `/` | Ana Sayfa: otopark kartları (doluluk, boş yer, ♿ boş engelli yeri, "Krokiyi gör"), seçili otoparkın canlı özeti, kroki, önerilen bölge, tarifeler | herkes | UC-05 |
 | `/aracim-nerede` | Aracım Nerede? (otopark adı + o otoparkın krokisinde bölge) | herkes | UC-06 |
+| `/yol-tarifi` | Yol Tarifi: Ankara haritasında otoparklar, konumunuzdan rezervasyonlu/seçili otoparka rota (Leaflet + OSM, OSRM), Türkçe adım adım tarif, Google Haritalar bağlantısı | herkes (sürücüye rezervasyonları) | UC-17 |
 | `/ucret-ode` | Ücret Öde (plaka → kart → sonuç) | herkes | UC-03 |
 | `/giris`, `/kayit` | Giriş / Sürücü kaydı (KVKK onayı + ayrı açık rıza) | herkes | — |
 | `/kvkk` | KVKK aydınlatma metni + ilgili kişi başvuru formu | herkes | KVKK |

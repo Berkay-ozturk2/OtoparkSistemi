@@ -486,6 +486,12 @@ export default function Rezervasyon() {
                                   Öde
                                 </button>
                               )}
+                              {['PendingPayment', 'Confirmed', 'CheckedIn'].includes(r.status) && r.lotCode && (
+                                <Link className="btn btn-sm btn-outline-primary me-1" to={`/yol-tarifi?lot=${r.lotCode}`} title="Otoparka yol tarifi">
+                                  <i className="bi bi-signpost-split me-1" />
+                                  Yol tarifi
+                                </Link>
+                              )}
                               {cancellable && (
                                 <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => setToCancel(r)}>
                                   İptal

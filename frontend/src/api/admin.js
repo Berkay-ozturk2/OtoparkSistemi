@@ -89,8 +89,8 @@ export function updatePermit(id, { status, validUntil, note }) {
 export function getAdminLots() {
   return api.get('/api/admin/lots');
 }
-export function updateLot(code, { name, address, description, isActive }) {
-  return api.put(`/api/admin/lots/${encodeURIComponent(code)}`, { name, address, description, isActive });
+export function updateLot(code, { name, address, description, isActive, latitude, longitude }) {
+  return api.put(`/api/admin/lots/${encodeURIComponent(code)}`, { name, address, description, isActive, latitude, longitude });
 }
 /** Cep türü / kullanım durumu: { type: 'Standard' | 'Disabled', isActive } */
 export function updateSlot(id, { type, isActive }) {

@@ -25,6 +25,14 @@ if not exist samples\demo\doluluk.mp4 (
   call deactivate
 )
 
+REM Yeni arayuz paketleri (ornegin harita icin leaflet) eksikse kur
+if not exist "%ROOT%\frontend\node_modules\leaflet\package.json" (
+  echo Yeni arayuz paketleri kuruluyor - npm install...
+  pushd "%ROOT%\frontend"
+  call npm install
+  popd
+)
+
 REM Goruntu servisi demo yapilandirmasiyla acilmali: normal modda aciksa once kapatilmali
 netstat -ano | findstr /R /C:":8000 .*LISTENING" >nul && (
   echo.

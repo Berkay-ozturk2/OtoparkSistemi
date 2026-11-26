@@ -45,5 +45,5 @@ public static class LotJson
 
     public static ParkingLotDto ToDto(ParkingLot lot) =>
         new(lot.Id, lot.Code, lot.Name, lot.Address, lot.Description, lot.MapWidth, lot.MapHeight,
-            Floors(lot), Decor(lot), lot.IsActive);
+            Floors(lot), Decor(lot), lot.IsActive, lot.Latitude, lot.Longitude);
 }
