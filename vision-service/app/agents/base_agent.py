@@ -87,6 +87,7 @@ class BaseCameraAgent:
         self._latest_id = 0
         self._file_period = 1.0 / 25.0
         self.camera_fps = 0.0
+        self.loops = 0  # video dosyası kaç kez başa sarıldı (demo)
         self.preview_fps = preview_fps
         self.live_preview = False  # alt sınıf draw_overlay uygularsa True yapar
 
@@ -311,11 +312,22 @@ class BaseCameraAgent:
         if ok and frame is not None:
             return frame
         if is_file_source(self.source):
-            # Video bitti: başa sar
-            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            ok, frame = cap.read()
+            # Video bitti: başa sar (sürekli canlı yayın gibi döngü)
+            try:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                ok, frame = cap.read()
+            except Exception:
+                ok, frame = False, None
             if ok and frame is not None:
+                self.loops += 1
                 return frame
+            # Bazı mp4 dosyalarında başa sarma çalışmaz: dosyayı hata vermeden yeniden aç
+            self._release()
+            if self._open():
+                ok, frame = self._cap.read()
+                if ok and frame is not None:
+                    self.loops += 1
+                    return frame
         shared_error = getattr(cap, "error", None)
         self._fail(shared_error or f"Kameradan görüntü alınamadı, yeniden bağlanılıyor: {mask_source(self.source_raw)}")
         self._release()

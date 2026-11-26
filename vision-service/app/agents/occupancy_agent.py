@@ -27,7 +27,7 @@ class OccupancyAgent(BaseCameraAgent):
 
     def __init__(self, agent_id: str, source, registry: ModelRegistry, backend: Optional[BackendClient],
                  slots_file: Path, threshold: float = 0.35, smoothing: int = 5, full_report_seconds: float = 60.0,
-                 vehicle_conf: float = 0.35, footprint: float = 1.0, **kw):
+                 vehicle_conf: float = 0.35, footprint: float = 1.0, detector: str = "yolo", **kw):
         kw.setdefault("target_fps", 1.0)
         super().__init__(agent_id, source, **kw)
         self.registry = registry
@@ -38,6 +38,12 @@ class OccupancyAgent(BaseCameraAgent):
         self.full_report_seconds = full_report_seconds
         self.vehicle_conf = vehicle_conf
         self.footprint = footprint
+        # "yolo" (gerçek kamera, varsayılan) | "color" (yalnızca sentetik demo videosu — demo_detector.py)
+        self.detector_kind = (detector or "yolo").lower()
+        self._demo_detector = None
+        if self.detector_kind == "color":
+            from app.pipeline.demo_detector import ColorVehicleDetector
+            self._demo_detector = ColorVehicleDetector()
         self.layout: Optional[SlotLayout] = None
         self.smoother = SlotSmoother(smoothing)
         self._last_full: Optional[float] = None  # None: ilk karede tam rapor gönder
@@ -53,7 +59,7 @@ class OccupancyAgent(BaseCameraAgent):
     def process_frame(self, frame: np.ndarray, now: float) -> Optional[np.ndarray]:
         if self.layout is None:
             self.on_start()
-        vd = self.registry.vehicle_detector
+        vd = self._demo_detector or self.registry.vehicle_detector
         if not vd.ready:
             self.last_error = self.registry.unavailable_reason(["vehicle"]) or "Araç modeli hazır değil"
             return frame
