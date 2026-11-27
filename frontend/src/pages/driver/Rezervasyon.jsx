@@ -36,9 +36,8 @@ import {
 /** UC-04: Çevrimiçi yer rezerve et */
 export default function Rezervasyon() {
   const toast = useToast();
-  const { lotCode: ctxLot, setLotCode: setCtxLot, lotName, lots } = useLot();
+  const { lotCode: ctxLot, setLotCode: setCtxLot, lotName } = useLot();
   const [resLot, setResLot] = useState(ctxLot);
-  const isSiteDemo = lots.some((lot) => lot.code === resLot && lot.siteReference);
   const [slotType, setSlotType] = useState('Standard');
   const [permits, setPermits] = useState([]);
   const [zonesLoading, setZonesLoading] = useState(false);
@@ -252,7 +251,6 @@ export default function Rezervasyon() {
                 <div className="mb-3">
                   <label className="form-label fw-semibold d-block">Otopark</label>
                   <LotSelector value={resLot} onChange={onLotChange} size="" align="start" className="w-100" />
-                  {isSiteDemo && <div className="form-text">Bu sahadaki rezervasyon yalnızca AkıllıPark demosunda geçerlidir.</div>}
                 </div>
 
                 <div className="mb-3">

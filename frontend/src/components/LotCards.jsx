@@ -62,7 +62,6 @@ export default function LotCards({ onShowMap }) {
                       <i className="bi bi-geo-alt me-1" />
                       {l.address || '—'}
                     </div>
-                    {l.siteReference && <div className="small text-secondary mt-1">Saha krokisi · Demo</div>}
                   </div>
                   {active && (
                     <span className="badge text-bg-primary ms-auto flex-shrink-0" title="Seçili otopark">
