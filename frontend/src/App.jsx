@@ -22,6 +22,7 @@ import OnayKuyrugu from './pages/operator/OnayKuyrugu';
 import AktifAraclar from './pages/operator/AktifAraclar';
 import ManuelGecis from './pages/operator/ManuelGecis';
 import KameraTesti from './pages/operator/KameraTesti';
+import AjanOfisi from './pages/operator/AjanOfisi';
 import Ihlaller from './pages/operator/Ihlaller';
 
 // Yönetici
@@ -77,6 +78,7 @@ export default function App() {
           <Route path="ihlaller" element={<Ihlaller />} />
           <Route path="manuel-gecis" element={<ManuelGecis />} />
           <Route path="kamera-testi" element={<KameraTesti />} />
+          <Route path="ajan-ofisi" element={<AjanOfisi />} />
         </Route>
 
         {/* Yönetici */}

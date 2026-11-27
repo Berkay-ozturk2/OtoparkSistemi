@@ -70,6 +70,14 @@ class OccupancyAgent(BaseCameraAgent):
     def info(self):
         data = super().info()
         data["layout"] = self.layout_id
+        data["occupiedCount"] = self.occupied_count if self.running else None
+        if self.layout is not None:
+            data["slotCount"] = len(self.layout.slots)
+        else:
+            try:
+                data["slotCount"] = len(load_layout(self.slots_file).slots)
+            except Exception:
+                data["slotCount"] = None
         return data
 
     def on_start(self) -> None:

@@ -152,6 +152,8 @@ class AgentAssignTests(unittest.TestCase):
         agent = OccupancyAgent("doluluk-1", "0", registry=SimpleNamespace(), backend=None, slots_file=SLOTS)
         mgr.agents[agent.id] = agent
         self.assertEqual((agent.info()["layout"], agent.lot_code), ("GAZI", "GAZI"))
+        info = agent.info()   # Ajan Ofisi alanları: duran ajanda da cep sayısı bilinir
+        self.assertEqual((info["slotCount"], info["occupiedCount"], info["framesProcessed"]), (28, None, 0))
         entry = reg.get("MERKEZ-K1")
         mgr.assign(agent.id, entry.lot_code, entry)
         self.assertEqual((agent.info()["layout"], agent.info()["lotCode"]), ("MERKEZ-K1", "MERKEZ"))
@@ -167,6 +169,8 @@ class AgentAssignTests(unittest.TestCase):
         mgr.agents[agent.id] = agent
         mgr.assign("giris-1", "hastane")
         self.assertEqual(agent.lot_code, "HASTANE")
+        info = agent.info()
+        self.assertEqual((info["lastPlateAt"], info["platesDecided"], info["name"]), (None, 0, "giris-1"))
         self.assertIsNone(mgr.assign("yok", "AVM"))
 
 

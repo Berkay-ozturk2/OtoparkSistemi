@@ -657,3 +657,213 @@ body {
   .app-navbar, .app-footer, .server-banner, .no-print { display: none !important; }
   .card { box-shadow: none; border: 1px solid #e2e8f0; }
 }
+
+/* ===================================================================
+   Ajan Ofisi — kamera ajanları masalarında çalışan kişiler olarak
+   =================================================================== */
+.office-room {
+  border-radius: var(--ap-radius);
+  overflow: hidden;
+  box-shadow: var(--ap-card-shadow);
+  background: #fff;
+}
+.office-wall {
+  position: relative;
+  height: 92px;
+  background: linear-gradient(#dfe7f2, #cfd9e8);
+  border-bottom: 6px solid #a8b4c6;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+}
+.office-window {
+  position: relative;
+  width: 200px;
+  height: 62px;
+  border: 5px solid #f8fafc;
+  border-radius: 6px;
+  background: linear-gradient(#9fd3f7 0 55%, #6b7280 55% 100%);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.office-window-car {
+  position: absolute;
+  bottom: 6px;
+  width: 18px;
+  height: 9px;
+  border-radius: 3px;
+}
+.office-board {
+  background: #fff;
+  border: 3px solid #94a3b8;
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  line-height: 1.2;
+}
+.office-clock {
+  margin-left: auto;
+  background: var(--ap-navy-800);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+.office-plant { font-size: 2.2rem; line-height: 1; }
+.office-floor {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.25rem;
+  padding: 1.25rem;
+  background-color: #eef1f5;
+  background-image:
+    linear-gradient(45deg, rgba(148, 163, 184, 0.12) 25%, transparent 25%, transparent 75%, rgba(148, 163, 184, 0.12) 75%),
+    linear-gradient(45deg, rgba(148, 163, 184, 0.12) 25%, transparent 25%, transparent 75%, rgba(148, 163, 184, 0.12) 75%);
+  background-size: 48px 48px;
+  background-position: 0 0, 24px 24px;
+  min-height: 320px;
+}
+.office-desk {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border-radius: var(--ap-radius);
+  padding: 0.5rem 0.5rem 0.75rem;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.office-desk:hover { background: rgba(255, 255, 255, 0.55); transform: translateY(-2px); }
+.office-desk:focus-visible { outline: 3px solid var(--ap-teal); outline-offset: 2px; }
+.office-selected { background: rgba(255, 255, 255, 0.85); box-shadow: 0 0 0 3px var(--ap-teal), var(--ap-card-shadow-hover); }
+.office-desk-chief .office-nameplate strong { color: #6c4bd1; }
+.office-bubble {
+  position: relative;
+  align-self: center;
+  max-width: 100%;
+  min-height: 2.6rem;
+  background: #fff;
+  border: 1px solid #d5dbe5;
+  border-radius: 12px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  text-align: center;
+  color: #334155;
+  margin-bottom: 4px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+.office-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-right: 1px solid #d5dbe5;
+  border-bottom: 1px solid #d5dbe5;
+  transform: translateX(-50%) rotate(45deg);
+}
+.office-bubble-error { border-color: #f5c2c7; color: #b02a37; }
+.office-worker { position: relative; width: 100%; }
+.office-svg { display: block; width: 100%; height: auto; }
+.office-screen {
+  position: absolute;
+  left: 7.3%;
+  top: 36.8%;
+  width: 30.9%;
+  height: 25.2%;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.office-screen img { width: 100%; height: 100%; object-fit: cover; }
+.office-screen-off { color: #475569; font-size: 0.6rem; letter-spacing: 0.04em; }
+.office-screen-chief { display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 3px; }
+.office-screen-chief span {
+  font-size: 0.55rem;
+  color: #94a3b8;
+  background: #1e293b;
+  border-radius: 2px;
+  padding: 0 3px;
+}
+.office-screen-chief span.on { color: #052e16; background: #4ade80; }
+.office-nameplate { display: flex; flex-direction: column; align-items: center; text-align: center; line-height: 1.25; margin-top: 2px; }
+.office-nameplate span { font-size: 0.78rem; color: #64748b; }
+.office-nameplate code { color: #94a3b8; }
+
+/* hareketler */
+.office-svg .office-arm-l, .office-svg .office-arm-r, .office-svg .office-head, .office-svg .office-zzz text, .office-svg .office-steam {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.office-working .office-arm-l { animation: office-type 0.32s ease-in-out infinite alternate; }
+.office-working .office-arm-r { animation: office-type 0.32s ease-in-out 0.16s infinite alternate; }
+.office-working .office-head { animation: office-nod 2.4s ease-in-out infinite; }
+.office-idle .office-head { animation: office-doze 3.5s ease-in-out infinite; transform-origin: bottom center; }
+.office-idle .office-zzz text { animation: office-z 2.4s ease-in-out infinite; opacity: 0; }
+.office-idle .office-zzz text:nth-child(2) { animation-delay: 0.4s; }
+.office-idle .office-zzz text:nth-child(3) { animation-delay: 0.8s; }
+.office-idle .office-steam { animation: office-steam 2.2s ease-in-out infinite; }
+.office-error .office-head { animation: office-shake 0.6s ease-in-out infinite; }
+@keyframes office-type { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+@keyframes office-nod { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-3deg); } }
+@keyframes office-doze { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(6deg) translateY(2px); } }
+@keyframes office-z { 0% { opacity: 0; transform: translateY(4px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
+@keyframes office-steam { 0%, 100% { opacity: 0.2; transform: translateY(2px); } 50% { opacity: 0.9; transform: translateY(-2px); } }
+@keyframes office-shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .office-svg * { animation: none !important; }
+}
+
+/* görev paneli */
+.office-panel { position: sticky; top: 1rem; }
+.office-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.office-chat {
+  max-height: 340px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.6rem;
+}
+.office-msg {
+  align-self: flex-start;
+  max-width: 92%;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem 0.75rem 0.75rem 0.2rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+}
+.office-msg-me {
+  align-self: flex-end;
+  background: var(--ap-navy-800);
+  border-color: var(--ap-navy-800);
+  color: #fff;
+  border-radius: 0.75rem 0.75rem 0.2rem 0.75rem;
+}
+.office-msg-me .office-msg-meta { color: rgba(255, 255, 255, 0.7); }
+.office-msg-failed { border-color: #f5c2c7; background: #fff5f5; }
+.office-msg-meta { font-size: 0.7rem; color: #94a3b8; margin-bottom: 2px; }
+.office-msg-img { display: block; width: 100%; border-radius: 0.4rem; margin-top: 0.35rem; }
+.office-feed { max-height: 260px; overflow-y: auto; }
