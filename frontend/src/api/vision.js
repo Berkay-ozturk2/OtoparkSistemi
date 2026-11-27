@@ -61,20 +61,50 @@ export function recognizePlate(file, { gate = 'Entry', forward = false, lot } = 
 }
 
 /**
- * POST /occupancy/analyze?forward=false (multipart "file")
- * → { slots: [{ code, occupied, confidence }], vehicles, annotatedImageBase64, elapsedMs }
+ * POST /occupancy/analyze?layout=AVM&detector=yolo&forward=false (multipart "file")
+ * layout: cep yerleşimi (kroki/kat) kimliği; detector: 'yolo' (gerçek fotoğraf) | 'color' (sentetik örnek)
+ * → { slots: [{ code, occupied, confidence }], vehicles, layout, lotCode, detector, annotatedImageBase64, elapsedMs }
  */
-export function analyzeOccupancy(file, { forward = false, lot } = {}) {
+export function analyzeOccupancy(file, { forward = false, lot, layout, detector = 'yolo' } = {}) {
   const fd = new FormData();
   fd.append('file', file);
-  return request(`/occupancy/analyze${qs({ forward: forward ? 'true' : 'false', lot })}`, {
+  return request(`/occupancy/analyze${qs({ forward: forward ? 'true' : 'false', lot, layout, detector })}`, {
     ...opts,
     method: 'POST',
     body: fd,
   });
 }
 
-/** Doluluk kamerası cep poligonları */
-export function getSlotConfig() {
-  return request('/config/slots', opts);
+/** [{ id, lotCode, floor, name, slotCount, imageWidth, imageHeight }] — doluluk kamerası görüş alanları */
+export function getOccupancyLayouts(lot) {
+  return request(`/config/layouts${qs({ lot })}`, opts);
+}
+
+/**
+ * Seçilen kroki için sentetik üstten görünüş otopark görüntüsü (File olarak döner; analizde detector='color').
+ * GET /occupancy/sample?layout=AVM&ratio=0.5&seed=12
+ */
+export async function getOccupancySample(layout, { ratio = 0.5, seed } = {}) {
+  const res = await fetch(`${VISION_URL}/occupancy/sample${qs({ layout, ratio, seed })}`, { cache: 'no-store' });
+  if (!res.ok) {
+    let message = 'Örnek görüntü üretilemedi';
+    try {
+      message = (await res.json())?.message || message;
+    } catch {
+      // gövde JSON değil
+    }
+    throw new Error(message);
+  }
+  const blob = await res.blob();
+  return new File([blob], `ornek_${layout}_${seed ?? 'rastgele'}.jpg`, { type: 'image/jpeg' });
+}
+
+/** Kamerayı başka otoparka (doluluk kamerasında başka krokiye/kata) bağlar. → AgentInfo */
+export function assignAgent(id, { lot, layout } = {}) {
+  return request(`/agents/${encodeURIComponent(id)}/assign${qs({ lot, layout })}`, { ...opts, method: 'POST' });
+}
+
+/** Doluluk kamerası cep poligonları (layout verilmezse GAZI) */
+export function getSlotConfig(layout) {
+  return request(`/config/slots${qs({ layout })}`, opts);
 }
