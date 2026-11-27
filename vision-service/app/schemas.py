@@ -40,7 +40,13 @@ class AgentInfo(CamelModel):
     camera_fps: float = 0.0
     lot_code: Optional[str] = None
     layout: Optional[str] = None          # doluluk ajanının izlediği cep yerleşimi (kroki/kat)
+    name: Optional[str] = None            # cameras.yaml'daki görünen ad
+    frames_processed: int = 0
+    occupied_count: Optional[int] = None  # doluluk ajanı: son durumda dolu cep sayısı
+    slot_count: Optional[int] = None
     last_plate: Optional[str] = None
+    last_plate_at: Optional[str] = None
+    plates_decided: int = 0
     last_error: Optional[str] = None
 
 

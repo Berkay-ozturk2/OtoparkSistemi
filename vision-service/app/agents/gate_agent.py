@@ -40,6 +40,8 @@ class GateAgent(BaseCameraAgent):
         self.send_crop = send_crop
         self.roi = roi  # [x1, y1, x2, y2] — yalnızca bu bölgede plaka ara (isteğe bağlı)
         self.last_plate: Optional[str] = None
+        self.last_plate_at: Optional[str] = None   # son kararın zamanı (UTC ISO) — Ajan Ofisi'nde gösterilir
+        self.plates_decided = 0
         self.last_decision: Optional[Dict[str, Any]] = None
         self._overlay_text: Optional[str] = None
         self._overlay_until = 0.0
@@ -52,6 +54,8 @@ class GateAgent(BaseCameraAgent):
         d = super().info()
         d["gate"] = self.gate
         d["lastPlate"] = self.last_plate
+        d["lastPlateAt"] = self.last_plate_at
+        d["platesDecided"] = self.plates_decided
         return d
 
     # ------------------------------------------------------------------
@@ -105,6 +109,8 @@ class GateAgent(BaseCameraAgent):
     # ------------------------------------------------------------------
     def _emit(self, decision: VoteResult) -> None:
         self.last_plate = decision.plate
+        self.last_plate_at = utc_now_iso()
+        self.plates_decided += 1
         image_b64 = to_base64_jpeg(decision.crop, quality=85, max_width=400) if self.send_crop else None
         log.info("[%s] karar: %s (geçerli=%s, güven=%.2f, oy %d/%d)", self.id, decision.plate, decision.valid,
                  decision.confidence, decision.votes, decision.total)

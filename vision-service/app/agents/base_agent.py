@@ -127,6 +127,8 @@ class BaseCameraAgent:
             "fps": round(self.fps, 2),
             "cameraFps": round(self.camera_fps, 2),
             "lotCode": self.lot_code,
+            "name": self.name,
+            "framesProcessed": int(getattr(self, "frames_processed", 0) or 0),
             "lastPlate": None,
             "lastError": self.last_error,
         }
