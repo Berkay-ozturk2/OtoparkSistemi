@@ -598,8 +598,8 @@ export default function KameraTesti() {
       const info = await assignAgent(agent.id, target);
       toast.success(
         agent.type === 'Occupancy'
-          ? `${agent.id} artık ${layoutName(info.layout)} krokisini izliyor${isRunning(agent) ? ' (yeniden başlatıldı)' : ''}.`
-          : `${agent.id} artık ${lotName(info.lotCode)} otoparkına bağlı.`,
+          ? `${agent.id} izlediği kroki: ${layoutName(info.layout)}${isRunning(agent) ? ' (kamera yeniden başlatıldı)' : ''}.`
+          : `${agent.id} bağlandığı otopark: ${lotName(info.lotCode)}${isRunning(agent) ? ' (kamera yeniden başlatıldı)' : ''}.`,
       );
       const a = await getVisionAgents();
       setAgents(Array.isArray(a) ? a : Array.isArray(a?.agents) ? a.agents : []);
