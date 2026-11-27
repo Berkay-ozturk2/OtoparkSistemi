@@ -4,9 +4,14 @@ import { useAuth } from '../auth/AuthContext';
 import { homePathForRole } from '../auth/roles';
 import { roleLabel } from '../utils/format';
 import LotSelector from './LotSelector';
+import ThemeToggle from './ThemeToggle';
 import useParkingHub from '../realtime/useParkingHub';
 import { getViolations } from '../api/operator';
 import { getPermits } from '../api/admin';
+import { getSubscriptions } from '../api/subscriptions';
+
+/** Abonelik onay/ret sonrası rozetin hemen tazelenmesi için yayınlanan olay. */
+const SUBSCRIPTIONS_CHANGED = 'akillipark:subscriptions-changed';
 
 /**
  * Menü rozetleri: açık ihlal sayısı (operatör/yönetici) ve bekleyen engelli izni sayısı (yönetici).
@@ -17,7 +22,32 @@ function useOpsBadges(role) {
   const isAdmin = role === 'Admin';
   const [violations, setViolations] = useState(0);
   const [permits, setPermits] = useState(0);
+  const [subs, setSubs] = useState(0);
   const timer = useRef(null);
+
+  // Abonelik başvuruları için anlık bildirim yok: 60 sn'de bir, sekmeye dönünce ve onay/ret sonrası tazelenir
+  useEffect(() => {
+    if (!isAdmin) {
+      setSubs(0);
+      return undefined;
+    }
+    const loadSubs = () =>
+      getSubscriptions({ status: 'Pending' })
+        .then((list) => setSubs(Array.isArray(list) ? list.length : 0))
+        .catch(() => {});
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') loadSubs();
+    };
+    loadSubs();
+    const id = setInterval(loadSubs, 60000);
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener(SUBSCRIPTIONS_CHANGED, loadSubs);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener(SUBSCRIPTIONS_CHANGED, loadSubs);
+    };
+  }, [isAdmin]);
 
   const loadViolations = useCallback(() => {
     if (!isOps) return;
@@ -63,7 +93,7 @@ function useOpsBadges(role) {
     { withAuth: true, enabled: isOps },
   );
 
-  return { violations, permits: isAdmin ? permits : 0 };
+  return { violations, permits: isAdmin ? permits : 0, subscriptions: isAdmin ? subs : 0 };
 }
 
 function CountBadge({ count, variant = 'danger', className = '' }) {
@@ -81,6 +111,7 @@ const PUBLIC_LINKS = [
 const DRIVER_LINKS = [
   { to: '/surucu', label: 'Panelim', icon: 'bi-speedometer2', end: true },
   { to: '/surucu/rezervasyon', label: 'Rezervasyon', icon: 'bi-calendar-check' },
+  { to: '/surucu/abonelik', label: 'Abonelik', icon: 'bi-person-vcard' },
 ];
 
 const OPERATOR_LINKS = [
@@ -97,6 +128,7 @@ const ADMIN_LINKS = [
   { to: '/yonetim', label: 'Yönetim Paneli', icon: 'bi-grid-1x2', end: true },
   { to: '/yonetim/otoparklar', label: 'Otoparklar ve Kroki', icon: 'bi-buildings' },
   { to: '/yonetim/engelli-izinleri', label: 'Engelli İzinleri', icon: 'bi-person-wheelchair', badgeKey: 'permits', badgeVariant: 'warning' },
+  { to: '/yonetim/abonelikler', label: 'Abonelikler', icon: 'bi-person-vcard', badgeKey: 'subscriptions', badgeVariant: 'warning' },
   { to: '/yonetim/tarifeler', label: 'Tarifeler ve Ayarlar', icon: 'bi-tags' },
   { to: '/yonetim/kullanicilar', label: 'Kullanıcılar', icon: 'bi-people' },
   { to: '/yonetim/terk-edilmis', label: 'Terk Edilmiş Araçlar', icon: 'bi-exclamation-octagon' },
@@ -259,6 +291,7 @@ export default function Navbar() {
           </ul>
 
           <LotSelector variant="navbar" className="me-xl-3 mb-2 mb-xl-0" />
+          <ThemeToggle className="me-xl-3 mb-2 mb-xl-0" />
 
           {isAuthenticated ? (
             <div className={`dropdown user-menu ${userOpen ? 'show' : ''}`} ref={userRef}>

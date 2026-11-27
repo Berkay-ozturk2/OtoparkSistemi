@@ -1,10 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bar, Line } from 'react-chartjs-2';
 import { CHART_COLORS } from '../../utils/chartSetup';
 import useParkingLive from '../../realtime/useParkingLive';
 import { generateDemoData, getAbandoned, getOccupancyReport, getPermits, getRevenueReport } from '../../api/admin';
-import { getActiveSessions, getReviewQueue, getViolations } from '../../api/operator';
+import { getActiveSessions, getGateEvents, getReviewQueue, getViolations } from '../../api/operator';
+import { getSubscriptionReport, getSubscriptions } from '../../api/subscriptions';
+import BlockOccupancy from '../../components/admin/BlockOccupancy';
+import PendingSubscriptions from '../../components/admin/PendingSubscriptions';
+import RecentGateEvents from '../../components/admin/RecentGateEvents';
+import useSubscriptionReview from '../../components/admin/useSubscriptionReview';
 import LotSelector from '../../components/LotSelector';
 import { useLot } from '../../lot/LotContext';
 import PageHeader from '../../components/PageHeader';
@@ -25,6 +30,7 @@ const QUICK_LINKS = [
   { to: '/operator', icon: 'bi-broadcast', label: 'Canlı İzleme', uc: 'UC-08' },
   { to: '/yonetim/otoparklar', icon: 'bi-buildings', label: 'Otoparklar ve Kroki', uc: 'UC-14' },
   { to: '/yonetim/engelli-izinleri', icon: 'bi-person-wheelchair', label: 'Engelli İzinleri', uc: 'UC-15' },
+  { to: '/yonetim/abonelikler', icon: 'bi-person-vcard', label: 'Abonelikler ve Raporlar', uc: 'UC-17' },
   { to: '/operator/ihlaller', icon: 'bi-exclamation-diamond', label: 'Engelli Yeri İhlalleri', uc: 'UC-16' },
 ];
 
@@ -33,7 +39,53 @@ export default function Dashboard() {
   const toast = useToast();
   const { lots, lotCode: ctxLot, lotName } = useLot();
   const [dashLot, setDashLot] = useState(''); // '' = tüm otoparklar
-  const live = useParkingLive({}, { lotCode: dashLot || ctxLot });
+  const [gateEvents, setGateEvents] = useState([]);
+  const [pendingSubs, setPendingSubs] = useState([]);
+  const [subReport, setSubReport] = useState(null);
+  const [focusBlock, setFocusBlock] = useState(null);
+  const mapRef = useRef(null);
+  const gateTimer = useRef(null);
+
+  const loadGate = useCallback(() => {
+    getGateEvents(8, dashLot || undefined)
+      .then((list) => setGateEvents(Array.isArray(list) ? list : []))
+      .catch(() => {});
+  }, [dashLot]);
+
+  const loadSubs = useCallback(() => {
+    const lot = dashLot || undefined;
+    getSubscriptions({ status: 'Pending', lot })
+      .then((list) => setPendingSubs(Array.isArray(list) ? list : []))
+      .catch(() => {});
+    getSubscriptionReport({ lot })
+      .then(setSubReport)
+      .catch(() => {});
+  }, [dashLot]);
+
+  const live = useParkingLive(
+    {
+      // Yeni geçişte liste kısa gecikmeyle yeniden çekilir (blok bilgisi sunucuda eklenir)
+      onGateEvent: () => {
+        if (gateTimer.current) clearTimeout(gateTimer.current);
+        gateTimer.current = setTimeout(loadGate, 500);
+      },
+    },
+    { lotCode: dashLot || ctxLot },
+  );
+  const review = useSubscriptionReview(() => loadSubs());
+
+  useEffect(() => {
+    loadGate();
+    loadSubs();
+    setFocusBlock(null);
+    const t = gateTimer;
+    return () => t.current && clearTimeout(t.current);
+  }, [loadGate, loadSubs]);
+
+  const showBlockOnMap = (code) => {
+    setFocusBlock(code);
+    if (code) mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
   const [stats, setStats] = useState({});
   const [weekRevenue, setWeekRevenue] = useState(null);
   const [weekOccupancy, setWeekOccupancy] = useState(null);
@@ -139,7 +191,7 @@ export default function Dashboard() {
         label: 'Giriş sayısı',
         data: hourly.map((h) => h.entries),
         borderColor: CHART_COLORS.navy,
-        backgroundColor: 'rgba(19, 49, 92, 0.12)',
+        backgroundColor: CHART_COLORS.navyFaint,
         fill: true,
         tension: 0.35,
         pointRadius: 2,
@@ -170,27 +222,24 @@ export default function Dashboard() {
 
       <ErrorAlert error={live.error || firstError} onRetry={load} className="mb-4" />
 
-      <div className="row g-3 mb-4">
-        <div className="col-6 col-md-4 col-xl-3">
-          <StatCard icon="bi-pie-chart" label="Doluluk" value={summary ? formatPercent(summary.occupancyRate) : '—'} sub={summary ? `${summary.occupied}/${summary.total} cep${dashLot ? '' : ` · ${lots.length} otopark`}` : null} variant="primary" loading={live.loading} />
+      <div className="row g-3 mb-3">
+        <div className="col-6 col-xl-3">
+          <StatCard icon="bi-pie-chart" label="Doluluk" value={summary ? formatPercent(summary.occupancyRate) : '—'} sub={summary ? `${summary.occupied}/${summary.total} cep${dashLot ? '' : `, ${lots.length} otopark`}` : null} variant="primary" loading={live.loading} />
         </div>
-        <div className="col-6 col-md-4 col-xl-3">
-          <StatCard icon="bi-check2-circle" label="Boş yer" value={summary?.free ?? '—'} sub={summary ? (summary.reserved != null ? `${summary.reserved} rezerve` : 'normal araçlar için') : null} variant="success" loading={live.loading} />
-        </div>
-        <div className="col-6 col-md-4 col-xl-3">
+        <div className="col-6 col-xl-3">
           <StatCard
-            icon="bi-person-wheelchair"
-            label="Engelli yeri boş"
-            value={summary ? `${summary.disabledFree ?? 0}/${summary.disabledTotal ?? 0}` : '—'}
-            sub="♿ izinli araçlar için"
-            variant="info"
+            icon="bi-check2-circle"
+            label="Boş yer"
+            value={summary?.free ?? '—'}
+            sub={summary ? `${summary.disabledFree ?? 0}/${summary.disabledTotal ?? 0} engelli cebi boş` : null}
+            variant="success"
             loading={live.loading}
           />
         </div>
-        <div className="col-6 col-md-4 col-xl-3">
-          <StatCard icon="bi-car-front" label="Aktif oturum" value={stats.active ?? '—'} variant="teal" loading={loading} />
+        <div className="col-6 col-xl-3">
+          <StatCard icon="bi-car-front" label="Aktif oturum" value={stats.active ?? '—'} sub="şu an içeride" variant="teal" loading={loading} />
         </div>
-        <div className="col-6 col-md-4 col-xl-3">
+        <div className="col-6 col-xl-3">
           <StatCard
             icon="bi-cash-stack"
             label="Bugünkü gelir"
@@ -200,57 +249,122 @@ export default function Dashboard() {
             loading={loading}
           />
         </div>
-        <div className="col-6 col-md-4 col-xl-3">
-          <Link to="/yonetim/terk-edilmis" className="text-decoration-none">
-            <StatCard
-              icon="bi-exclamation-octagon"
-              label="Terk edilmiş"
-              value={stats.abandoned ?? '—'}
-              sub="azami süreyi aşan"
-              variant={stats.abandoned > 0 ? 'danger' : 'secondary'}
-              loading={loading}
-              className="card-hover"
-            />
+      </div>
+
+      {/* İşlem bekleyen işler: sıfır olanlar sönük, olanlar vurgulu */}
+      <nav className="attention-strip mb-4" aria-label="İşlem bekleyen işler">
+        {[
+          { to: '/yonetim/abonelikler', icon: 'bi-person-vcard', label: 'abonelik başvurusu', count: pendingSubs.length },
+          { to: '/yonetim/engelli-izinleri', icon: 'bi-person-wheelchair', label: 'engelli izni başvurusu', count: stats.permits },
+          { to: '/operator/onay-kuyrugu', icon: 'bi-ui-checks', label: 'plaka okuması onay bekliyor', count: stats.pending },
+          { to: '/operator/ihlaller', icon: 'bi-exclamation-diamond', label: 'açık ihlal', count: stats.violations, danger: true },
+          { to: '/yonetim/terk-edilmis', icon: 'bi-exclamation-octagon', label: 'terk edilmiş araç', count: stats.abandoned, danger: true },
+        ].map((a) => (
+          <Link key={a.to} to={a.to} className={`attention-item ${a.count > 0 ? (a.danger ? 'is-danger' : 'is-due') : 'is-clear'}`}>
+            <i className={`bi ${a.icon}`} aria-hidden="true" />
+            <strong>{loading && a.count == null ? '…' : (a.count ?? '—')}</strong>
+            <span>{a.label}</span>
           </Link>
+        ))}
+      </nav>
+
+      <section className="card mb-4" aria-labelledby="blocks-title">
+        <div className="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <h2 id="blocks-title" className="section-title">
+            <i className="bi bi-grid-3x3-gap me-2 text-accent" aria-hidden="true" />
+            Blok doluluğu
+            <span className="section-sub">{lot?.name || lotName(dashLot || ctxLot)}</span>
+          </h2>
+          <div className="d-flex align-items-center gap-2">
+            <span className="block-legend d-none d-md-inline-flex" aria-hidden="true">
+              <span className="bay bay-occupied" /> dolu
+              <span className="bay bay-free" /> boş
+              <span className="bay bay-reserved" /> rezerve
+            </span>
+            {!dashLot && <LotSelector />}
+          </div>
         </div>
-        <div className="col-6 col-md-4 col-xl-3">
-          <Link to="/operator/onay-kuyrugu" className="text-decoration-none">
-            <StatCard
-              icon="bi-ui-checks"
-              label="Onay bekleyen"
-              value={stats.pending ?? '—'}
-              sub="plaka okuması"
-              variant={stats.pending > 0 ? 'warning' : 'secondary'}
-              loading={loading}
-              className="card-hover"
-            />
-          </Link>
+        <div className="card-body">
+          <BlockOccupancy
+            slots={slots}
+            zones={zones}
+            loading={live.loading}
+            selected={focusBlock}
+            onSelect={showBlockOnMap}
+            floorName={(f) => {
+              const fl = (lot?.floors || []).find((x) => Number(x.floor) === Number(f));
+              return (lot?.floors || []).length > 1 ? fl?.name || `Kat ${f}` : null;
+            }}
+          />
+          <p className="block-hint">Bir bloğu seçince krokide vurgulanır.</p>
         </div>
-        <div className="col-6 col-md-4 col-xl-3">
-          <Link to="/operator/ihlaller" className="text-decoration-none">
-            <StatCard
-              icon="bi-exclamation-diamond"
-              label="Açık ihlal"
-              value={stats.violations ?? '—'}
-              sub="engelli cebine izinsiz park"
-              variant={stats.violations > 0 ? 'danger' : 'secondary'}
-              loading={loading}
-              className="card-hover"
-            />
-          </Link>
+      </section>
+
+      <div className="row g-4 mb-4">
+        <div className="col-xl-7">
+          <section className="card h-100" aria-labelledby="subs-title">
+            <div className="card-header d-flex justify-content-between align-items-center gap-2">
+              <h2 id="subs-title" className="section-title">
+                <i className="bi bi-person-vcard me-2 text-accent" aria-hidden="true" />
+                Abonelik başvuruları
+                {pendingSubs.length > 0 && <span className="count-pill">{pendingSubs.length} bekliyor</span>}
+              </h2>
+              <Link to="/yonetim/abonelikler" className="btn btn-sm btn-link section-link">
+                Tümü ve raporlar
+              </Link>
+            </div>
+            {subReport && (
+              <dl className="sub-summary">
+                <div>
+                  <dt>Aktif abone</dt>
+                  <dd>
+                    {subReport.activeNow}
+                    <small>
+                      {subReport.activeMonthly} aylık, {subReport.activeYearly} yıllık
+                    </small>
+                  </dd>
+                </div>
+                <div>
+                  <dt>{subReport.year} geliri</dt>
+                  <dd>{formatCurrency(subReport.revenue)}</dd>
+                </div>
+                <div className={subReport.expiringSoon > 0 ? 'is-due' : ''}>
+                  <dt>14 gün içinde bitecek</dt>
+                  <dd>{subReport.expiringSoon}</dd>
+                </div>
+              </dl>
+            )}
+            <div className="card-body pt-2">
+              <PendingSubscriptions
+                items={pendingSubs.slice(0, 5)}
+                busyId={review.busyId}
+                onApprove={review.approve}
+                onReject={review.startReject}
+                emptyText="Bekleyen başvuru yok. Yeni başvurular burada görünür."
+              />
+              {pendingSubs.length > 5 && (
+                <Link to="/yonetim/abonelikler" className="d-inline-block mt-2 small">
+                  {pendingSubs.length - 5} başvuru daha var
+                </Link>
+              )}
+            </div>
+          </section>
         </div>
-        <div className="col-6 col-md-4 col-xl-3">
-          <Link to="/yonetim/engelli-izinleri" className="text-decoration-none">
-            <StatCard
-              icon="bi-patch-question"
-              label="Bekleyen izin"
-              value={stats.permits ?? '—'}
-              sub="engelli izni başvurusu"
-              variant={stats.permits > 0 ? 'warning' : 'secondary'}
-              loading={loading}
-              className="card-hover"
-            />
-          </Link>
+        <div className="col-xl-5">
+          <section className="card h-100" aria-labelledby="gate-title">
+            <div className="card-header d-flex justify-content-between align-items-center gap-2">
+              <h2 id="gate-title" className="section-title">
+                <i className="bi bi-arrow-left-right me-2 text-accent" aria-hidden="true" />
+                Son giriş-çıkışlar
+              </h2>
+              <Link to="/operator" className="btn btn-sm btn-link section-link">
+                Canlı izleme
+              </Link>
+            </div>
+            <div className="card-body pt-1">
+              <RecentGateEvents events={gateEvents} showLot={!dashLot} />
+            </div>
+          </section>
         </div>
       </div>
 
@@ -317,7 +431,7 @@ export default function Dashboard() {
 
       <div className="row g-4">
         <div className="col-xl-8">
-          <div className="card h-100">
+          <div className="card h-100" ref={mapRef}>
             <div className="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
               <span>
                 <i className="bi bi-map me-2 text-accent" />
@@ -326,7 +440,7 @@ export default function Dashboard() {
               {!dashLot && <LotSelector />}
             </div>
             <div className="card-body">
-              <ParkingMap lot={lot} slots={slots} zones={zones} recommendedZone={recommendation?.zoneCode} />
+              <ParkingMap lot={lot} slots={slots} zones={zones} recommendedZone={focusBlock ? undefined : recommendation?.zoneCode} highlightZone={focusBlock || undefined} />
               {!dashLot && lots.length > 1 && (
                 <div className="table-responsive mt-3">
                   <table className="table table-sm align-middle mb-0">
@@ -388,6 +502,8 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {review.modal}
 
       <ConfirmModal
         show={confirmDemo}

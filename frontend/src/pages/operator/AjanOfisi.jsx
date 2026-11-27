@@ -28,7 +28,7 @@ const ROLES = {
   Exit: { role: 'Çıkış Görevlisi', shirt: '#e0823b', icon: 'bi-box-arrow-right' },
   Occupancy: { role: 'Doluluk Gözcüsü', shirt: '#3b7dd8', icon: 'bi-grid-3x3-gap' },
 };
-const CHIEF = { id: '__chief', name: 'Nazlı', role: 'Görüntü İşleme Şefi', shirt: '#6c4bd1', skin: '#e9b896', hair: '#2a1d16', icon: 'bi-cpu' };
+const CHIEF = { id: '__chief', name: 'Nazlı', role: 'Görüntü İşleme Şefi', shirt: '#d61f2c', skin: '#e9b896', hair: '#2a1d16', icon: 'bi-cpu' };
 const LOG_KEY = 'akillipark_office_log';
 const MAX_LOG = 40;
 
@@ -77,7 +77,7 @@ function Worker({ persona, mood, screen, lamp }) {
     <div className={`office-worker office-${mood}`}>
       <svg viewBox="0 0 220 190" className="office-svg" aria-hidden="true">
         <ellipse cx="110" cy="180" rx="96" ry="8" fill="rgba(0,0,0,.12)" />
-        <rect x="78" y="58" width="64" height="80" rx="14" fill="#4a5262" />
+        <rect x="78" y="58" width="64" height="80" rx="14" fill="#52525b" />
         <g className="office-body">
           <rect x="84" y="92" width="52" height="50" rx="20" fill={persona.shirt} />
           <path d="M100 92 L110 104 L120 92 Z" fill="#fff" opacity=".85" />
@@ -111,21 +111,21 @@ function Worker({ persona, mood, screen, lamp }) {
         <path className="office-arm-r" d="M132 104 Q140 122 123 133" stroke={persona.shirt} strokeWidth="10" fill="none" strokeLinecap="round" />
         <circle className="office-arm-l" cx="98" cy="134" r="5" fill={persona.skin} />
         <circle className="office-arm-r" cx="122" cy="134" r="5" fill={persona.skin} />
-        <rect x="92" y="131" width="36" height="6" rx="1.5" fill="#2f3542" />
+        <rect x="92" y="131" width="36" height="6" rx="1.5" fill="#27272a" />
         <rect x="45" y="118" width="8" height="18" fill="#6b7280" />
         <rect x="35" y="133" width="28" height="4" rx="2" fill="#6b7280" />
-        <rect x="14" y="68" width="70" height="52" rx="4" fill="#1f2430" />
-        <circle cx="78" cy="73" r="3" fill={lamp} />
+        <rect x="14" y="68" width="70" height="52" rx="4" fill="#18181b" />
+        <circle cx="78" cy="73" r="3" style={{ fill: lamp }} />
         <rect x="170" y="120" width="14" height="16" rx="2" fill="#f5f5f5" />
         <path d="M184 124 q6 0 6 5 q0 5 -6 5" stroke="#f5f5f5" strokeWidth="2.5" fill="none" />
         {sleeping && (
-          <g className="office-steam" stroke="#c7ccd4" strokeWidth="1.6" fill="none" strokeLinecap="round">
+          <g className="office-steam" stroke="#d4d4d8" strokeWidth="1.6" fill="none" strokeLinecap="round">
             <path d="M174 116 q-3 -5 0 -9 q3 -4 0 -8" />
             <path d="M180 116 q-3 -5 0 -9 q3 -4 0 -8" />
           </g>
         )}
         {sleeping && (
-          <g className="office-zzz" fill="#7c8799" fontWeight="700">
+          <g className="office-zzz" fill="#a1a1aa" fontWeight="700">
             <text x="134" y="46" fontSize="12">z</text>
             <text x="143" y="36" fontSize="15">z</text>
             <text x="154" y="24" fontSize="18">Z</text>
@@ -508,7 +508,7 @@ export default function AjanOfisi() {
                 <Worker
                   persona={CHIEF}
                   mood={health ? 'working' : 'error'}
-                  lamp={health?.status === 'ok' ? '#2ecc71' : '#f39c12'}
+                  lamp={health?.status === 'ok' ? 'var(--ap-success)' : 'var(--ap-warning-fill)'}
                   screen={
                     <div className="office-screen-chief">
                       <span className={models.plateDetector ? 'on' : ''}>Plaka</span>
@@ -540,7 +540,7 @@ export default function AjanOfisi() {
                     <Worker
                       persona={p}
                       mood={busy[a.id] ? 'working' : mood}
-                      lamp={mood === 'working' ? '#2ecc71' : mood === 'error' ? '#e74c3c' : '#7f8c8d'}
+                      lamp={mood === 'working' ? 'var(--ap-success)' : mood === 'error' ? 'var(--ap-danger)' : 'var(--ap-text-subtle)'}
                       screen={<AgentScreen agent={a} tick={tick} />}
                     />
                     <div className="office-nameplate">

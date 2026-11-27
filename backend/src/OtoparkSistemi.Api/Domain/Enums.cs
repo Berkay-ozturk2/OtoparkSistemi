@@ -97,3 +97,19 @@ public enum ViolationStatus
     Resolved,
     FalseAlarm
 }
+
+/// <summary>Abonelik paketi.</summary>
+public enum SubscriptionPlan
+{
+    Monthly,
+    Yearly
+}
+
+/// <summary>Abonelik durumu. Süresi dolan Active abonelik "sona ermiş" olarak hesaplanır (ayrı durum tutulmaz).</summary>
+public enum SubscriptionStatus
+{
+    Pending,
+    Active,
+    Rejected,
+    Cancelled
+}

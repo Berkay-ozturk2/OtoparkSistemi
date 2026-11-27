@@ -22,6 +22,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PrivacyRequest> PrivacyRequests => Set<PrivacyRequest>();
     public DbSet<DisabledPermit> DisabledPermits => Set<DisabledPermit>();
     public DbSet<Violation> Violations => Set<Violation>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
 
     // SQLite DateTime'ı Kind=Unspecified döndürür, Npgsql (timestamptz) ise Kind=Utc ister.
     // Bu dönüştürücüler yazarken UTC'ye çevirir, okurken Kind=Utc işaretler.
@@ -214,6 +215,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(x => x.DetectedAt);
             e.HasOne(x => x.Lot).WithMany().HasForeignKey(x => x.LotId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Slot).WithMany().HasForeignKey(x => x.SlotId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Not: Bu tablo eski veritabanlarına SchemaGuard.CreateMissingTablesAsync ile (veri silinmeden) eklenir.
+        // Sütun/uzunluk değişirse oradaki CREATE TABLE ifadeleri de güncellenmelidir.
+        modelBuilder.Entity<Subscription>(e =>
+        {
+            e.Property(x => x.Plate).HasMaxLength(32).IsRequired();
+            e.Property(x => x.HolderName).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Phone).HasMaxLength(20);
+            e.Property(x => x.Plan).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.Price).HasPrecision(10, 2);
+            e.Property(x => x.Note).HasMaxLength(500);
+            e.Property(x => x.ReviewedBy).HasMaxLength(150);
+            e.HasIndex(x => x.Plate);
+            e.HasIndex(x => x.Status);
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne(x => x.Lot).WithMany().HasForeignKey(x => x.LotId).OnDelete(DeleteBehavior.Cascade);
         });
 
         // Tüm DateTime alanlarına UTC dönüştürücüsü uygula

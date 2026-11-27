@@ -15,6 +15,7 @@ import YolTarifi from './pages/public/YolTarifi';
 // Sürücü
 import SurucuPanel from './pages/driver/Panel';
 import Rezervasyon from './pages/driver/Rezervasyon';
+import Abonelik from './pages/driver/Abonelik';
 
 // Operatör
 import CanliIzleme from './pages/operator/CanliIzleme';
@@ -36,6 +37,7 @@ import DenetimKayitlari from './pages/admin/DenetimKayitlari';
 import KvkkTalepleri from './pages/admin/KvkkTalepleri';
 import Otoparklar from './pages/admin/Otoparklar';
 import EngelliIzinleri from './pages/admin/EngelliIzinleri';
+import Abonelikler from './pages/admin/Abonelikler';
 
 function NotFound() {
   return (
@@ -68,6 +70,7 @@ export default function App() {
         <Route path="surucu" element={<ProtectedRoute roles={[ROLES.Driver]} />}>
           <Route index element={<SurucuPanel />} />
           <Route path="rezervasyon" element={<Rezervasyon />} />
+          <Route path="abonelik" element={<Abonelik />} />
         </Route>
 
         {/* Operatör (Yönetici de erişebilir) */}
@@ -86,6 +89,7 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="otoparklar" element={<Otoparklar />} />
           <Route path="engelli-izinleri" element={<EngelliIzinleri />} />
+          <Route path="abonelikler" element={<Abonelikler />} />
           <Route path="tarifeler" element={<Tarifeler />} />
           <Route path="kullanicilar" element={<Kullanicilar />} />
           <Route path="terk-edilmis" element={<TerkEdilmis />} />
