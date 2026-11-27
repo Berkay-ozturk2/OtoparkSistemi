@@ -115,7 +115,7 @@ function Worker({ persona, mood, screen, lamp }) {
         <rect x="45" y="118" width="8" height="18" fill="#6b7280" />
         <rect x="35" y="133" width="28" height="4" rx="2" fill="#6b7280" />
         <rect x="14" y="68" width="70" height="52" rx="4" fill="#18181b" />
-        <circle cx="78" cy="73" r="3" fill={lamp} />
+        <circle cx="78" cy="73" r="3" style={{ fill: lamp }} />
         <rect x="170" y="120" width="14" height="16" rx="2" fill="#f5f5f5" />
         <path d="M184 124 q6 0 6 5 q0 5 -6 5" stroke="#f5f5f5" strokeWidth="2.5" fill="none" />
         {sleeping && (
@@ -508,7 +508,7 @@ export default function AjanOfisi() {
                 <Worker
                   persona={CHIEF}
                   mood={health ? 'working' : 'error'}
-                  lamp={health?.status === 'ok' ? '#2ecc71' : '#f39c12'}
+                  lamp={health?.status === 'ok' ? 'var(--ap-success)' : 'var(--ap-warning-fill)'}
                   screen={
                     <div className="office-screen-chief">
                       <span className={models.plateDetector ? 'on' : ''}>Plaka</span>
@@ -540,7 +540,7 @@ export default function AjanOfisi() {
                     <Worker
                       persona={p}
                       mood={busy[a.id] ? 'working' : mood}
-                      lamp={mood === 'working' ? '#2ecc71' : mood === 'error' ? '#e74c3c' : '#7f8c8d'}
+                      lamp={mood === 'working' ? 'var(--ap-success)' : mood === 'error' ? 'var(--ap-danger)' : 'var(--ap-text-subtle)'}
                       screen={<AgentScreen agent={a} tick={tick} />}
                     />
                     <div className="office-nameplate">

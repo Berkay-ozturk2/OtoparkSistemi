@@ -10,14 +10,18 @@ function lotIcon(lot, selected) {
   const free = Number(lot.freeSlots ?? 0);
   const total = Number(lot.totalSlots ?? 0) || 1;
   const ratio = free / total;
-  const color = free <= 0 ? '#dc3545' : ratio < 0.2 ? '#fd7e14' : '#198754';
+  // Renk + harf birlikte: dolu = ×, az yer = P!, boş = P (renk körlüğü için)
+  const full = free <= 0;
+  const low = !full && ratio < 0.2;
+  const color = full ? 'var(--ap-pin-full)' : low ? 'var(--ap-pin-low)' : 'var(--ap-pin-free)';
+  const glyph = full ? '×' : low ? 'P!' : 'P';
   const size = selected ? 46 : 36;
   return L.divIcon({
     className: 'citymap-lot-icon',
     html: `<div style="width:${size}px;height:${size}px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);`
-      + `background:${color};border:3px solid ${selected ? '#18181b' : '#fff'};box-shadow:0 2px 6px rgba(0,0,0,.35);`
+      + `background:${color};border:3px solid ${selected ? 'var(--ap-text)' : 'var(--ap-white)'};box-shadow:0 2px 6px rgba(0,0,0,.35);`
       + 'display:flex;align-items:center;justify-content:center">'
-      + `<span style="transform:rotate(45deg);color:#fff;font-weight:800;font-size:${selected ? 20 : 16}px;font-family:system-ui">P</span></div>`,
+      + `<span style="transform:rotate(45deg);color:var(--ap-white);font-weight:800;font-size:${selected ? 20 : 16}px;font-family:var(--ap-font-sans)">${glyph}</span></div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size],
     popupAnchor: [0, -size],
@@ -26,8 +30,8 @@ function lotIcon(lot, selected) {
 
 const youIcon = L.divIcon({
   className: 'citymap-you-icon',
-  html: '<div style="width:20px;height:20px;border-radius:50%;background:#27272a;border:4px solid #fff;'
-    + 'box-shadow:0 0 0 6px rgba(13,110,253,.25)"></div>',
+  html: '<div style="width:20px;height:20px;border-radius:50%;background:var(--ap-brand);border:4px solid var(--ap-white);'
+    + 'box-shadow:0 0 0 6px rgba(var(--ap-brand-rgb),.25)"></div>',
   iconSize: [20, 20],
   iconAnchor: [10, 10],
 });
@@ -87,8 +91,8 @@ export default function CityMap({ lots, selectedCode, origin, route, onSelectLot
 
         {route && route.length > 1 && (
           <>
-            <Polyline positions={route} pathOptions={{ color: '#ffffff', weight: 9, opacity: 0.9 }} />
-            <Polyline positions={route} pathOptions={{ color: '#d61f2c', weight: 5, opacity: 0.95 }} />
+            <Polyline positions={route} pathOptions={{ className: 'citymap-route-casing', weight: 9, opacity: 0.9 }} />
+            <Polyline positions={route} pathOptions={{ className: 'citymap-route', weight: 5, opacity: 0.95 }} />
           </>
         )}
 

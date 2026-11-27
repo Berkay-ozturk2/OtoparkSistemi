@@ -23,16 +23,16 @@ export default function BarrierIndicator({ gate = 'Entry', open = false, event, 
         </div>
 
         <svg viewBox="0 0 220 90" className="barrier-svg" aria-hidden="true">
-          <rect x="0" y="80" width="220" height="10" rx="3" fill="#cbd5e1" />
-          <rect x="16" y="30" width="26" height="52" rx="5" fill="#13315c" />
+          <rect x="0" y="80" width="220" height="10" rx="3" className="barrier-ground" />
+          <rect x="16" y="30" width="26" height="52" rx="5" className="barrier-post" />
           <circle cx="29" cy="40" r="5" className="barrier-light" />
           <g className="barrier-arm">
-            <rect x="29" y="34" width="180" height="12" rx="6" fill="#fff" stroke="#94a3b8" />
+            <rect x="29" y="34" width="180" height="12" rx="6" className="barrier-pole" />
             {[0, 1, 2, 3, 4].map((i) => (
-              <rect key={i} x={50 + i * 34} y="34" width="16" height="12" fill="#ef4444" />
+              <rect key={i} x={50 + i * 34} y="34" width="16" height="12" className="barrier-stripe" />
             ))}
           </g>
-          <circle cx="29" cy="40" r="4" fill="#0b2545" />
+          <circle cx="29" cy="40" r="4" className="barrier-hub" />
         </svg>
 
         {event ? (

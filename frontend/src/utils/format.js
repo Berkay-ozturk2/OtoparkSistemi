@@ -238,3 +238,30 @@ export function toImageSrc(base64, mime = 'image/jpeg') {
   if (base64.startsWith('data:')) return base64;
   return `data:${mime};base64,${base64}`;
 }
+
+// ---------- Abonelik ----------
+export const PLAN_LABELS = { Monthly: 'Aylık', Yearly: 'Yıllık' };
+export const planLabel = (p) => PLAN_LABELS[p] || p || '—';
+
+/** Abonelik durumu: onaylı ama süresi dolmuşsa "Sona erdi", henüz başlamadıysa "Başlayacak". */
+export function subscriptionStatus(s) {
+  if (!s) return { label: '—', variant: 'secondary', icon: 'bi-question-circle' };
+  if (s.status === 'Active') {
+    if (s.isExpired) return { label: 'Sona erdi', variant: 'secondary', icon: 'bi-hourglass-bottom' };
+    if (!s.isCurrent) return { label: 'Başlayacak', variant: 'info', icon: 'bi-calendar-event' };
+    return { label: 'Aktif', variant: 'success', icon: 'bi-check-circle-fill' };
+  }
+  return (
+    {
+      Pending: { label: 'Değerlendiriliyor', variant: 'warning', icon: 'bi-hourglass-split' },
+      Rejected: { label: 'Reddedildi', variant: 'danger', icon: 'bi-x-circle-fill' },
+      Cancelled: { label: 'İptal edildi', variant: 'secondary', icon: 'bi-slash-circle' },
+    }[s.status] || { label: s.status, variant: 'secondary', icon: 'bi-question-circle' }
+  );
+}
+
+/** Kalan gün (bitiş tarihi yoksa null). */
+export function daysUntil(value, now = Date.now()) {
+  if (!value) return null;
+  return Math.ceil((new Date(value).getTime() - now) / 86400000);
+}
