@@ -204,8 +204,11 @@ Operatör/Yönetici, bağlantı kurarken `?access_token=<JWT>` ile bağlanırsa 
 | POST | /agents/{id}/start , /agents/{id}/stop | ajanı başlat/durdur |
 | GET | /agents/{id}/snapshot | son işlenmiş kare (JPEG, yalnızca bellekte, kaydedilmez) |
 | POST | /recognize?gate=Entry&forward=false | multipart `file` (resim) → `{plates:[{plate, rawText, confidence, formatValid, bbox:[x1,y1,x2,y2]}], backendResponse, elapsedMs, annotatedImageBase64}` ; `forward=true` ise en iyi sonuç backend'e plaka olayı olarak gönderilir |
-| POST | /occupancy/analyze?forward=false | multipart `file` → `{slots:[{code, occupied, confidence}], vehicles:int, annotatedImageBase64, elapsedMs}` |
-| GET | /config/slots | doluluk kamerası cep poligonları |
+| POST | /agents/{id}/assign?lot=&layout= | kamerayı başka otoparka (giriş/çıkış) ya da krokiye/kata (doluluk) bağlar → AgentInfo (`layout` alanı dahil) |
+| POST | /occupancy/analyze?layout=&detector=yolo|color&forward=false | multipart `file` → `{slots:[{code, occupied, confidence}], vehicles:int, layout, lotCode, detector, annotatedImageBase64, elapsedMs}` ; `forward=true` ise sonuç yerleşimin otoparkına (`lotCode`) gönderilir |
+| GET | /occupancy/sample?layout=&ratio=0.5&seed= | seçilen kroki için sentetik üstten görünüş JPEG (`X-Occupied-Count` başlığı) |
+| GET | /config/layouts?lot= | `[{id, lotCode, floor, name, slotCount, imageWidth, imageHeight}]` — doluluk kamerası görüş alanları (bkz. §13) |
+| GET | /config/slots?layout= | doluluk kamerası cep poligonları (vars. GAZI) |
 
 CORS: http://localhost:5173 izinli.
 
@@ -351,3 +354,15 @@ Varsayılan konumlar (seed, yaklaşık; yönetici panelinden düzeltilebilir):
   - Adımlar arayüzde Türkçeye çevrilir.
   - Servise ulaşılamazsa kuş uçuşu mesafe ve Google Haritalar bağlantısı (`https://www.google.com/maps/dir/?api=1&origin=..&destination=..&travelmode=driving`) gösterilir.
 - Backend'e yeni uç nokta eklenmez. Konum verisi yalnızca tarayıcıda kullanılır, sunucuya gönderilmez ve saklanmaz (KVKK).
+
+## 13. Doluluk kamerası krokileri (v3)
+
+- Her otopark, çok katlıysa her kat, ayrı bir cep yerleşimidir (kamera görüş alanı):
+  - `GAZI`: `config/slots.json`
+  - `MERKEZ-B1`, `MERKEZ-Z`, `MERKEZ-K1`, `AVM` ve `HASTANE`: `config/slots/*.json`
+- Yerleşimdeki cep kodları backend cep kodlarıyla birebir aynıdır. Doluluk sonucu, yerleşimin `lotCode` değeriyle `POST /api/vision/occupancy` uç noktasına gider.
+- GAZI dışındaki yerleşimler `tools/kroki_to_slots.py` ile backend krokisinden üstten görünüş olarak üretilir.
+- `layout` verilmeyip yalnızca `lot` verilirse o otoparkın en alt kattaki yerleşimi kullanılır. İkisi de verilmezse GAZI kullanılır.
+- Yerleşim ile `lot` farklı otoparklara aitse istek 400 ile reddedilir.
+- Sentetik örnek görüntü (`/occupancy/sample`) yalnızca test içindir. Bu görüntüde araçlar renkli bloklardır, bu yüzden analizde `detector=color` kullanılır. Gerçek fotoğraflarda YOLO kullanılır.
+- Kamera ataması (`/agents/{id}/assign`) çalışma anı ayarıdır. Servis yeniden başlayınca `cameras.yaml` ayarına döner.

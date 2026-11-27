@@ -25,9 +25,12 @@ from app.agents.manager import AgentManager
 from app.backend_client import BackendClient, utc_now_iso
 from app.config import get_settings
 from app.model_registry import ModelRegistry
-from app.pipeline.occupancy import draw_layout, evaluate_slots, load_layout
+from app.pipeline.demo_detector import ColorVehicleDetector
+from app.pipeline.layouts import LayoutNotFound, LayoutRegistry
+from app.pipeline.occupancy import draw_layout, evaluate_slots
+from app.pipeline.sample_scene import render_sample
 from app.pipeline.recognizer import annotate_plates, best_result, decode_image, to_base64_jpeg
-from app.schemas import (AgentInfo, HealthResponse, OccupancyAnalyzeResponse, RecognizeResponse)
+from app.schemas import (AgentInfo, HealthResponse, LayoutSummary, OccupancyAnalyzeResponse, RecognizeResponse)
 
 settings = get_settings()
 logging.basicConfig(
@@ -39,6 +42,7 @@ log = logging.getLogger("vision")
 registry = ModelRegistry(settings)
 backend = BackendClient(settings.BACKEND_URL, settings.VISION_API_KEY, settings.BACKEND_TIMEOUT, settings.BACKEND_RETRIES)
 manager = AgentManager(settings, registry, backend)
+layouts = LayoutRegistry(settings.slots_file, settings.slots_dir)
 
 
 @asynccontextmanager
@@ -111,6 +115,15 @@ def _read_upload(file: UploadFile):
     return img
 
 
+def _layout_or_error(layout_id: Optional[str], lot: Optional[str]):
+    try:
+        return layouts.resolve(layout_id, lot)
+    except LayoutNotFound as exc:
+        raise HTTPException(404, str(exc))
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+
+
 def _agent_or_404(agent_id: str):
     agent = manager.get(agent_id)
     if agent is None:
@@ -146,6 +159,25 @@ def start_agent(agent_id: str):
 def stop_agent(agent_id: str):
     agent = _agent_or_404(agent_id)
     agent.stop()
+    return agent.info()
+
+
+@app.post("/agents/{agent_id}/assign", response_model=AgentInfo, response_model_by_alias=True)
+def assign_agent(
+    agent_id: str,
+    lot: Optional[str] = Query(None, description="Otopark kodu (giriş/çıkış kamerası için)"),
+    layout: Optional[str] = Query(None, description="Cep yerleşimi kimliği (doluluk kamerası için, ör. MERKEZ-K1)"),
+):
+    """Kamerayı başka bir otoparka / krokiye bağlar (servis yeniden başlayana kadar).
+    Çalışan kamera yeni ayarla yeniden başlatılır."""
+    agent = _agent_or_404(agent_id)
+    if agent.agent_type == "Occupancy":
+        entry = _layout_or_error(layout, lot)
+        manager.assign(agent_id, entry.lot_code, entry)
+    else:
+        if not lot or not lot.strip():
+            raise HTTPException(400, "Otopark kodu (lot) gerekli")
+        manager.assign(agent_id, lot.strip().upper())
     return agent.info()
 
 
@@ -248,52 +280,89 @@ def recognize(
 
 @app.post("/occupancy/analyze", response_model=OccupancyAnalyzeResponse, response_model_by_alias=True)
 def occupancy_analyze(
-    file: UploadFile = File(..., description="Otopark görüntüsü (slots.json ile aynı bakış açısı)"),
+    file: UploadFile = File(..., description="Otopark görüntüsü (seçilen cep yerleşimiyle aynı bakış açısı)"),
     forward: bool = Query(False),
     camera_id: str = Query("web-test", alias="cameraId"),
     threshold: Optional[float] = Query(None, ge=0.05, le=0.95),
-    lot: Optional[str] = Query(None, description="Otopark kodu (vars. slots.json içindeki ya da GAZI)"),
+    lot: Optional[str] = Query(None, description="Otopark kodu (layout yoksa o otoparkın ilk yerleşimi)"),
+    layout: Optional[str] = Query(None, description="Cep yerleşimi kimliği (GET /config/layouts)"),
+    detector: Literal["yolo", "color"] = Query(
+        "yolo", description="yolo: gerçek fotoğraf; color: sentetik örnek görüntü (GET /occupancy/sample)"),
 ):
-    reason = registry.unavailable_reason(["vehicle"])
-    if reason:
-        raise HTTPException(503, reason)
-    if not settings.slots_file.exists():
-        raise HTTPException(404, f"Cep yapılandırması bulunamadı: {settings.SLOTS_FILE}")
+    entry = _layout_or_error(layout, lot)
+    if detector == "yolo":
+        reason = registry.unavailable_reason(["vehicle"])
+        if reason:
+            raise HTTPException(503, reason)
     img = _read_upload(file)
     t0 = time.perf_counter()
     h, w = img.shape[:2]
-    layout = load_layout(settings.slots_file).scaled(w, h)
-    vehicles = registry.vehicle_detector.detect(img, conf=settings.VEHICLE_CONFIDENCE)
-    obs = evaluate_slots(layout, [v.bbox for v in vehicles], [v.confidence for v in vehicles],
+    slot_layout = entry.layout.scaled(w, h)
+    if detector == "color":
+        vd = ColorVehicleDetector.for_layout(slot_layout, w, h)
+    else:
+        vd = registry.vehicle_detector
+    vehicles = vd.detect(img, conf=settings.VEHICLE_CONFIDENCE)
+    obs = evaluate_slots(slot_layout, [v.bbox for v in vehicles], [v.confidence for v in vehicles],
                          threshold or settings.OCCUPANCY_THRESHOLD, settings.OCCUPANCY_FOOTPRINT)
     elapsed = (time.perf_counter() - t0) * 1000
-    annotated = draw_layout(img, layout, {o.code: o.occupied for o in obs})
+    annotated = draw_layout(img, slot_layout, {o.code: o.occupied for o in obs})
     for v in vehicles:
         x1, y1, x2, y2 = [int(a) for a in v.bbox]
         cv2.rectangle(annotated, (x1, y1), (x2, y2), (255, 160, 0), 2)
     slots = [{"code": o.code, "occupied": o.occupied, "confidence": o.confidence} for o in obs]
     backend_response = None
     if forward:
-        ok = backend.send_occupancy(camera_id, slots, utc_now_iso(),
-                                    lot_code=(lot or getattr(layout, "lot_code", None) or "GAZI").upper())
+        ok = backend.send_occupancy(camera_id, slots, utc_now_iso(), lot_code=entry.lot_code)
         backend_response = {"sent": ok, "error": None if ok else backend.last_error}
     return {
         "slots": slots,
         "vehicles": len(vehicles),
+        "layout": entry.id,
+        "lotCode": entry.lot_code,
+        "detector": detector,
         "annotatedImageBase64": to_base64_jpeg(annotated, 85, 1280),
         "elapsedMs": round(elapsed, 1),
         "backendResponse": backend_response,
     }
 
 
+@app.get("/occupancy/sample", responses={200: {"content": {"image/jpeg": {}}}})
+def occupancy_sample(
+    layout: Optional[str] = Query(None, description="Cep yerleşimi kimliği"),
+    lot: Optional[str] = Query(None, description="Otopark kodu (layout yoksa)"),
+    ratio: float = Query(0.5, ge=0, le=1, description="Dolu cep oranı"),
+    seed: Optional[int] = Query(None, description="Aynı görüntüyü yeniden üretmek için"),
+):
+    """Seçilen kroki için sentetik üstten görünüş otopark görüntüsü (Kamera Testi için).
+    Analizde detector=color kullanın; YOLO çizilmiş araçları güvenilir tanımaz."""
+    entry = _layout_or_error(layout, lot)
+    img, occupied = render_sample(entry.layout, ratio, seed, title=f"ORNEK - {entry.layout.name or entry.id}")
+    ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 90])
+    if not ok:
+        raise HTTPException(500, "Örnek görüntü kodlanamadı")
+    return Response(content=buf.tobytes(), media_type="image/jpeg", headers={
+        "Cache-Control": "no-store",
+        "X-Layout": entry.id,
+        "X-Occupied-Count": str(len(occupied)),
+        "Access-Control-Expose-Headers": "X-Layout, X-Occupied-Count",
+    })
+
+
+@app.get("/config/layouts", response_model=list[LayoutSummary], response_model_by_alias=True)
+def config_layouts(lot: Optional[str] = Query(None, description="Yalnızca bu otoparkın yerleşimleri")):
+    """Tanımlı doluluk kamerası görüş alanları (otopark / kat başına cep yerleşimleri)."""
+    entries = layouts.for_lot(lot) if lot else layouts.entries()
+    return [e.summary() for e in entries]
+
+
 @app.get("/config/slots")
-def config_slots():
-    if not settings.slots_file.exists():
-        raise HTTPException(404, f"Cep yapılandırması bulunamadı: {settings.SLOTS_FILE}")
+def config_slots(layout: Optional[str] = Query(None), lot: Optional[str] = Query(None)):
+    entry = _layout_or_error(layout, lot)
     try:
-        return load_layout(settings.slots_file).to_dict()
+        return entry.layout.to_dict()
     except Exception as exc:
-        raise HTTPException(500, f"slots.json okunamadı: {exc}")
+        raise HTTPException(500, f"{entry.path.name} okunamadı: {exc}")
 
 
 @app.get("/", include_in_schema=False)

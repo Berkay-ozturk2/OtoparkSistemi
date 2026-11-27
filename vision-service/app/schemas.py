@@ -39,6 +39,7 @@ class AgentInfo(CamelModel):
     fps: float = 0.0
     camera_fps: float = 0.0
     lot_code: Optional[str] = None
+    layout: Optional[str] = None          # doluluk ajanının izlediği cep yerleşimi (kroki/kat)
     last_plate: Optional[str] = None
     last_error: Optional[str] = None
 
@@ -71,9 +72,23 @@ class SlotState(CamelModel):
 class OccupancyAnalyzeResponse(CamelModel):
     slots: List[SlotState]
     vehicles: int
+    layout: Optional[str] = None
+    lot_code: Optional[str] = None
+    detector: Optional[str] = None
     annotated_image_base64: Optional[str] = None
     elapsed_ms: float
     backend_response: Optional[Any] = None
+
+
+class LayoutSummary(CamelModel):
+    id: str
+    lot_code: str
+    floor: int = 0
+    name: str
+    slot_count: int
+    image_width: int
+    image_height: int
+    file: Optional[str] = None
 
 
 class PlateEventPayload(CamelModel):
