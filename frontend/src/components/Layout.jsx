@@ -30,7 +30,10 @@ export default function Layout() {
         </div>
       )}
       <main className={`flex-grow-1 py-4 ${wide ? 'container-fluid px-3 px-lg-4' : 'container-xl'}`}>
-        <Outlet />
+        {/* Sayfa değişince içerik bir kez yumuşakça belirir */}
+        <div key={location.pathname} className="page-enter">
+          <Outlet />
+        </div>
       </main>
       <footer className="app-footer py-3 mt-auto">
         <div className="container-xl d-flex flex-wrap justify-content-between align-items-center gap-2 small">

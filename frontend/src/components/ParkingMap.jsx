@@ -75,9 +75,9 @@ function Decor({ d, idx, viewW, viewH }) {
           <rect x={x} y={y} width={w} height={h} rx={clamp(short * 0.12, 2, 10)} fill="#4b5563" />
           {short >= 24 &&
             (horizontal ? (
-              <line x1={x + 12} x2={x + w - 12} y1={cy} y2={cy} stroke="#f8fafc" strokeWidth={lineW} strokeDasharray="22 16" />
+              <line x1={x + 12} x2={x + w - 12} y1={cy} y2={cy} stroke="#fafafa" strokeWidth={lineW} strokeDasharray="22 16" />
             ) : (
-              <line x1={cx} x2={cx} y1={y + 12} y2={y + h - 12} stroke="#f8fafc" strokeWidth={lineW} strokeDasharray="22 16" />
+              <line x1={cx} x2={cx} y1={y + 12} y2={y + h - 12} stroke="#fafafa" strokeWidth={lineW} strokeDasharray="22 16" />
             ))}
           {d.text && (
             <text x={cx} y={cy - lineW - 4} textAnchor="middle" className="pm-road-text" fontSize={clamp(short * 0.28, 9, 14)}>
@@ -149,8 +149,8 @@ function Decor({ d, idx, viewW, viewH }) {
       const fs = clamp(short * 0.16, 11, 28);
       return (
         <g className="pm-building">
-          <rect x={x} y={y} width={w} height={h} rx="8" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="2" />
-          <rect x={x + 6} y={y + 6} width={w - 12} height={h - 12} rx="5" fill="none" stroke="#cbd5e1" strokeDasharray="6 6" />
+          <rect x={x} y={y} width={w} height={h} rx="8" fill="#e4e4e7" stroke="#a1a1aa" strokeWidth="2" />
+          <rect x={x + 6} y={y + 6} width={w - 12} height={h - 12} rx="5" fill="none" stroke="#d4d4d8" strokeDasharray="6 6" />
           {d.text && (
             <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" className="pm-building-text" fontSize={fs}>
               {d.text}
@@ -166,8 +166,8 @@ function Decor({ d, idx, viewW, viewH }) {
       return (
         <g className="pm-elevator">
           <title>{d.text || 'Asansör'}</title>
-          <rect x={x} y={y} width={w} height={h} rx="6" fill="#f1f5f9" stroke="#334155" strokeWidth="2" />
-          <rect x={cx - s / 2} y={iy - s / 2} width={s} height={s} rx={s * 0.15} fill="#334155" />
+          <rect x={x} y={y} width={w} height={h} rx="6" fill="#f4f4f5" stroke="#3f3f46" strokeWidth="2" />
+          <rect x={cx - s / 2} y={iy - s / 2} width={s} height={s} rx={s * 0.15} fill="#3f3f46" />
           <path d={`M${cx - s * 0.22} ${iy - s * 0.06} L${cx} ${iy - s * 0.34} L${cx + s * 0.22} ${iy - s * 0.06} Z`} fill="#fff" />
           <path d={`M${cx - s * 0.22} ${iy + s * 0.06} L${cx} ${iy + s * 0.34} L${cx + s * 0.22} ${iy + s * 0.06} Z`} fill="#fff" />
           {hasRoom && (
@@ -553,13 +553,13 @@ export default function ParkingMap({
         >
           <defs>
             <pattern id="pm-asphalt" width="12" height="12" patternUnits="userSpaceOnUse">
-              <rect width="12" height="12" fill="#e9eef5" />
-              <circle cx="3" cy="3" r="0.8" fill="#dbe3ee" />
-              <circle cx="9" cy="8" r="0.8" fill="#dbe3ee" />
+              <rect width="12" height="12" fill="#ededef" />
+              <circle cx="3" cy="3" r="0.8" fill="#e4e4e7" />
+              <circle cx="9" cy="8" r="0.8" fill="#e4e4e7" />
             </pattern>
             <pattern id="pm-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-              <rect width="10" height="10" fill="#cbd5e1" />
-              <line x1="0" y1="0" x2="0" y2="10" stroke="#94a3b8" strokeWidth="4" />
+              <rect width="10" height="10" fill="#d4d4d8" />
+              <line x1="0" y1="0" x2="0" y2="10" stroke="#a1a1aa" strokeWidth="4" />
             </pattern>
           </defs>
 
@@ -666,7 +666,7 @@ export default function ParkingMap({
                 </text>
 
                 {st === 'inactive' ? (
-                  <g stroke="#64748b" strokeWidth={clamp(short * 0.06, 2, 5)} strokeLinecap="round">
+                  <g stroke="#71717a" strokeWidth={clamp(short * 0.06, 2, 5)} strokeLinecap="round">
                     <line x1={iconCx - iconSize / 3} y1={iconCy - iconSize / 3} x2={iconCx + iconSize / 3} y2={iconCy + iconSize / 3} />
                     <line x1={iconCx + iconSize / 3} y1={iconCy - iconSize / 3} x2={iconCx - iconSize / 3} y2={iconCy + iconSize / 3} />
                   </g>

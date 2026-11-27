@@ -15,7 +15,7 @@ function lotIcon(lot, selected) {
   return L.divIcon({
     className: 'citymap-lot-icon',
     html: `<div style="width:${size}px;height:${size}px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);`
-      + `background:${color};border:3px solid ${selected ? '#0d1b3e' : '#fff'};box-shadow:0 2px 6px rgba(0,0,0,.35);`
+      + `background:${color};border:3px solid ${selected ? '#18181b' : '#fff'};box-shadow:0 2px 6px rgba(0,0,0,.35);`
       + 'display:flex;align-items:center;justify-content:center">'
       + `<span style="transform:rotate(45deg);color:#fff;font-weight:800;font-size:${selected ? 20 : 16}px;font-family:system-ui">P</span></div>`,
     iconSize: [size, size],
@@ -26,7 +26,7 @@ function lotIcon(lot, selected) {
 
 const youIcon = L.divIcon({
   className: 'citymap-you-icon',
-  html: '<div style="width:20px;height:20px;border-radius:50%;background:#0d6efd;border:4px solid #fff;'
+  html: '<div style="width:20px;height:20px;border-radius:50%;background:#27272a;border:4px solid #fff;'
     + 'box-shadow:0 0 0 6px rgba(13,110,253,.25)"></div>',
   iconSize: [20, 20],
   iconAnchor: [10, 10],
@@ -88,7 +88,7 @@ export default function CityMap({ lots, selectedCode, origin, route, onSelectLot
         {route && route.length > 1 && (
           <>
             <Polyline positions={route} pathOptions={{ color: '#ffffff', weight: 9, opacity: 0.9 }} />
-            <Polyline positions={route} pathOptions={{ color: '#0d6efd', weight: 5, opacity: 0.95 }} />
+            <Polyline positions={route} pathOptions={{ color: '#d61f2c', weight: 5, opacity: 0.95 }} />
           </>
         )}
 
