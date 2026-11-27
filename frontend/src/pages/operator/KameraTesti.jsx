@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   agentSnapshotUrl,
   agentStreamUrl,
   analyzeOccupancy,
+  assignAgent,
+  getOccupancyLayouts,
+  getOccupancySample,
   getVisionAgents,
   getVisionHealth,
   recognizePlate,
@@ -15,6 +18,7 @@ import ErrorAlert from '../../components/ErrorAlert';
 import EmptyState from '../../components/EmptyState';
 import Loading from '../../components/Loading';
 import { useToast } from '../../components/Toast';
+import { useLot } from '../../lot/LotContext';
 import { decisionInfo, formatPercent, gateLabel, toImageSrc } from '../../utils/format';
 
 function statusVariant(status) {
@@ -103,6 +107,34 @@ function SnapshotPreview({ agentId, running }) {
   );
 }
 
+function floorLabel(floor) {
+  if (floor == null || floor === 0) return 'Zemin';
+  return floor < 0 ? `B${-floor} (Kat ${floor})` : `Kat ${floor}`;
+}
+
+/** Kroki seçimi: otoparka göre gruplanmış cep yerleşimleri (çok katlıda her kat ayrı kamera) */
+function LayoutOptions({ layouts, lotName }) {
+  const groups = [];
+  layouts.forEach((l) => {
+    let g = groups.find((x) => x.lot === l.lotCode);
+    if (!g) {
+      g = { lot: l.lotCode, items: [] };
+      groups.push(g);
+    }
+    g.items.push(l);
+  });
+  return groups.map((g) => (
+    <optgroup key={g.lot} label={lotName(g.lot)}>
+      {g.items.map((l) => (
+        <option key={l.id} value={l.id}>
+          {lotName(g.lot)}
+          {g.items.length > 1 ? ` · ${floorLabel(l.floor)}` : ''} — {l.slotCount} cep
+        </option>
+      ))}
+    </optgroup>
+  ));
+}
+
 function FilePicker({ id, file, onChange }) {
   const [preview, setPreview] = useState(null);
   useEffect(() => {
@@ -123,6 +155,7 @@ function FilePicker({ id, file, onChange }) {
 }
 
 function RecognizeTest() {
+  const { lotCode, lotName, lots, setLotCode } = useLot();
   const [file, setFile] = useState(null);
   const [gate, setGate] = useState('Entry');
   const [forward, setForward] = useState(false);
@@ -137,7 +170,7 @@ function RecognizeTest() {
     setError(null);
     setResult(null);
     try {
-      setResult(await recognizePlate(file, { gate, forward }));
+      setResult(await recognizePlate(file, { gate, forward, lot: lotCode }));
     } catch (err) {
       setError(err);
     } finally {
@@ -157,6 +190,16 @@ function RecognizeTest() {
       </div>
       <div className="card-body">
         <form onSubmit={run} className="mb-3">
+          <label className="form-label small fw-semibold" htmlFor="rec-lot">
+            Otopark
+          </label>
+          <select id="rec-lot" className="form-select mb-3" value={lotCode} onChange={(e) => setLotCode(e.target.value)}>
+            {lots.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.name}
+              </option>
+            ))}
+          </select>
           <FilePicker id="rec-file" file={file} onChange={setFile} />
           <div className="row g-2 mt-2 align-items-center">
             <div className="col-sm-5">
@@ -177,7 +220,8 @@ function RecognizeTest() {
           {forward && (
             <div className="alert alert-warning small mt-2 mb-0 py-2">
               <i className="bi bi-exclamation-triangle me-1" />
-              Gerçek bir {gateLabel(gate).toLocaleLowerCase('tr-TR')} olayı oluşturulur (oturum açılır/kapanır).
+              <strong>{lotName(lotCode)}</strong> otoparkında gerçek bir {gateLabel(gate).toLocaleLowerCase('tr-TR')} olayı
+              oluşturulur (oturum açılır/kapanır).
             </div>
           )}
           <button type="submit" className="btn btn-primary w-100 mt-3" disabled={!file || busy}>
@@ -252,21 +296,69 @@ function RecognizeTest() {
   );
 }
 
-function OccupancyTest() {
+function OccupancyTest({ layouts, layoutsError }) {
+  const { lotCode, lotName } = useLot();
+  const [layoutId, setLayoutId] = useState('');
   const [file, setFile] = useState(null);
+  const [detector, setDetector] = useState('yolo');
+  const [ratio, setRatio] = useState(50);
   const [forward, setForward] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [sampleBusy, setSampleBusy] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const [pickerKey, setPickerKey] = useState(0);
+
+  // Üst menüden otopark değişince o otoparkın ilk krokisi (en alt kat) seçilir
+  useEffect(() => {
+    if (!layouts.length) return;
+    setLayoutId((cur) => {
+      const current = layouts.find((l) => l.id === cur);
+      if (current && current.lotCode === lotCode) return cur;
+      return (layouts.find((l) => l.lotCode === lotCode) || layouts[0]).id;
+    });
+  }, [layouts, lotCode]);
+
+  const layout = layouts.find((l) => l.id === layoutId) || null;
+
+  const changeLayout = (id) => {
+    setLayoutId(id);
+    setResult(null);
+    if (detector === 'color') setFile(null); // örnek görüntü eski krokiye aitti
+  };
+
+  const pickFile = (f) => {
+    setFile(f);
+    setDetector('yolo'); // yüklenen gerçek fotoğraf
+    setResult(null);
+  };
+
+  const makeSample = async () => {
+    if (!layout) return;
+    setSampleBusy(true);
+    setError(null);
+    setResult(null);
+    try {
+      const seed = Math.floor(Math.random() * 100000);
+      const f = await getOccupancySample(layout.id, { ratio: ratio / 100, seed });
+      setPickerKey((k) => k + 1); // dosya seçicideki eski adı temizle
+      setFile(f);
+      setDetector('color');
+    } catch (err) {
+      setError(err);
+    } finally {
+      setSampleBusy(false);
+    }
+  };
 
   const run = async (e) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file || !layout) return;
     setBusy(true);
     setError(null);
     setResult(null);
     try {
-      setResult(await analyzeOccupancy(file, { forward }));
+      setResult(await analyzeOccupancy(file, { forward, layout: layout.id, detector }));
     } catch (err) {
       setError(err);
     } finally {
@@ -284,15 +376,71 @@ function OccupancyTest() {
         Doluluk Analizi Testi
       </div>
       <div className="card-body">
+        <ErrorAlert error={layoutsError} title="Kroki listesi alınamadı" className="mb-3" />
         <form onSubmit={run} className="mb-3">
-          <FilePicker id="occ-file" file={file} onChange={setFile} />
+          <label className="form-label small fw-semibold" htmlFor="occ-layout">
+            Kroki / kamera görüş alanı
+          </label>
+          <select
+            id="occ-layout"
+            className="form-select"
+            value={layoutId}
+            onChange={(e) => changeLayout(e.target.value)}
+            disabled={!layouts.length}
+          >
+            {!layouts.length && <option value="">Yükleniyor…</option>}
+            <LayoutOptions layouts={layouts} lotName={lotName} />
+          </select>
+          {layout && (
+            <div className="form-text">
+              {lotName(layout.lotCode)} · {floorLabel(layout.floor)} · {layout.slotCount} cep
+            </div>
+          )}
+
+          <div className="border rounded p-2 mt-3 bg-body-tertiary">
+            <div className="d-flex align-items-center justify-content-between gap-2">
+              <label className="small mb-0" htmlFor="occ-ratio">
+                Örnek doluluk: <strong>%{ratio}</strong>
+              </label>
+              <button type="button" className="btn btn-sm btn-outline-primary" onClick={makeSample} disabled={!layout || sampleBusy}>
+                {sampleBusy ? <span className="spinner-border spinner-border-sm me-1" /> : <i className="bi bi-magic me-1" />}
+                Örnek görüntü oluştur
+              </button>
+            </div>
+            <input
+              id="occ-ratio"
+              type="range"
+              className="form-range"
+              min="0"
+              max="100"
+              step="10"
+              value={ratio}
+              onChange={(e) => setRatio(Number(e.target.value))}
+            />
+            <div className="small text-secondary">
+              Gerçek fotoğraf yoksa seçilen krokinin üstten görünüşlü sentetik görüntüsünü üretir.
+            </div>
+          </div>
+
+          <div className="small text-secondary mt-3 mb-1">ya da kendi fotoğrafınızı yükleyin:</div>
+          <FilePicker key={pickerKey} id="occ-file" file={file} onChange={pickFile} />
+
+          <div className="mt-2">
+            <label className="form-label small fw-semibold mb-1" htmlFor="occ-detector">
+              Araç tespiti
+            </label>
+            <select id="occ-detector" className="form-select form-select-sm" value={detector} onChange={(e) => setDetector(e.target.value)}>
+              <option value="yolo">YOLO — gerçek fotoğraf</option>
+              <option value="color">Renk dedektörü — sentetik örnek görüntü</option>
+            </select>
+          </div>
           <div className="form-check form-switch mt-2">
             <input id="occ-fwd" type="checkbox" className="form-check-input" checked={forward} onChange={(e) => setForward(e.target.checked)} />
             <label className="form-check-label" htmlFor="occ-fwd">
-              Sonucu backend&apos;e gönder (kroki güncellenir)
+              Sonucu backend&apos;e gönder ({layout ? `${lotName(layout.lotCode)} krokisi güncellenir` : 'kroki seçin'})
             </label>
           </div>
-          <button type="submit" className="btn btn-primary w-100 mt-3" disabled={!file || busy}>
+          <button type="submit" className="btn btn-primary w-100 mt-3" disabled={!file || !layout || busy}>
             {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-play-fill me-2" />}
             Analiz Et
           </button>
@@ -305,6 +453,9 @@ function OccupancyTest() {
             {result.annotatedImageBase64 && <img src={toImageSrc(result.annotatedImageBase64)} alt="İşlenmiş doluluk görüntüsü" className="annotated-img mb-3" />}
             <div className="d-flex flex-wrap gap-3 small mb-2">
               <span>
+                Kroki: <strong>{result.layout || layout?.id}</strong>
+              </span>
+              <span>
                 Tespit edilen araç: <strong>{result.vehicles ?? '—'}</strong>
               </span>
               <span>
@@ -312,6 +463,14 @@ function OccupancyTest() {
               </span>
               <span className="text-secondary">Süre: {result.elapsedMs != null ? `${Math.round(result.elapsedMs)} ms` : '—'}</span>
             </div>
+            {result.backendResponse && (
+              <div className={`small mb-2 ${result.backendResponse.sent ? 'text-success' : 'text-danger'}`}>
+                <i className={`bi ${result.backendResponse.sent ? 'bi-check-circle' : 'bi-x-circle'} me-1`} />
+                {result.backendResponse.sent
+                  ? `${lotName(result.lotCode)} krokisi güncellendi.`
+                  : `Backend'e gönderilemedi: ${result.backendResponse.error || 'bilinmeyen hata'}`}
+              </div>
+            )}
             {slots.length > 0 && (
               <div className="d-flex flex-wrap gap-1">
                 {slots.map((s) => (
@@ -332,9 +491,52 @@ function OccupancyTest() {
   );
 }
 
+/** Kameranın bağlı olduğu otopark (giriş/çıkış) ya da kroki (doluluk) seçimi */
+function AgentTarget({ agent, layouts, lots, lotName, busy, onAssign }) {
+  if (agent.type === 'Occupancy') {
+    const known = layouts.some((l) => l.id === agent.layout);
+    return (
+      <select
+        className="form-select form-select-sm"
+        style={{ minWidth: 170 }}
+        value={agent.layout || ''}
+        disabled={busy || !layouts.length}
+        title="Doluluk kamerasının izlediği kroki/kat"
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) => onAssign(agent, { layout: e.target.value })}
+      >
+        {!known && <option value={agent.layout || ''}>{agent.layout || '—'}</option>}
+        <LayoutOptions layouts={layouts} lotName={lotName} />
+      </select>
+    );
+  }
+  const code = agent.lotCode || 'GAZI';
+  return (
+    <select
+      className="form-select form-select-sm"
+      style={{ minWidth: 150 }}
+      value={code}
+      disabled={busy || !lots.length}
+      title="Plaka olaylarının gönderileceği otopark"
+      onClick={(e) => e.stopPropagation()}
+      onChange={(e) => onAssign(agent, { lot: e.target.value })}
+    >
+      {!lots.some((l) => l.code === code) && <option value={code}>{code}</option>}
+      {lots.map((l) => (
+        <option key={l.code} value={l.code}>
+          {l.name}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 /** Görüntü işleme servisi test ve yönetim ekranı */
 export default function KameraTesti() {
   const toast = useToast();
+  const { lots, lotName } = useLot();
+  const [layouts, setLayouts] = useState([]);
+  const [layoutsError, setLayoutsError] = useState(null);
   const [health, setHealth] = useState(null);
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -367,6 +569,46 @@ export default function KameraTesti() {
     }, 5000);
     return () => clearInterval(t);
   }, [load]);
+
+  useEffect(() => {
+    let alive = true;
+    getOccupancyLayouts()
+      .then((list) => {
+        if (!alive) return;
+        setLayouts(Array.isArray(list) ? list : []);
+        setLayoutsError(null);
+      })
+      .catch((err) => alive && setLayoutsError(err));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const layoutName = useMemo(() => {
+    const map = Object.fromEntries(layouts.map((l) => [l.id, l]));
+    return (id) => {
+      const l = map[id];
+      return l ? `${lotName(l.lotCode)} · ${floorLabel(l.floor)}` : id;
+    };
+  }, [layouts, lotName]);
+
+  const assign = async (agent, target) => {
+    setBusyId(agent.id);
+    try {
+      const info = await assignAgent(agent.id, target);
+      toast.success(
+        agent.type === 'Occupancy'
+          ? `${agent.id} izlediği kroki: ${layoutName(info.layout)}${isRunning(agent) ? ' (kamera yeniden başlatıldı)' : ''}.`
+          : `${agent.id} bağlandığı otopark: ${lotName(info.lotCode)}${isRunning(agent) ? ' (kamera yeniden başlatıldı)' : ''}.`,
+      );
+      const a = await getVisionAgents();
+      setAgents(Array.isArray(a) ? a : Array.isArray(a?.agents) ? a.agents : []);
+    } catch (err) {
+      toast.error(err);
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const toggleAgent = async (agent) => {
     setBusyId(agent.id);
@@ -480,6 +722,7 @@ export default function KameraTesti() {
                         <th>Ajan</th>
                         <th>Tür</th>
                         <th>Kaynak</th>
+                        <th title="Giriş/çıkış: plaka olaylarının gideceği otopark · Doluluk: izlenen kroki/kat">Otopark / Kroki</th>
                         <th>Durum</th>
                         <th title="Kamera okuma / plaka tespit">FPS (kamera / tespit)</th>
                         <th>Son plaka</th>
@@ -503,6 +746,9 @@ export default function KameraTesti() {
                           </td>
                           <td className="small text-truncate" style={{ maxWidth: 160 }} title={a.source}>
                             {a.source}
+                          </td>
+                          <td>
+                            <AgentTarget agent={a} layouts={layouts} lots={lots} lotName={lotName} busy={busyId === a.id} onAssign={assign} />
                           </td>
                           <td>
                             <span className={`badge text-bg-${statusVariant(a.status)}`} title={a.lastError || ''}>
@@ -571,7 +817,7 @@ export default function KameraTesti() {
           <RecognizeTest />
         </div>
         <div className="col-md-6 col-xl-4">
-          <OccupancyTest />
+          <OccupancyTest layouts={layouts} layoutsError={layoutsError} />
         </div>
       </div>
     </div>

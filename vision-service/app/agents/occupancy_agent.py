@@ -27,7 +27,7 @@ class OccupancyAgent(BaseCameraAgent):
 
     def __init__(self, agent_id: str, source, registry: ModelRegistry, backend: Optional[BackendClient],
                  slots_file: Path, threshold: float = 0.35, smoothing: int = 5, full_report_seconds: float = 60.0,
-                 vehicle_conf: float = 0.35, footprint: float = 1.0, **kw):
+                 vehicle_conf: float = 0.35, footprint: float = 1.0, detector: str = "yolo", **kw):
         kw.setdefault("target_fps", 1.0)
         super().__init__(agent_id, source, **kw)
         self.registry = registry
@@ -38,10 +38,47 @@ class OccupancyAgent(BaseCameraAgent):
         self.full_report_seconds = full_report_seconds
         self.vehicle_conf = vehicle_conf
         self.footprint = footprint
+        # "yolo" (gerçek kamera, varsayılan) | "color" (yalnızca sentetik demo videosu — demo_detector.py)
+        self.detector_kind = (detector or "yolo").lower()
+        self._demo_detector = None
+        if self.detector_kind == "color":
+            from app.pipeline.demo_detector import ColorVehicleDetector
+            self._demo_detector = ColorVehicleDetector()
         self.layout: Optional[SlotLayout] = None
+        self.layout_id: Optional[str] = self._peek_layout_id(self.slots_file)
         self.smoother = SlotSmoother(smoothing)
         self._last_full: Optional[float] = None  # None: ilk karede tam rapor gönder
         self.occupied_count = 0
+
+    @staticmethod
+    def _peek_layout_id(path: Path) -> Optional[str]:
+        try:
+            meta = load_layout(path)
+        except Exception:
+            return None
+        return (meta.layout_id or ("GAZI" if path.name == "slots.json" else path.stem)).upper()
+
+    def set_layout(self, slots_file: Path, layout_id: str, lot_code: str) -> None:
+        """Kameranın izlediği krokiyi (cep yerleşimini) değiştirir. Ajan çalışıyorsa çağıran durdurup
+        yeniden başlatmalıdır (AgentManager.assign)."""
+        self.slots_file = Path(slots_file)
+        self.layout_id = layout_id
+        self.lot_code = (lot_code or "GAZI").upper()
+        self.layout = None
+        self.occupied_count = 0
+
+    def info(self):
+        data = super().info()
+        data["layout"] = self.layout_id
+        data["occupiedCount"] = self.occupied_count if self.running else None
+        if self.layout is not None:
+            data["slotCount"] = len(self.layout.slots)
+        else:
+            try:
+                data["slotCount"] = len(load_layout(self.slots_file).slots)
+            except Exception:
+                data["slotCount"] = None
+        return data
 
     def on_start(self) -> None:
         self.layout = load_layout(self.slots_file)
@@ -53,7 +90,7 @@ class OccupancyAgent(BaseCameraAgent):
     def process_frame(self, frame: np.ndarray, now: float) -> Optional[np.ndarray]:
         if self.layout is None:
             self.on_start()
-        vd = self.registry.vehicle_detector
+        vd = self._demo_detector or self.registry.vehicle_detector
         if not vd.ready:
             self.last_error = self.registry.unavailable_reason(["vehicle"]) or "Araç modeli hazır değil"
             return frame

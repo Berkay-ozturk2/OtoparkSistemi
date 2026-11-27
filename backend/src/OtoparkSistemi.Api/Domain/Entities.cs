@@ -51,6 +51,10 @@ public class ParkingLot
     /// <summary>[{type, x, y, w, h, text}] JSON dizisi (yollar, giriş/çıkış, bina, asansör, etiketler).</summary>
     public string DecorJson { get; set; } = "[]";
 
+    /// <summary>Otopark girişinin coğrafi konumu (WGS84). Haritada gösterim ve yol tarifi için.</summary>
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; }
 
@@ -305,4 +309,33 @@ public class Violation
     public ViolationStatus Status { get; set; } = ViolationStatus.Open;
     public string? Note { get; set; }
     public string? ResolvedBy { get; set; }
+}
+
+/// <summary>
+/// Aylık / yıllık abonelik. Sürücü başvurur (Pending), yönetici onaylar (Active) veya reddeder.
+/// Başlangıç ve bitiş tarihleri onay anında kesinleşir; bitiş geçince abonelik kendiliğinden sona ermiş sayılır.
+/// </summary>
+public class Subscription
+{
+    public int Id { get; set; }
+    public int? UserId { get; set; }
+    public User? User { get; set; }
+    public string Plate { get; set; } = string.Empty;
+    public string HolderName { get; set; } = string.Empty;
+    public string? Phone { get; set; }
+    public int LotId { get; set; }
+    public ParkingLot? Lot { get; set; }
+    public SubscriptionPlan Plan { get; set; }
+
+    /// <summary>Başvuru anındaki paket ücreti (sonradan fiyat değişse de korunur).</summary>
+    public decimal Price { get; set; }
+    public SubscriptionStatus Status { get; set; } = SubscriptionStatus.Pending;
+
+    /// <summary>Başvuruda istenen başlangıç; onayda bugünden önceyse bugüne çekilir.</summary>
+    public DateTime StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public string? Note { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? ReviewedAt { get; set; }
+    public string? ReviewedBy { get; set; }
 }

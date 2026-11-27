@@ -1,0 +1,50 @@
+# =====================================================================
+#  DEMO kamera yapılandırması — gerçek kamera ve otopark OLMADAN uçtan uca test
+# =====================================================================
+#  Seçmek için görüntü servisini şu ortam değişkeniyle başlatın:
+#      CAMERAS_FILE=config/cameras.demo.yaml          (scripts\6_demo_baslat.bat bunu yapar)
+#  Videoları üretmek için:  python tools/demo_uret.py  -> samples/demo/*.mp4
+#
+#  * Video dosyaları bitince başa sarar (sürekli canlı yayın gibi).
+#  * doluluk-demo `detector: color` kullanır: sentetik videodaki renkli araçları bulan DEMO dedektörü.
+#    Gerçek bir otopark videosu kullanacaksanız `detector: yolo` yapın (ya da satırı silin).
+#  * Kendi videonuzu kullanmak için `source` satırını değiştirin, cepleri tools/slot_editor.py ile çizin.
+#  * Webcam ile test: source: "0" (aynı webcam'i kullanan giriş/çıkıştan biri çalışır, diğeri durur).
+
+cameras:
+  - id: giris-demo
+    lotCode: GAZI
+    name: "DEMO giriş kamerası (video)"
+    type: Gate
+    gate: Entry
+    source: "samples/demo/giris.mp4"
+    fps: 10
+    enabled: true
+    voteWindowSeconds: 1.5
+    voteMinReads: 3
+    cooldownSeconds: 20
+
+  - id: cikis-demo
+    lotCode: GAZI
+    name: "DEMO çıkış kamerası (video)"
+    type: Gate
+    gate: Exit
+    source: "samples/demo/cikis.mp4"
+    fps: 10
+    enabled: true
+    voteWindowSeconds: 1.5
+    voteMinReads: 3
+    cooldownSeconds: 20
+
+  - id: doluluk-demo
+    lotCode: GAZI
+    name: "DEMO doluluk kamerası (sentetik GAZI otoparkı)"
+    type: Occupancy
+    source: "samples/demo/doluluk.mp4"
+    detector: color
+    fps: 2
+    enabled: true
+    slotsFile: config/slots.json
+    threshold: 0.35
+    smoothing: 3
+    fullReportSeconds: 30

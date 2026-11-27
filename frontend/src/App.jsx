@@ -10,10 +10,12 @@ import UcretOde from './pages/public/UcretOde';
 import Giris from './pages/public/Giris';
 import KayitOl from './pages/public/KayitOl';
 import KvkkAydinlatma from './pages/public/KvkkAydinlatma';
+import YolTarifi from './pages/public/YolTarifi';
 
 // Sürücü
 import SurucuPanel from './pages/driver/Panel';
 import Rezervasyon from './pages/driver/Rezervasyon';
+import Abonelik from './pages/driver/Abonelik';
 
 // Operatör
 import CanliIzleme from './pages/operator/CanliIzleme';
@@ -21,6 +23,7 @@ import OnayKuyrugu from './pages/operator/OnayKuyrugu';
 import AktifAraclar from './pages/operator/AktifAraclar';
 import ManuelGecis from './pages/operator/ManuelGecis';
 import KameraTesti from './pages/operator/KameraTesti';
+import AjanOfisi from './pages/operator/AjanOfisi';
 import Ihlaller from './pages/operator/Ihlaller';
 
 // Yönetici
@@ -34,6 +37,7 @@ import DenetimKayitlari from './pages/admin/DenetimKayitlari';
 import KvkkTalepleri from './pages/admin/KvkkTalepleri';
 import Otoparklar from './pages/admin/Otoparklar';
 import EngelliIzinleri from './pages/admin/EngelliIzinleri';
+import Abonelikler from './pages/admin/Abonelikler';
 
 function NotFound() {
   return (
@@ -57,6 +61,7 @@ export default function App() {
         <Route index element={<AnaSayfa />} />
         <Route path="aracim-nerede" element={<AracimNerede />} />
         <Route path="ucret-ode" element={<UcretOde />} />
+        <Route path="yol-tarifi" element={<YolTarifi />} />
         <Route path="giris" element={<Giris />} />
         <Route path="kayit" element={<KayitOl />} />
         <Route path="kvkk" element={<KvkkAydinlatma />} />
@@ -65,6 +70,7 @@ export default function App() {
         <Route path="surucu" element={<ProtectedRoute roles={[ROLES.Driver]} />}>
           <Route index element={<SurucuPanel />} />
           <Route path="rezervasyon" element={<Rezervasyon />} />
+          <Route path="abonelik" element={<Abonelik />} />
         </Route>
 
         {/* Operatör (Yönetici de erişebilir) */}
@@ -75,6 +81,7 @@ export default function App() {
           <Route path="ihlaller" element={<Ihlaller />} />
           <Route path="manuel-gecis" element={<ManuelGecis />} />
           <Route path="kamera-testi" element={<KameraTesti />} />
+          <Route path="ajan-ofisi" element={<AjanOfisi />} />
         </Route>
 
         {/* Yönetici */}
@@ -82,6 +89,7 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="otoparklar" element={<Otoparklar />} />
           <Route path="engelli-izinleri" element={<EngelliIzinleri />} />
+          <Route path="abonelikler" element={<Abonelikler />} />
           <Route path="tarifeler" element={<Tarifeler />} />
           <Route path="kullanicilar" element={<Kullanicilar />} />
           <Route path="terk-edilmis" element={<TerkEdilmis />} />

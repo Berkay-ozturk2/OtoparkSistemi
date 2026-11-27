@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useLot } from '../lot/LotContext';
 import { formatPercent } from '../utils/format';
 import { freeBadgeClass } from './LotSelector';
@@ -113,6 +114,12 @@ export default function LotCards({ onShowMap }) {
                     <i className="bi bi-map me-1" />
                     Krokiyi gör
                   </button>
+                  {Number.isFinite(l.latitude) && (
+                    <Link className="btn btn-sm btn-outline-secondary" to={`/yol-tarifi?lot=${l.code}`} title="Bulunduğunuz yerden yol tarifi">
+                      <i className="bi bi-signpost-split" />
+                      <span className="visually-hidden">Yol tarifi</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

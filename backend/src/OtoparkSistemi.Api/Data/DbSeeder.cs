@@ -14,6 +14,19 @@ namespace OtoparkSistemi.Api.Data;
 /// </summary>
 public static class DbSeeder
 {
+    /// <summary>
+    /// Otoparkların varsayılan konumları (Ankara, WGS84). Yaklaşık değerlerdir; Yönetici > Otoparklar
+    /// sayfasından ya da PUT /api/admin/lots/{code} ile düzeltilebilir.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, (double Lat, double Lng)> DefaultLocations =
+        new Dictionary<string, (double Lat, double Lng)>
+        {
+            ["GAZI"] = (39.93830, 32.82230),     // Gazi Üni. Teknoloji Fakültesi, Emniyet Mah., Yenimahalle
+            ["MERKEZ"] = (39.92080, 32.85410),   // Kızılay Meydanı yanı, Çankaya
+            ["AVM"] = (39.91050, 32.78400),      // Eskişehir Yolu üzeri (Çarşı AVM — kurgusal)
+            ["HASTANE"] = (39.90098, 32.75704)   // Ankara Bilkent Şehir Hastanesi, Çankaya
+        };
+
     public static async Task SeedAsync(AppDbContext db, CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;
@@ -81,6 +94,18 @@ public static class DbSeeder
             db.ParkingLots.AddRange(missingReferenceLots);
             await db.SaveChangesAsync(ct);
         }
+
+        // Konumu olmayan otoparklara varsayılan konum (eski veritabanları için de çalışır; elle girilen konuma dokunmaz)
+        var lotsWithoutLocation = await db.ParkingLots.Where(l => l.Latitude == null || l.Longitude == null).ToListAsync(ct);
+        foreach (var lot in lotsWithoutLocation)
+        {
+            if (DefaultLocations.TryGetValue(lot.Code, out var loc))
+            {
+                lot.Latitude = loc.Lat;
+                lot.Longitude = loc.Lng;
+            }
+        }
+        if (lotsWithoutLocation.Count > 0) await db.SaveChangesAsync(ct);
 
         if (!await db.Tariffs.AnyAsync(ct))
         {

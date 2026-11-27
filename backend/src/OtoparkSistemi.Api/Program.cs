@@ -201,6 +201,8 @@ builder.Services.AddScoped<ParkingService>();
 builder.Services.AddScoped<GateService>();
 builder.Services.AddScoped<ReservationService>();
 builder.Services.AddScoped<PermitService>();
+builder.Services.AddSingleton(builder.Configuration.GetSection("Subscriptions").Get<SubscriptionPricing>() ?? new SubscriptionPricing());
+builder.Services.AddScoped<SubscriptionService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<ReportService>();
 builder.Services.AddScoped<AuditService>();

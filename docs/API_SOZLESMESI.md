@@ -204,8 +204,11 @@ Operatör/Yönetici, bağlantı kurarken `?access_token=<JWT>` ile bağlanırsa 
 | POST | /agents/{id}/start , /agents/{id}/stop | ajanı başlat/durdur |
 | GET | /agents/{id}/snapshot | son işlenmiş kare (JPEG, yalnızca bellekte, kaydedilmez) |
 | POST | /recognize?gate=Entry&forward=false | multipart `file` (resim) → `{plates:[{plate, rawText, confidence, formatValid, bbox:[x1,y1,x2,y2]}], backendResponse, elapsedMs, annotatedImageBase64}` ; `forward=true` ise en iyi sonuç backend'e plaka olayı olarak gönderilir |
-| POST | /occupancy/analyze?forward=false | multipart `file` → `{slots:[{code, occupied, confidence}], vehicles:int, annotatedImageBase64, elapsedMs}` |
-| GET | /config/slots | doluluk kamerası cep poligonları |
+| POST | /agents/{id}/assign?lot=&layout= | kamerayı başka otoparka (giriş/çıkış) ya da krokiye/kata (doluluk) bağlar → AgentInfo (`layout` alanı dahil) |
+| POST | /occupancy/analyze?layout=&detector=yolo|color&forward=false | multipart `file` → `{slots:[{code, occupied, confidence}], vehicles:int, layout, lotCode, detector, annotatedImageBase64, elapsedMs}` ; `forward=true` ise sonuç yerleşimin otoparkına (`lotCode`) gönderilir |
+| GET | /occupancy/sample?layout=&ratio=0.5&seed= | seçilen kroki için sentetik üstten görünüş JPEG (`X-Occupied-Count` başlığı) |
+| GET | /config/layouts?lot= | `[{id, lotCode, floor, name, slotCount, imageWidth, imageHeight}]` — doluluk kamerası görüş alanları (bkz. §13) |
+| GET | /config/slots?layout= | doluluk kamerası cep poligonları (vars. GAZI) |
 
 CORS: http://localhost:5173 izinli.
 
@@ -319,3 +322,49 @@ Bir kamera tek otoparka bağlıdır (`cameras.yaml` içinde `lotCode`).
 
 Her otoparkta `decor`: sıralar arasında yollar (`road`), giriş (`entry`) ve çıkış (`exit`) işaretleri, bina/AVM/hastane bloğu (`building`), katlı otoparkta asansör (`elevator`), bölge etiketleri (`label`).
 Cepler yollara bakacak şekilde dizilir (sıra çiftleri arasında yol). Engelli cepler normal cepten **%40 daha geniş** çizilir (gerçek engelli yerleri gibi), dolayısıyla sıradaki sonraki ceplerin x'i buna göre kayar.
+
+---
+
+## 12. Otopark konumları ve yol tarifi (v3)
+
+### 12.1 Veri
+`ParkingLot`'a `latitude`, `longitude` (WGS84, `double?`) eklenir. Şu nesnelerde döner:
+- `GET /api/parking/lots` öğeleri (LotSummary)
+- `GET /api/parking/lots/{code}/layout` → `lot`
+- `GET /api/admin/lots`
+
+`PUT /api/admin/lots/{code}` gövdesi `latitude`, `longitude` alabilir. İkisi birlikte verilmelidir; aralık enlem -90..90, boylam -180..180, aksi hâlde 400.
+
+Varsayılan konumlar (seed, yaklaşık; yönetici panelinden düzeltilebilir):
+
+| Kod | Konum | Enlem, Boylam |
+|---|---|---|
+| GAZI | Gazi Üni. Teknoloji Fakültesi, Emniyet Mah., Yenimahalle | 39.93830, 32.82230 |
+| MERKEZ | Kızılay Meydanı yanı, Çankaya | 39.92080, 32.85410 |
+| AVM | Eskişehir Yolu üzeri (Çarşı AVM — kurgusal) | 39.91050, 32.78400 |
+| HASTANE | Ankara Bilkent Şehir Hastanesi, Çankaya | 39.90098, 32.75704 |
+
+**Şema geçişi:** veri silinmez. Başlangıçta `ParkingLots.Latitude/Longitude` sütunları yoksa `ALTER TABLE ... ADD COLUMN` ile eklenir (`SchemaGuard.AddMissingColumnsAsync`). Ardından konumu boş otoparklara varsayılan konum yazılır; elle girilmiş konuma dokunulmaz.
+
+### 12.2 Yol tarifi (yalnızca arayüz)
+- Sayfa: `/yol-tarifi?lot=KOD` (herkese açık).
+  - Başlangıç: tarayıcı konumu (Geolocation), haritaya tıklama ya da hazır nokta (Kızılay, AŞTİ, Ulus).
+  - Giriş yapmış sürücünün aktif rezervasyonları (`PendingPayment | Confirmed | CheckedIn`) listelenir ve ilki otomatik hedef seçilir.
+- Harita: Leaflet + OpenStreetMap karoları (atıf gösterilir).
+- Rota: OSRM `GET {OSRM}/route/v1/driving/{lng},{lat};{lng},{lat}?overview=full&geometries=geojson&steps=true`.
+  - Varsayılan sunucu herkese açık demo sunucusu `https://router.project-osrm.org`. `VITE_OSRM_URL` ile değiştirilebilir.
+  - Adımlar arayüzde Türkçeye çevrilir.
+  - Servise ulaşılamazsa kuş uçuşu mesafe ve Google Haritalar bağlantısı (`https://www.google.com/maps/dir/?api=1&origin=..&destination=..&travelmode=driving`) gösterilir.
+- Backend'e yeni uç nokta eklenmez. Konum verisi yalnızca tarayıcıda kullanılır, sunucuya gönderilmez ve saklanmaz (KVKK).
+
+## 13. Doluluk kamerası krokileri (v3)
+
+- Her otopark, çok katlıysa her kat, ayrı bir cep yerleşimidir (kamera görüş alanı):
+  - `GAZI`: `config/slots.json`
+  - `MERKEZ-B1`, `MERKEZ-Z`, `MERKEZ-K1`, `AVM` ve `HASTANE`: `config/slots/*.json`
+- Yerleşimdeki cep kodları backend cep kodlarıyla birebir aynıdır. Doluluk sonucu, yerleşimin `lotCode` değeriyle `POST /api/vision/occupancy` uç noktasına gider.
+- GAZI dışındaki yerleşimler `tools/kroki_to_slots.py` ile backend krokisinden üstten görünüş olarak üretilir.
+- `layout` verilmeyip yalnızca `lot` verilirse o otoparkın en alt kattaki yerleşimi kullanılır. İkisi de verilmezse GAZI kullanılır.
+- Yerleşim ile `lot` farklı otoparklara aitse istek 400 ile reddedilir.
+- Sentetik örnek görüntü (`/occupancy/sample`) yalnızca test içindir. Bu görüntüde araçlar renkli bloklardır, bu yüzden analizde `detector=color` kullanılır. Gerçek fotoğraflarda YOLO kullanılır.
+- Kamera ataması (`/agents/{id}/assign`) çalışma anı ayarıdır. Servis yeniden başlayınca `cameras.yaml` ayarına döner.

@@ -9,7 +9,9 @@ const ROW_Y = { A: 60, B: 260, C: 460 };
 const PAD = 14;
 const ZOOM_STEPS = [1, 1.5, 2, 3, 4];
 
-const DISABLED_BLUE = '#1565C0';
+// Renkler theme/tokens.css'ten gelir; SVG'de var() yalnızca style ile çalışır
+const DISABLED_COLOR = 'var(--ap-slot-disabled)';
+const FG_COLOR = 'var(--ap-slot-disabled-fg)';
 
 /** Koordinatı olmayan cepler için eski sözleşmedeki formülle yedek konum hesaplar */
 export function slotGeometry(slot) {
@@ -42,12 +44,12 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
  * Tekerlekli sandalye simgesi (yazı tipinden bağımsız SVG; Windows'ta da aynı görünür).
  * 24×24 birimlik çizim, (cx, cy) merkezli ve `size` boyutunda ölçeklenir.
  */
-export function WheelchairIcon({ cx, cy, size, color = '#fff' }) {
+export function WheelchairIcon({ cx, cy, size, color = FG_COLOR }) {
   const k = size / 24;
   return (
     <g transform={`translate(${cx - size / 2} ${cy - size / 2}) scale(${k})`} className="pm-wheelchair" aria-hidden="true">
-      <circle cx="12.5" cy="3.2" r="2.3" fill={color} />
-      <g fill="none" stroke={color} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12.5" cy="3.2" r="2.3" style={{ fill: color }} />
+      <g fill="none" style={{ stroke: color }} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
         <path d="M11.5 7.2 V13.2 H17 L19.6 19" />
         <path d="M11.5 10 H16" />
         <path d="M8.3 11.6 A5.6 5.6 0 1 0 15.8 18.4" />
@@ -102,12 +104,12 @@ function Decor({ d, idx, viewW, viewH, pavingId }) {
       const lineW = clamp(short * 0.05, 2, 5);
       return (
         <g className="pm-road">
-          <rect x={x} y={y} width={w} height={h} rx={clamp(short * 0.12, 2, 10)} fill="#4b5563" />
+          <rect x={x} y={y} width={w} height={h} rx={clamp(short * 0.12, 2, 10)} className="pm-road-bg" />
           {short >= 24 &&
             (horizontal ? (
-              <line x1={x + 12} x2={x + w - 12} y1={cy} y2={cy} stroke="#f8fafc" strokeWidth={lineW} strokeDasharray="22 16" />
+              <line x1={x + 12} x2={x + w - 12} y1={cy} y2={cy} className="pm-road-line" strokeWidth={lineW} strokeDasharray="22 16" />
             ) : (
-              <line x1={cx} x2={cx} y1={y + 12} y2={y + h - 12} stroke="#f8fafc" strokeWidth={lineW} strokeDasharray="22 16" />
+              <line x1={cx} x2={cx} y1={y + 12} y2={y + h - 12} className="pm-road-line" strokeWidth={lineW} strokeDasharray="22 16" />
             ))}
           {d.text && (
             <text x={cx} y={cy - lineW - 4} textAnchor="middle" className="pm-road-text" fontSize={clamp(short * 0.28, 9, 14)}>
@@ -120,7 +122,7 @@ function Decor({ d, idx, viewW, viewH, pavingId }) {
     case 'entry':
     case 'exit': {
       const isEntry = d.type === 'entry';
-      const color = isEntry ? '#16a34a' : '#dc2626';
+      const gateCls = isEntry ? 'pm-gate-entry' : 'pm-gate-exit';
       const label = d.text || (isEntry ? 'GİRİŞ' : 'ÇIKIŞ');
       // Ok yönü: giriş tuval merkezine doğru, çıkış merkezden dışarı doğru
       let dx = viewW / 2 - cx;
@@ -169,8 +171,8 @@ function Decor({ d, idx, viewW, viewH, pavingId }) {
       return (
         <g className={`pm-${d.type}`}>
           <title>{isEntry ? 'Giriş' : 'Çıkış'}</title>
-          <rect x={x} y={y} width={w} height={h} rx={clamp(short * 0.25, 4, 12)} fill={color} />
-          <path d={arrowPaths[dir]} transform={`translate(${arrowX} ${arrowY})`} fill="#fff" />
+          <rect x={x} y={y} width={w} height={h} rx={clamp(short * 0.25, 4, 12)} className={gateCls} />
+          <path d={arrowPaths[dir]} transform={`translate(${arrowX} ${arrowY})`} className="pm-gate-arrow" />
           {textEl}
         </g>
       );
@@ -179,8 +181,8 @@ function Decor({ d, idx, viewW, viewH, pavingId }) {
       const fs = clamp(short * 0.16, 11, 28);
       return (
         <g className="pm-building">
-          <rect x={x} y={y} width={w} height={h} rx="8" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="2" />
-          <rect x={x + 6} y={y + 6} width={w - 12} height={h - 12} rx="5" fill="none" stroke="#cbd5e1" strokeDasharray="6 6" />
+          <rect x={x} y={y} width={w} height={h} rx="8" className="pm-building-bg" strokeWidth="2" />
+          <rect x={x + 6} y={y + 6} width={w - 12} height={h - 12} rx="5" className="pm-building-inner" strokeDasharray="6 6" />
           {d.text && (
             <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" className="pm-building-text" fontSize={fs}>
               {d.text}
@@ -196,10 +198,10 @@ function Decor({ d, idx, viewW, viewH, pavingId }) {
       return (
         <g className="pm-elevator">
           <title>{d.text || 'Asansör'}</title>
-          <rect x={x} y={y} width={w} height={h} rx="6" fill="#f1f5f9" stroke="#334155" strokeWidth="2" />
-          <rect x={cx - s / 2} y={iy - s / 2} width={s} height={s} rx={s * 0.15} fill="#334155" />
-          <path d={`M${cx - s * 0.22} ${iy - s * 0.06} L${cx} ${iy - s * 0.34} L${cx + s * 0.22} ${iy - s * 0.06} Z`} fill="#fff" />
-          <path d={`M${cx - s * 0.22} ${iy + s * 0.06} L${cx} ${iy + s * 0.34} L${cx + s * 0.22} ${iy + s * 0.06} Z`} fill="#fff" />
+          <rect x={x} y={y} width={w} height={h} rx="6" className="pm-elevator-bg" strokeWidth="2" />
+          <rect x={cx - s / 2} y={iy - s / 2} width={s} height={s} rx={s * 0.15} className="pm-elevator-box" />
+          <path d={`M${cx - s * 0.22} ${iy - s * 0.06} L${cx} ${iy - s * 0.34} L${cx + s * 0.22} ${iy - s * 0.06} Z`} className="pm-elevator-arrow" />
+          <path d={`M${cx - s * 0.22} ${iy + s * 0.06} L${cx} ${iy + s * 0.34} L${cx + s * 0.22} ${iy + s * 0.06} Z`} className="pm-elevator-arrow" />
           {hasRoom && (
             <text x={cx} y={iy + s / 2 + 13} textAnchor="middle" className="pm-elevator-text" fontSize="11">
               {d.text || 'Asansör'}
@@ -210,6 +212,14 @@ function Decor({ d, idx, viewW, viewH, pavingId }) {
     }
     case 'label': {
       const r = clamp(short / 2, 12, 34);
+      // Uzun etiketler (açıklama satırları) daire rozete sığmaz: düz metin olarak yazılır
+      if (String(d.text || '').length > 3) {
+        return (
+          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" className="pm-note-text" fontSize={clamp(h * 0.5, 10, 16)}>
+            {d.text}
+          </text>
+        );
+      }
       return (
         <g className="pm-label">
           <circle cx={cx} cy={cy} r={r} className="pm-zone-badge" />
@@ -231,9 +241,9 @@ function Decor({ d, idx, viewW, viewH, pavingId }) {
       }
       return (
         <g className="pm-green">
-          <rect x={x} y={y} width={w} height={h} rx="10" fill="#bbf7d0" stroke="#86efac" strokeWidth="2" />
+          <rect x={x} y={y} width={w} height={h} rx="10" className="pm-green-bg" strokeWidth="2" />
           {trees.slice(0, 60).map(([tx, ty]) => (
-            <circle key={`t-${idx}-${tx}-${ty}`} cx={tx} cy={ty} r={r} fill="#4ade80" stroke="#22c55e" />
+            <circle key={`t-${idx}-${tx}-${ty}`} cx={tx} cy={ty} r={r} className="pm-tree" />
           ))}
           {d.text && (
             <text x={cx} y={y + h - 8} textAnchor="middle" className="pm-green-text" fontSize={clamp(short * 0.18, 10, 14)}>
@@ -591,13 +601,17 @@ export default function ParkingMap({
               </pattern>
             )}
             <pattern id="pm-asphalt" width="12" height="12" patternUnits="userSpaceOnUse">
-              <rect width="12" height="12" fill="#e9eef5" />
-              <circle cx="3" cy="3" r="0.8" fill="#dbe3ee" />
-              <circle cx="9" cy="8" r="0.8" fill="#dbe3ee" />
+              <rect width="12" height="12" className="pm-ground" />
+              <circle cx="3" cy="3" r="0.8" className="pm-ground-dot" />
+              <circle cx="9" cy="8" r="0.8" className="pm-ground-dot" />
             </pattern>
             <pattern id="pm-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-              <rect width="10" height="10" fill="#cbd5e1" />
-              <line x1="0" y1="0" x2="0" y2="10" stroke="#94a3b8" strokeWidth="4" />
+              <rect width="10" height="10" className="pm-hatch-bg" />
+              <line x1="0" y1="0" x2="0" y2="10" className="pm-hatch-line" strokeWidth="4" />
+            </pattern>
+            {/* Rezerve cepler: rengin yanında ikinci işaret olarak çapraz çizgi deseni */}
+            <pattern id="pm-stripes" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="14" className="pm-stripe-line" />
             </pattern>
           </defs>
 
@@ -692,6 +706,19 @@ export default function ParkingMap({
                 }
               >
                 <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={clamp(short * 0.1, 3, 8)} className="pm-slot-rect" />
+                {st === 'reserved' && (
+                  <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={clamp(short * 0.1, 3, 8)} fill="url(#pm-stripes)" className="pm-slot-pattern" />
+                )}
+                {dis && st !== 'inactive' && short > 20 && (
+                  <rect
+                    x={g.x + 5}
+                    y={g.y + 5}
+                    width={g.w - 10}
+                    height={g.h - 10}
+                    rx={Math.max(1, clamp(short * 0.1, 3, 8) - 3)}
+                    className="pm-disabled-inner"
+                  />
+                )}
                 <text
                   x={portrait ? g.x + g.w / 2 : g.x + 5}
                   y={portrait ? g.y + codeFs + 4 : g.y + g.h / 2}
@@ -704,12 +731,12 @@ export default function ParkingMap({
                 </text>
 
                 {st === 'inactive' ? (
-                  <g stroke="#64748b" strokeWidth={clamp(short * 0.06, 2, 5)} strokeLinecap="round">
+                  <g className="pm-inactive-x" strokeWidth={clamp(short * 0.06, 2, 5)} strokeLinecap="round">
                     <line x1={iconCx - iconSize / 3} y1={iconCy - iconSize / 3} x2={iconCx + iconSize / 3} y2={iconCy + iconSize / 3} />
                     <line x1={iconCx + iconSize / 3} y1={iconCy - iconSize / 3} x2={iconCx - iconSize / 3} y2={iconCy + iconSize / 3} />
                   </g>
                 ) : dis ? (
-                  <WheelchairIcon cx={iconCx} cy={iconCy} size={iconSize} color={st === 'free' ? DISABLED_BLUE : '#fff'} />
+                  <WheelchairIcon cx={iconCx} cy={iconCy} size={iconSize} color={st === 'free' ? DISABLED_COLOR : FG_COLOR} />
                 ) : st === 'occupied' ? (
                   <CarShape g={g} />
                 ) : (
@@ -728,13 +755,13 @@ export default function ParkingMap({
                 {viol && (
                   <g className="pm-viol-mark">
                     <rect x={g.x - 2} y={g.y - 2} width={g.w + 4} height={g.h + 4} rx={clamp(short * 0.1, 3, 8) + 2} className="pm-viol-ring" />
-                    <circle cx={g.x + g.w - 2} cy={g.y + 2} r={clamp(short * 0.17, 8, 14)} fill="#dc2626" stroke="#fff" strokeWidth="2" />
+                    <circle cx={g.x + g.w - 2} cy={g.y + 2} r={clamp(short * 0.17, 8, 14)} className="pm-viol-dot" strokeWidth="2" />
                     <text
                       x={g.x + g.w - 2}
                       y={g.y + 2}
                       textAnchor="middle"
                       dominantBaseline="central"
-                      fill="#fff"
+                      className="pm-viol-text"
                       fontWeight="900"
                       fontSize={clamp(short * 0.22, 10, 18)}
                     >

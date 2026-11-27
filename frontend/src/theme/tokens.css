@@ -1,0 +1,372 @@
+/* =====================================================================
+   AkıllıPark — tasarım token'ları (tek kaynak)
+   Temel: "Tech Innovation" (elektrik mavisi + camgöbeği, koyu grafit),
+   gözü yormayacak şekilde yumuşatıldı. Açık ve koyu mod.
+
+   Katmanlar:
+     1) Ölçekler   — yazı, boşluk, köşe, gölge, hareket (moddan bağımsız)
+     2) Anlamsal   — zemin, yüzey, metin, kenarlık, marka, vurgu, durum
+     3) Park yeri  — boş / dolu / engelli / rezerve / abone / kullanım dışı
+     4) Bootstrap  — --bs-* değişkenleri bu token'lardan beslenir
+
+   Kural: bileşen stillerinde ham renk (#hex) yazılmaz, buradaki
+   anlamsal token'lar kullanılır. Mod değişimi yalnızca bu dosyada olur.
+   ===================================================================== */
+
+/* ---------- 1) Ölçekler ---------- */
+:root {
+  /* Yazı tipleri (npm @fontsource ile projeye gömülü; internetsiz çalışır) */
+  --ap-font-sans: 'Inter Variable', 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --ap-font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  /* Yazı ölçeği (1.2 oranlı) */
+  --ap-text-xs: 0.75rem;
+  --ap-text-sm: 0.875rem;
+  --ap-text-md: 1rem;
+  --ap-text-lg: 1.2rem;
+  --ap-text-xl: 1.44rem;
+  --ap-text-2xl: 1.73rem;
+  --ap-text-3xl: 2.07rem;
+  --ap-text-4xl: 2.49rem;
+  --ap-weight-regular: 400;
+  --ap-weight-medium: 500;
+  --ap-weight-semibold: 600;
+  --ap-weight-bold: 700;
+  --ap-weight-black: 800;
+  --ap-leading-tight: 1.2;
+  --ap-leading-normal: 1.5;
+  --ap-tracking-tight: -0.02em;
+  --ap-tracking-caps: 0.05em;
+
+  /* Boşluk ölçeği (4px tabanlı) */
+  --ap-space-1: 0.25rem;
+  --ap-space-2: 0.5rem;
+  --ap-space-3: 0.75rem;
+  --ap-space-4: 1rem;
+  --ap-space-5: 1.25rem;
+  --ap-space-6: 1.5rem;
+  --ap-space-8: 2rem;
+  --ap-space-10: 2.5rem;
+  --ap-space-12: 3rem;
+
+  /* Köşe yuvarlaklığı */
+  --ap-radius-xs: 0.375rem;
+  --ap-radius-sm: 0.5rem;
+  --ap-radius-md: 0.75rem;
+  --ap-radius-lg: 1rem;
+  --ap-radius-xl: 1.25rem;
+  --ap-radius-pill: 999px;
+  --ap-radius: var(--ap-radius-lg); /* kart varsayılanı */
+
+  /* Hareket */
+  --ap-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ap-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ap-dur-1: 0.15s;
+  --ap-dur-2: 0.25s;
+  --ap-dur-3: 0.45s;
+
+  /* Moddan bağımsız sabitler */
+  --ap-white: #ffffff;
+  --ap-black: #000000;
+
+  /* Türk plakası: gerçek nesnenin renkleri, iki modda da aynı kalır */
+  --ap-plate-bg: #ffffff;
+  --ap-plate-ink: #111827;
+  --ap-plate-eu: #1d4ed8;
+  --ap-plate-stars: #facc15;
+}
+
+/* ---------- 2+3) Açık mod ---------- */
+:root,
+[data-bs-theme='light'] {
+  color-scheme: light;
+
+  /* Zemin ve yüzeyler — saf beyaz/siyah yok, hafif mavi-gri */
+  --ap-bg: #f3f5f9;
+  --ap-surface: #ffffff;
+  --ap-surface-2: #f6f8fb;      /* kart içi bölmeler, tablo başlıkları */
+  --ap-surface-3: #eceff5;      /* boş durum zemini, pasif alanlar */
+  --ap-surface-inverse: #121a2a; /* kamera karesi, plaka kırpıntısı */
+
+  /* Metin (beyaz yüzeyde kontrast: text 15.2, secondary 9.1, muted 5.6, subtle 3.2 — subtle yalnızca süs) */
+  --ap-text: #172033;
+  --ap-text-secondary: #344158;
+  --ap-text-muted: #5a6478;
+  --ap-text-subtle: #8b95a7;
+  --ap-text-inverse: #ffffff;
+
+  /* Kenarlıklar */
+  --ap-border: #e1e6ee;
+  --ap-border-subtle: #edf0f5;
+  --ap-border-strong: #c7cfdc;
+  --ap-scrollbar: #c3cad6;
+
+  /* Marka: yumuşatılmış elektrik mavisi (birincil butonlar, seçili sekmeler) */
+  --ap-brand: #1f56d6;          /* beyaz metinle 6.1:1 */
+  --ap-brand-strong: #1844ab;   /* üzerine gelme / basılı */
+  --ap-brand-muted: #5b7fd9;    /* devre dışı */
+  --ap-brand-soft: #e8effd;     /* hafif zemin */
+  --ap-brand-rgb: 31, 86, 214;
+  --ap-on-brand: #ffffff;
+
+  /* Vurgu: camgöbeği (çağrı butonları, odak, aktif göstergeler) */
+  --ap-accent: #0b7c96;         /* beyaz metinle 4.9:1 */
+  --ap-accent-strong: #086478;
+  --ap-accent-soft: #e3f5f9;
+  --ap-accent-soft-2: #bfe9f2;
+  --ap-accent-muted: #7cbccb;
+  --ap-accent-rgb: 11, 124, 150;
+  --ap-on-accent: #ffffff;
+  --ap-accent-on-dark: #5ad6ef; /* her zaman koyu olan navbar/hero üzerinde */
+
+  /* Anlamsal durumlar (bildirim, rozet, olay akışı) */
+  --ap-success: #13795b;
+  --ap-success-soft: #e2f4ec;
+  --ap-success-rgb: 19, 121, 91;
+  --ap-danger: #c42b3a;
+  --ap-danger-soft: #fdecee;
+  --ap-danger-border: #f3c1c7;
+  --ap-danger-rgb: 196, 43, 58;
+  --ap-warning: #a15c00;        /* metin olarak okunur kehribar */
+  --ap-warning-fill: #e8a317;
+  --ap-warning-soft: #fdf3dc;
+  --ap-warning-rgb: 232, 163, 23;
+  --ap-info: #1f6fb8;
+  --ap-info-soft: #e5f0fa;
+  --ap-highlight: #fff6bf;      /* yeni gelen olay parlaması */
+
+  /* Gölgeler (mavi-gri tonlu, yumuşak) */
+  --ap-shadow-rgb: 18, 28, 48;
+  --ap-shadow-sm: 0 1px 2px rgba(var(--ap-shadow-rgb), 0.05);
+  --ap-card-shadow: 0 1px 2px rgba(var(--ap-shadow-rgb), 0.04), 0 6px 20px rgba(var(--ap-shadow-rgb), 0.06);
+  --ap-card-shadow-hover: 0 4px 10px rgba(var(--ap-shadow-rgb), 0.06), 0 14px 32px rgba(var(--ap-shadow-rgb), 0.1);
+  --ap-shadow-lg: 0 18px 40px -18px rgba(var(--ap-shadow-rgb), 0.45);
+
+  /* Her iki modda da koyu kalan "komuta" yüzeyleri (navbar, vitrin, giriş yan paneli) */
+  --ap-chrome-1: #0e1626;
+  --ap-chrome-2: #16223a;
+  --ap-chrome-3: #22314f;
+  --ap-chrome-text: rgba(255, 255, 255, 0.8);
+
+  /* ---------- 3) Park yeri durumları ----------
+     Okabe–Ito tabanlı, renk körlüğüne dayanıklı palet. Renk TEK işaret değildir:
+       boş      → yeşil-turkuaz, "P" harfi, düz dolgu
+       dolu     → turuncu-kırmızı, araç silueti, düz dolgu
+       engelli  → mavi, ♿ simgesi, çift kenarlık
+       rezerve  → kehribar, "R" harfi, çapraz çizgi deseni
+       abone    → mor, ★ simgesi, nokta deseni (backend'de henüz yok; token hazır)
+       kapalı   → gri, X işareti, tarama deseni
+     -fg: dolgu üzerindeki yazı/simge rengi, -soft: açık zemin, -line: kenarlık */
+  --ap-slot-free: #12866a;          /* beyaz yazı 4.5:1 */
+  --ap-slot-free-text: #0c6650;     /* açık zemin üzerinde metin */
+  --ap-slot-free-fg: #ffffff;
+  --ap-slot-free-soft: #dff3ec;
+  --ap-slot-occupied: #a8401a;      /* boştan daha koyu: renk görmeyen için parlaklık farkı */
+  --ap-slot-occupied-text: #94360f;
+  --ap-slot-occupied-fg: #ffffff;
+  --ap-slot-occupied-soft: #fbe6dc;
+  --ap-slot-disabled: #0b67a8;
+  --ap-slot-disabled-fg: #ffffff;
+  --ap-slot-disabled-soft: #d6e8f7;
+  --ap-slot-disabled-line: #08528a;
+  --ap-slot-disabled-text: #08528a;
+  --ap-slot-reserved: #e3a21a;
+  --ap-slot-reserved-fg: #3a2600;
+  --ap-slot-reserved-stripe: rgba(58, 38, 0, 0.22);
+  --ap-slot-reserved-soft: #fcf0d4;
+  --ap-slot-reserved-text: #8a4f00;
+  --ap-slot-subscriber: #8a4fbf;
+  --ap-slot-subscriber-fg: #ffffff;
+  --ap-slot-subscriber-soft: #efe4f8;
+  --ap-slot-subscriber-text: #6d3a9c;
+  --ap-slot-inactive: #c9ced8;
+  --ap-slot-inactive-line: #9aa3b2;
+  --ap-slot-inactive-fg: #3d4657;
+  --ap-slot-outline: rgba(255, 255, 255, 0.9);
+  --ap-slot-focus: #172033;
+  --ap-slot-violation: #c42b3a;
+
+  /* Kroki (SVG) yüzeyleri */
+  --ap-map-ground: #e9edf3;
+  --ap-map-ground-dot: #dfe4ec;
+  --ap-map-road: #4a5568;
+  --ap-map-road-line: #f5f7fa;
+  --ap-map-road-text: #e6eaf0;
+  --ap-map-building: #e3e7ee;
+  --ap-map-building-line: #9aa3b2;
+  --ap-map-elevator-bg: #f3f5f9;
+  --ap-map-elevator: #3d4657;
+  --ap-map-green: #c6efd6;
+  --ap-map-green-line: #8fd9ac;
+  --ap-map-tree: #52c27e;
+  --ap-map-tree-line: #34a866;
+  --ap-map-green-text: #17603a;
+  --ap-map-label: #3d4657;
+  --ap-map-zone: rgba(255, 255, 255, 0.35);
+  --ap-map-entry: #13795b;
+  --ap-map-exit: #c42b3a;
+  --ap-office-sky: #a9d6f5;
+
+  /* Harita işaretçileri (Leaflet) */
+  --ap-pin-free: #12866a;
+  --ap-pin-low: #d9822b;
+  --ap-pin-full: #c42b3a;
+  --ap-route: #1f56d6;
+}
+
+/* ---------- 2+3) Koyu mod ---------- */
+[data-bs-theme='dark'] {
+  color-scheme: dark;
+
+  /* Saf siyah değil: lacivert-grafit; yüzeyler basamaklı açılır */
+  --ap-bg: #0c1220;
+  --ap-surface: #131b2c;
+  --ap-surface-2: #182236;
+  --ap-surface-3: #1e2a40;
+  --ap-surface-inverse: #070b14;
+
+  /* Metin (surface üzerinde: text 14.1, secondary 9.6, muted 6.0, subtle 3.6) */
+  --ap-text: #e4e9f2;
+  --ap-text-secondary: #c2cad8;
+  --ap-text-muted: #98a3b6;
+  --ap-text-subtle: #6f7b90;
+  --ap-text-inverse: #0c1220;
+
+  --ap-border: #263349;
+  --ap-border-subtle: #1f2a3e;
+  --ap-border-strong: #34445f;
+  --ap-scrollbar: #34445f;
+
+  --ap-brand: #3767dc;          /* beyaz metinle 5.1:1 */
+  --ap-brand-strong: #5a88f2;
+  --ap-brand-muted: #2f4f94;
+  --ap-brand-soft: #182a4d;
+  --ap-brand-rgb: 63, 114, 234;
+  --ap-on-brand: #ffffff;
+
+  --ap-accent: #34c3de;         /* koyu metinle 9:1 */
+  --ap-accent-strong: #5fd4ec;
+  --ap-accent-soft: #0f2e3a;
+  --ap-accent-soft-2: #134252;
+  --ap-accent-muted: #2a7f91;
+  --ap-accent-rgb: 52, 195, 222;
+  --ap-on-accent: #04202a;
+  --ap-accent-on-dark: #5fd4ec;
+
+  --ap-success: #3cc597;
+  --ap-success-soft: #10302a;
+  --ap-success-rgb: 60, 197, 151;
+  --ap-danger: #f0717d;
+  --ap-danger-soft: #3a161d;
+  --ap-danger-border: #6b2a34;
+  --ap-danger-rgb: 240, 113, 125;
+  --ap-warning: #f2bd4e;
+  --ap-warning-fill: #e8a317;
+  --ap-warning-soft: #36290f;
+  --ap-warning-rgb: 242, 189, 78;
+  --ap-info: #6eaef0;
+  --ap-info-soft: #13263f;
+  --ap-highlight: #3a3415;
+
+  --ap-shadow-rgb: 0, 0, 0;
+  --ap-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --ap-card-shadow: 0 0 0 1px var(--ap-border-subtle), 0 6px 20px rgba(0, 0, 0, 0.28);
+  --ap-card-shadow-hover: 0 0 0 1px var(--ap-border), 0 14px 32px rgba(0, 0, 0, 0.4);
+  --ap-shadow-lg: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+
+  --ap-chrome-1: #080d18;
+  --ap-chrome-2: #0f1728;
+  --ap-chrome-3: #1a2740;
+
+  /* Park yeri durumları — koyu zeminde biraz daha açık, aynı ton ailesi */
+  --ap-slot-free: #12866a;
+  --ap-slot-free-text: #4fd1a8;
+  --ap-slot-free-soft: #10302a;
+  --ap-slot-occupied: #c24e1e;
+  --ap-slot-occupied-text: #f29a6c;
+  --ap-slot-occupied-soft: #3a2015;
+  --ap-slot-disabled: #2276b8;
+  --ap-slot-disabled-text: #86bff0;
+  --ap-slot-disabled-soft: #16304a;
+  --ap-slot-disabled-line: #8cc4f0;
+  --ap-slot-reserved: #e8ad2c;
+  --ap-slot-reserved-soft: #36290f;
+  --ap-slot-reserved-text: #f2bd4e;
+  --ap-slot-subscriber: #a46fd6;
+  --ap-slot-subscriber-soft: #2b1d3d;
+  --ap-slot-subscriber-text: #c9a3ec;
+  --ap-slot-inactive: #3a4558;
+  --ap-slot-inactive-line: #56627a;
+  --ap-slot-inactive-fg: #c2cad8;
+  --ap-slot-outline: rgba(12, 18, 32, 0.9);
+  --ap-slot-focus: #ffffff;
+  --ap-slot-violation: #f0717d;
+
+  --ap-map-ground: #161f31;
+  --ap-map-ground-dot: #1b2539;
+  --ap-map-road: #2a3549;
+  --ap-map-road-line: #8793a8;
+  --ap-map-road-text: #c2cad8;
+  --ap-map-building: #1e2a40;
+  --ap-map-building-line: #3d4c66;
+  --ap-map-elevator-bg: #1e2a40;
+  --ap-map-elevator: #c2cad8;
+  --ap-map-green: #173628;
+  --ap-map-green-line: #23523a;
+  --ap-map-tree: #2f8a58;
+  --ap-map-tree-line: #3fa56c;
+  --ap-map-green-text: #8fd9ac;
+  --ap-map-label: #c2cad8;
+  --ap-map-zone: rgba(255, 255, 255, 0.04);
+  --ap-map-entry: #3cc597;
+  --ap-map-exit: #f0717d;
+  --ap-office-sky: #2a4a73;
+
+  --ap-pin-free: #12866a;
+  --ap-pin-low: #d9822b;
+  --ap-pin-full: #d94452;
+  --ap-route: #5a88f2;
+}
+
+/* ---------- 4) Bootstrap köprüsü ---------- */
+:root,
+[data-bs-theme='light'],
+[data-bs-theme='dark'] {
+  --bs-font-sans-serif: var(--ap-font-sans);
+  --bs-font-monospace: var(--ap-font-mono);
+  --bs-body-bg: var(--ap-surface);
+  --bs-body-color: var(--ap-text);
+  --bs-emphasis-color: var(--ap-text);
+  --bs-secondary-color: var(--ap-text-muted);
+  --bs-tertiary-color: var(--ap-text-subtle);
+  --bs-secondary-bg: var(--ap-surface-3);
+  --bs-tertiary-bg: var(--ap-surface-2);
+  --bs-border-color: var(--ap-border);
+  --bs-border-color-translucent: var(--ap-border);
+  --bs-heading-color: var(--ap-text);
+
+  --bs-primary: var(--ap-brand);
+  --bs-primary-rgb: var(--ap-brand-rgb);
+  --bs-primary-text-emphasis: var(--ap-brand-strong);
+  --bs-primary-bg-subtle: var(--ap-brand-soft);
+  --bs-link-color: var(--ap-brand);
+  --bs-link-color-rgb: var(--ap-brand-rgb);
+  --bs-link-hover-color: var(--ap-accent);
+  --bs-link-hover-color-rgb: var(--ap-accent-rgb);
+  --bs-success-rgb: var(--ap-success-rgb);
+  --bs-danger-rgb: var(--ap-danger-rgb);
+  --bs-warning-rgb: var(--ap-warning-rgb);
+  --bs-success-text-emphasis: var(--ap-success);
+  --bs-danger-text-emphasis: var(--ap-danger);
+  --bs-warning-text-emphasis: var(--ap-warning);
+  --bs-success-bg-subtle: var(--ap-success-soft);
+  --bs-danger-bg-subtle: var(--ap-danger-soft);
+  --bs-warning-bg-subtle: var(--ap-warning-soft);
+  --bs-info-bg-subtle: var(--ap-info-soft);
+
+  --bs-border-radius-sm: var(--ap-radius-xs);
+  --bs-border-radius: var(--ap-radius-sm);
+  --bs-border-radius-lg: var(--ap-radius-md);
+  --bs-border-radius-xl: var(--ap-radius-lg);
+  --bs-focus-ring-color: rgba(var(--ap-accent-rgb), 0.3);
+}

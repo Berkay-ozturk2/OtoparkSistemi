@@ -78,10 +78,12 @@ class AgentManager:
                 full_report_seconds=float(cfg.get("fullReportSeconds", s.OCCUPANCY_FULL_REPORT_SECONDS)),
                 vehicle_conf=float(cfg.get("vehicleConfidence", s.VEHICLE_CONFIDENCE)),
                 footprint=float(cfg.get("footprint", s.OCCUPANCY_FOOTPRINT)),
+                detector=str(cfg.get("detector", "yolo")),
                 target_fps=float(cfg.get("fps", 1)), **common)
         raise ValueError(f"Bilinmeyen ajan türü: {cfg.get('type')} (Gate | Occupancy)")
 
     def load(self) -> None:
+        log.info("Kamera yapılandırması: %s", self.settings.cameras_file)
         for cfg in load_camera_config(self.settings.cameras_file):
             try:
                 agent = self.build_agent(cfg)
@@ -151,6 +153,28 @@ class AgentManager:
                 log.info("[%s] aynı kamerayı (%s) kullandığı için durduruldu; şimdi %s çalışıyor",
                          other.id, agent.source, agent.id)
                 other.stop()
+
+    def assign(self, agent_id: str, lot_code: str, layout=None) -> Optional[BaseCameraAgent]:
+        """Ajanı başka bir otoparka (doluluk ajanında: başka bir krokiye/kata) bağlar.
+        Çalışan ajan durdurulup yeni ayarla yeniden başlatılır. Değişiklik servis yeniden
+        başlayana kadar geçerlidir (kalıcı ayar için cameras.yaml)."""
+        agent = self.agents.get(agent_id)
+        if agent is None:
+            return None
+        was_running = agent.running
+        if was_running:
+            agent.stop()
+        if isinstance(agent, OccupancyAgent):
+            if layout is None:
+                raise ValueError("Doluluk ajanı için cep yerleşimi (layout) gerekli")
+            agent.set_layout(layout.path, layout.id, layout.lot_code)
+        else:
+            agent.lot_code = (lot_code or "GAZI").upper()
+        log.info("[%s] otopark ataması: %s%s", agent.id, agent.lot_code,
+                 f" / {layout.id}" if layout is not None and isinstance(agent, OccupancyAgent) else "")
+        if was_running:
+            self.start(agent.id)
+        return agent
 
     def stop(self, agent_id: str) -> Optional[BaseCameraAgent]:
         agent = self.agents.get(agent_id)

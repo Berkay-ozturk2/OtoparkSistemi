@@ -80,7 +80,7 @@ public class OperatorController(
     {
         limit = Math.Clamp(limit, 1, 500);
         var lotFilter = await parking.ResolveOptionalLotAsync(lot, ct);
-        var query = db.GateEvents.AsNoTracking().AsQueryable();
+        var query = db.GateEvents.AsNoTracking().Include(e => e.Session).ThenInclude(x => x!.Zone).AsQueryable();
         if (lotFilter != null)
         {
             var code = lotFilter.Code;

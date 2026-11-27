@@ -58,6 +58,10 @@ Modüllerin ekip üyelerine dağılımı ve use-case eşlemesi: **[docs/AJANLAR.
 | Sürücü | surucu@otopark.local | Surucu123! |
 
 ### 5. Kamerasız demo
+Ayrıntılı adımlar: **[docs/DEMO_TEST_REHBERI.md](docs/DEMO_TEST_REHBERI.md)** (demo videoları, slot çizimi, doğrulamalı senaryo).
+
+- `scripts\6_demo_baslat.bat` → sentetik videolarla demo kameraları (gerçek YOLO + OCR, doluluk ve harita).
+- `scripts\7_demo_senaryo.bat` → adım adım, doğrulamalı uçtan uca senaryo (26 kontrol).
 - `scripts\3_simulator.bat` → sahte giriş/çıkış ve doluluk olayları üretir; operatör ekranı canlı akar,
   düşük güvenli okumalar Onay Kuyruğu'na düşer.
 - Yönetici › Panel › **Demo verisi üret** → son 30 güne ait örnek veriler (raporlar dolu görünür).

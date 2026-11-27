@@ -32,7 +32,92 @@ public static class SchemaGuard
         }
 
         await db.Database.EnsureCreatedAsync(ct);
+        await AddMissingColumnsAsync(db, logger, ct);
+        await CreateMissingTablesAsync(db, logger, ct);
         await DbSeeder.SeedAsync(db, ct);
+    }
+
+    /// <summary>
+    /// Veri SİLMEDEN eklenebilen yeni sütunlar. EnsureCreated var olan tabloya sütun eklemediği için
+    /// sonradan eklenen alanlar burada ALTER TABLE ile eklenir (ör. otopark konumu — yol tarifi özelliği).
+    /// Sütun zaten varsa hiçbir şey yapılmaz.
+    /// </summary>
+    public static async Task AddMissingColumnsAsync(AppDbContext db, ILogger logger, CancellationToken ct = default)
+    {
+        var columns = new[] { ("ParkingLots", "Latitude"), ("ParkingLots", "Longitude") };
+        foreach (var (table, column) in columns)
+        {
+            if (await ColumnExistsAsync(db, table, column, ct)) continue;
+            var type = db.Database.IsSqlite() ? "REAL" : "double precision";
+            // Tablo/sütun adları sabit listeden gelir (kullanıcı girdisi değildir)
+#pragma warning disable EF1002
+            await db.Database.ExecuteSqlRawAsync($"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {type} NULL", ct);
+#pragma warning restore EF1002
+            logger.LogInformation("Veritabanına sütun eklendi: {Table}.{Column} (veriler korundu)", table, column);
+        }
+    }
+
+    /// <summary>Sonradan eklenen, veri silmeden oluşturulabilen tablolar.</summary>
+    public static readonly string[] AddableTables = ["Subscriptions"];
+
+    /// <summary>
+    /// EnsureCreated var olan veritabanına yeni tablo eklemez. Eksik tablolar, EF'in bu sağlayıcı için ürettiği
+    /// oluşturma betiğinden yalnızca o tabloya ait CREATE TABLE / CREATE INDEX ifadeleri çalıştırılarak eklenir
+    /// (şema sürümü artırılmaz, mevcut veri korunur).
+    /// </summary>
+    public static async Task CreateMissingTablesAsync(AppDbContext db, ILogger logger, CancellationToken ct = default)
+    {
+        string? script = null;
+        foreach (var table in AddableTables)
+        {
+            if (await TableExistsAsync(db, table, ct)) continue;
+            script ??= db.Database.GenerateCreateScript();
+            var quoted = $"\"{table}\"";
+            var statements = script
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(s =>
+                    s.StartsWith($"CREATE TABLE {quoted}", StringComparison.Ordinal) ||
+                    (s.StartsWith("CREATE", StringComparison.Ordinal) && s.Contains("INDEX", StringComparison.Ordinal) &&
+                     s.Contains($" ON {quoted}", StringComparison.Ordinal)))
+                .ToList();
+            if (statements.Count == 0)
+            {
+                logger.LogWarning("{Table} tablosu için oluşturma ifadesi bulunamadı.", table);
+                continue;
+            }
+            // İfadeler EF modelinden üretilir (kullanıcı girdisi değildir)
+#pragma warning disable EF1002
+            foreach (var sql in statements)
+                await db.Database.ExecuteSqlRawAsync(sql, ct);
+#pragma warning restore EF1002
+            logger.LogInformation("Veritabanına tablo eklendi: {Table} (veriler korundu)", table);
+        }
+    }
+
+    public static async Task<bool> TableExistsAsync(AppDbContext db, string table, CancellationToken ct = default)
+    {
+#pragma warning disable EF1002
+        var sql = db.Database.IsSqlite()
+            ? $"SELECT COUNT(*) AS \"Value\" FROM sqlite_master WHERE type = 'table' AND name = '{table}'"
+            : $"SELECT COUNT(*)::int AS \"Value\" FROM information_schema.tables WHERE table_name = '{table}'";
+        var count = await db.Database.SqlQueryRaw<int>(sql).SingleAsync(ct);
+#pragma warning restore EF1002
+        return count > 0;
+    }
+
+    /// <summary>
+    /// Sütun var mı? Şema kataloğundan bakılır. (Not: SQLite'ta SELECT "YokSutun" hata VERMEZ; bilinmeyen
+    /// çift tırnaklı ad metin sabiti sayılır. Bu yüzden deneme-sorgusu yerine katalog kullanılır.)
+    /// </summary>
+    public static async Task<bool> ColumnExistsAsync(AppDbContext db, string table, string column, CancellationToken ct = default)
+    {
+#pragma warning disable EF1002
+        var sql = db.Database.IsSqlite()
+            ? $"SELECT COUNT(*) AS \"Value\" FROM pragma_table_info('{table}') WHERE name = '{column}'"
+            : $"SELECT COUNT(*)::int AS \"Value\" FROM information_schema.columns WHERE table_name = '{table}' AND column_name = '{column}'";
+        var count = await db.Database.SqlQueryRaw<int>(sql).SingleAsync(ct);
+#pragma warning restore EF1002
+        return count > 0;
     }
 
     /// <summary>

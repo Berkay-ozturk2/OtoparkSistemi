@@ -116,6 +116,8 @@ public record ParkingLotDto(
     List<FloorDto> Floors,
     List<MapDecorDto> Decor,
     bool IsActive,
+    double? Latitude = null,
+    double? Longitude = null,
     ParkingSiteReferenceDto? SiteReference = null);
 
 /// <summary>/api/parking/lots öğesi. FreeSlots = normal araçlar için boş (Standard) cep sayısı.</summary>
@@ -134,13 +136,16 @@ public record LotSummaryDto(
     bool IsActive,
     int MapWidth,
     int MapHeight,
+    double? Latitude = null,
+    double? Longitude = null,
     ParkingSiteReferenceDto? SiteReference = null);
 
 public record LayoutZoneDto(int Id, string Code, string Name, int Floor);
 
 public record LotLayoutDto(ParkingLotDto Lot, List<LayoutZoneDto> Zones, List<SlotDto> Slots);
 
-public record UpdateLotRequest(string? Name, string? Address, string? Description, bool? IsActive);
+public record UpdateLotRequest(string? Name, string? Address, string? Description, bool? IsActive,
+    double? Latitude = null, double? Longitude = null);
 
 public record UpdateSlotRequest(SlotType? Type, bool? IsActive);
 
@@ -320,11 +325,13 @@ public record GateEventDto(
     bool IsManual,
     DateTime CreatedAt,
     string? LotCode,
-    bool IsDisabledPermit)
+    bool IsDisabledPermit,
+    string? ZoneCode = null)
 {
+    /// <summary>ZoneCode: girişte önerilen bölge; yoksa oturumun bölgesi (Session.Zone yüklenmişse).</summary>
     public static GateEventDto From(GateEvent e) =>
         new(e.Id, e.CameraId, e.Gate, e.Plate, e.Confidence, e.Decision, e.Message, e.IsManual, e.CreatedAt,
-            e.LotCode, e.IsDisabledPermit);
+            e.LotCode, e.IsDisabledPermit, e.SuggestedZone ?? e.Session?.Zone?.Code);
 }
 
 /// <summary>SignalR "GateEvent" yükü: GateEvent + önerilen bölge + bariyer durumu.</summary>
@@ -457,3 +464,62 @@ public record RevenueReportDto(
     decimal AveragePerSession,
     List<RevenueSeriesDto> Series,
     List<RevenueByMethodDto> ByMethod);
+
+// ---------- Abonelikler ----------
+
+/// <summary>Satıştaki paket: ücret ve aylık karşılığı. SavingPercent: aylığa göre yıllık indirim oranı.</summary>
+public record SubscriptionPlanDto(
+    SubscriptionPlan Plan,
+    string Name,
+    int Months,
+    decimal Price,
+    decimal MonthlyEquivalent,
+    int SavingPercent);
+
+/// <summary>IsCurrent: onaylı ve bugün başlangıç–bitiş aralığında. IsExpired: onaylı ama bitişi geçmiş.</summary>
+public record SubscriptionDto(
+    int Id,
+    string Plate,
+    string HolderName,
+    string? Phone,
+    int? UserId,
+    string? UserEmail,
+    string LotCode,
+    string LotName,
+    SubscriptionPlan Plan,
+    decimal Price,
+    SubscriptionStatus Status,
+    DateTime StartDate,
+    DateTime? EndDate,
+    string? Note,
+    DateTime CreatedAt,
+    DateTime? ReviewedAt,
+    string? ReviewedBy,
+    bool IsCurrent,
+    bool IsExpired);
+
+public record CreateSubscriptionRequest(
+    string? Plate,
+    string? LotCode,
+    SubscriptionPlan? Plan,
+    string? HolderName,
+    string? Phone,
+    DateTime? StartDate);
+
+/// <summary>Yönetici: Active (onay), Rejected (ret, gerekçe zorunlu), Cancelled (iptal).</summary>
+public record UpdateSubscriptionRequest(SubscriptionStatus? Status, string? Note);
+
+public record SubscriptionReportMonthDto(int Month, int NewMonthly, int NewYearly, decimal Revenue);
+
+/// <summary>Bir yılın aylık kırılımı + şu anki abone sayıları.</summary>
+public record SubscriptionReportDto(
+    int Year,
+    int NewMonthly,
+    int NewYearly,
+    decimal Revenue,
+    int ActiveNow,
+    int ActiveMonthly,
+    int ActiveYearly,
+    int Pending,
+    int ExpiringSoon,
+    List<SubscriptionReportMonthDto> Months);
