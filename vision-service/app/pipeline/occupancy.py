@@ -22,6 +22,7 @@ Box = Sequence[float]  # x1, y1, x2, y2
 class Slot:
     code: str
     polygon: List[Tuple[float, float]]
+    disabled: bool = False   # engelli cebi (yalnızca örnek görüntü çiziminde işaretlenir)
 
 
 @dataclass
@@ -29,6 +30,11 @@ class SlotLayout:
     image_width: int
     image_height: int
     slots: List[Slot] = field(default_factory=list)
+    # Kamera görüş alanı bilgisi (isteğe bağlı): hangi otoparkın hangi katı/bölümü
+    layout_id: Optional[str] = None
+    lot_code: Optional[str] = None
+    name: Optional[str] = None
+    floor: Optional[int] = None
 
     def scaled(self, width: int, height: int) -> "SlotLayout":
         """Poligonları gerçek görüntü boyutuna ölçekler."""
@@ -39,15 +45,30 @@ class SlotLayout:
         return SlotLayout(
             image_width=width,
             image_height=height,
-            slots=[Slot(s.code, [(x * sx, y * sy) for x, y in s.polygon]) for s in self.slots],
+            slots=[Slot(s.code, [(x * sx, y * sy) for x, y in s.polygon], s.disabled) for s in self.slots],
+            layout_id=self.layout_id, lot_code=self.lot_code, name=self.name, floor=self.floor,
         )
 
     def to_dict(self) -> dict:
-        return {
+        data: dict = {}
+        if self.layout_id:
+            data["id"] = self.layout_id
+        if self.lot_code:
+            data["lotCode"] = self.lot_code
+        if self.name:
+            data["name"] = self.name
+        if self.floor is not None:
+            data["floor"] = self.floor
+        data.update({
             "imageWidth": self.image_width,
             "imageHeight": self.image_height,
-            "slots": [{"code": s.code, "polygon": [[round(x, 1), round(y, 1)] for x, y in s.polygon]} for s in self.slots],
-        }
+            "slots": [
+                {"code": s.code, "polygon": [[round(x, 1), round(y, 1)] for x, y in s.polygon],
+                 **({"disabled": True} if s.disabled else {})}
+                for s in self.slots
+            ],
+        })
+        return data
 
     @staticmethod
     def from_dict(data: dict) -> "SlotLayout":
@@ -55,8 +76,15 @@ class SlotLayout:
         for item in data.get("slots", []):
             poly = [(float(p[0]), float(p[1])) for p in item.get("polygon", [])]
             if len(poly) >= 3 and item.get("code"):
-                slots.append(Slot(str(item["code"]).upper(), poly))
-        return SlotLayout(int(data.get("imageWidth", 1280)), int(data.get("imageHeight", 720)), slots)
+                slots.append(Slot(str(item["code"]).upper(), poly, bool(item.get("disabled", False))))
+        floor = data.get("floor")
+        return SlotLayout(
+            int(data.get("imageWidth", 1280)), int(data.get("imageHeight", 720)), slots,
+            layout_id=data.get("id") or None,
+            lot_code=(str(data["lotCode"]).upper() if data.get("lotCode") else None),
+            name=data.get("name") or None,
+            floor=int(floor) if isinstance(floor, (int, float)) else None,
+        )
 
 
 def load_layout(path: Path) -> SlotLayout:

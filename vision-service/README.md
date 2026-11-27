@@ -93,8 +93,11 @@ uvicorn app.main:app --port 8000
 | POST | `/agents/{id}/start`, `/agents/{id}/stop` | ajanı başlat/durdur |
 | GET | `/agents/{id}/snapshot` | son işlenmiş kare (JPEG, yalnızca bellekte) |
 | POST | `/recognize?gate=Entry&forward=false[&cameraId=web-test]` | multipart `file` → plaka sonuçları + çizimli görüntü |
-| POST | `/occupancy/analyze?forward=false[&cameraId=web-test]` | multipart `file` → cep durumları + çizimli görüntü |
-| GET | `/config/slots` | cep poligonları |
+| POST | `/agents/{id}/assign?lot=AVM` · `?layout=MERKEZ-K1` | kamerayı başka otoparka / krokiye bağlar (servis yeniden başlayana kadar) |
+| POST | `/occupancy/analyze?layout=AVM&detector=yolo&forward=false[&cameraId=web-test]` | multipart `file` → cep durumları + çizimli görüntü (`detector=color`: sentetik örnek) |
+| GET | `/occupancy/sample?layout=AVM&ratio=0.5[&seed=7]` | seçilen kroki için sentetik üstten görünüş görüntü (JPEG) |
+| GET | `/config/layouts[?lot=MERKEZ]` | tanımlı krokiler / kamera görüş alanları |
+| GET | `/config/slots[?layout=AVM]` | cep poligonları (vars. GAZI) |
 
 `annotatedImageBase64` ve `imageBase64` alanları **öneksiz** base64 JPEG'dir; tarayıcıda
 `data:image/jpeg;base64,` + değer şeklinde gösterilir. Hatalar `{ "message": "..." }` biçimindedir.
@@ -170,6 +173,34 @@ Sol tık: nokta · Sağ tık/Enter: cebi kapat (kod sırayla A01, A02 …) · `c
 `u`: geri al · `s`: kaydet · `q`: çık. Poligonlar farklı çözünürlükteki karelere otomatik ölçeklenir.
 
 Eğik açılı kamerada araç kutusu komşu cebe taşar; `.env` → `OCCUPANCY_FOOTPRINT=0.5` (kutunun yalnızca alt yarısı) deneyin.
+
+### Diğer otoparkların krokileri (`config/slots/*.json`)
+
+Her otopark — çok katlıysa her kat — ayrı bir doluluk kamerası görüş alanıdır:
+
+| Kimlik | Otopark | Cep |
+|---|---|---|
+| `GAZI` | Gazi Teknoloji Fakültesi (`config/slots.json`, gerçek kamera açısı) | 28 |
+| `MERKEZ-B1`, `MERKEZ-Z`, `MERKEZ-K1` | Merkez Katlı Otopark (kat başına) | 32 + 32 + 32 |
+| `AVM` | Çarşı AVM | 144 |
+| `HASTANE` | Şehir Hastanesi | 60 |
+
+GAZI dışındakiler backend krokisinden **üstten görünüş** olarak üretilmiştir (cep kodları backend ile aynı).
+Kroki değişirse yeniden üretin (sistem açıkken):
+
+```bat
+python tools\kroki_to_slots.py                 :: tüm otoparklar (GAZI hariç)
+python tools\kroki_to_slots.py --lots AVM       :: yalnızca AVM
+```
+
+Gerçek bir kamera kurulduğunda yerleşimi kameranın görüntüsü üzerinde yeniden çizin (kodlar aynı kalmalı):
+`python tools\slot_editor.py --image kare.jpg --load config\slots\AVM.json --out config\slots\AVM.json`.
+Dosyada `lotCode` yoksa dosya adının ilk parçası otopark kodu sayılır (`HASTANE-ACIL.json` → HASTANE).
+
+**Kamera Testi ekranında** kroki seçilir; fotoğraf yoksa *Örnek görüntü oluştur* ile seçilen krokinin sentetik
+görüntüsü üretilip renk dedektörüyle analiz edilir. Kamera Ajanları tablosundaki *Otopark / Kroki* sütunundan
+doluluk kamerası başka bir krokiye/kata, giriş-çıkış kameraları başka bir otoparka bağlanabilir (kalıcı ayar için
+`config/cameras.yaml` → `lotCode` ve `slotsFile: config/slots/AVM.json`).
 
 ## 6. Simülatör — kamera/ML olmadan canlı demo
 

@@ -87,6 +87,7 @@ class Settings:
     # Dosyalar
     CAMERAS_FILE: str = "config/cameras.yaml"
     SLOTS_FILE: str = "config/slots.json"
+    SLOTS_DIR: str = "config/slots"         # diğer otoparkların / katların cep yerleşimleri
 
     # Diğer
     HEARTBEAT_INTERVAL: float = 10.0
@@ -142,6 +143,10 @@ class Settings:
     @property
     def slots_file(self) -> Path:
         return self.path(self.SLOTS_FILE)
+
+    @property
+    def slots_dir(self) -> Path:
+        return self.path(self.SLOTS_DIR)
 
     @property
     def cors_origins(self) -> List[str]:

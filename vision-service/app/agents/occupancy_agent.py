@@ -45,9 +45,32 @@ class OccupancyAgent(BaseCameraAgent):
             from app.pipeline.demo_detector import ColorVehicleDetector
             self._demo_detector = ColorVehicleDetector()
         self.layout: Optional[SlotLayout] = None
+        self.layout_id: Optional[str] = self._peek_layout_id(self.slots_file)
         self.smoother = SlotSmoother(smoothing)
         self._last_full: Optional[float] = None  # None: ilk karede tam rapor gönder
         self.occupied_count = 0
+
+    @staticmethod
+    def _peek_layout_id(path: Path) -> Optional[str]:
+        try:
+            meta = load_layout(path)
+        except Exception:
+            return None
+        return (meta.layout_id or ("GAZI" if path.name == "slots.json" else path.stem)).upper()
+
+    def set_layout(self, slots_file: Path, layout_id: str, lot_code: str) -> None:
+        """Kameranın izlediği krokiyi (cep yerleşimini) değiştirir. Ajan çalışıyorsa çağıran durdurup
+        yeniden başlatmalıdır (AgentManager.assign)."""
+        self.slots_file = Path(slots_file)
+        self.layout_id = layout_id
+        self.lot_code = (lot_code or "GAZI").upper()
+        self.layout = None
+        self.occupied_count = 0
+
+    def info(self):
+        data = super().info()
+        data["layout"] = self.layout_id
+        return data
 
     def on_start(self) -> None:
         self.layout = load_layout(self.slots_file)

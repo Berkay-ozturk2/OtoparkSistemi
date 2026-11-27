@@ -26,7 +26,8 @@
 #   sendCrop            : plaka kırpıntısı backend'e gönderilsin mi (KVKK: yalnızca plaka bölgesi)
 #
 # Occupancy alanları:
-#   slotsFile           : cep poligonları (vars. config/slots.json; tools/slot_editor.py ile çizilir)
+#   slotsFile           : cep poligonları (vars. config/slots.json = GAZI; diğer otoparklar/katlar
+#                         config/slots/AVM.json, config/slots/MERKEZ-K1.json ... — tools/kroki_to_slots.py)
 #   threshold           : cep alanının en az bu oranı araçla kaplıysa "dolu" (vars. 0.35)
 #   smoothing           : son N karede çoğunluk (titreme önleme, vars. 5)
 #   fullReportSeconds   : tüm ceplerin periyodik gönderim aralığı (vars. 60 sn)

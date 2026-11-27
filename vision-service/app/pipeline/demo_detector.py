@@ -59,3 +59,17 @@ class ColorVehicleDetector:
                 continue
             out.append(VehicleDetection([float(x), float(y), float(x + bw), float(y + bh)], 0.9, 2))
         return out
+
+    @classmethod
+    def for_layout(cls, layout, image_width: int, image_height: int) -> "ColorVehicleDetector":
+        """Araç büyüklük eşiklerini cep boyutuna göre ayarlar. Çok cepli büyük krokilerde (ör. AVM, 144 cep)
+        sabit oranlar küçük araçları elerdi. `layout` görüntü boyutuna ölçeklenmiş olmalıdır."""
+        areas = []
+        for s in getattr(layout, "slots", []):
+            xs = [p[0] for p in s.polygon]
+            ys = [p[1] for p in s.polygon]
+            areas.append(max(1.0, (max(xs) - min(xs)) * (max(ys) - min(ys))))
+        img = float(max(1, image_width * image_height))
+        if not areas:
+            return cls()
+        return cls(min_area_ratio=0.25 * min(areas) / img, max_area_ratio=min(0.5, 2.5 * max(areas) / img))

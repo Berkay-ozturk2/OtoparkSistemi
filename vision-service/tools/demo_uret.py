@@ -29,13 +29,11 @@ import numpy as np
 
 BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BASE))
+from app.pipeline.sample_scene import ASPHALT, CAR_COLORS, draw_car_top  # noqa: E402,F401 (ortak çizim)
 from app.pipeline.tr_plate import format_display, is_valid, normalize  # noqa: E402
 
 DEFAULT_PLATES = ["34DMO101", "06ENG061", "06DMO202", "35DMO303", "16DMO404", "07DMO505"]
 DISABLED_SLOTS = {"A01", "A02"}           # DbSeeder: GAZI'de girişe en yakın iki engelli cep
-CAR_COLORS = [(40, 40, 220), (220, 90, 30), (30, 170, 40), (0, 200, 230), (200, 40, 160),
-              (230, 160, 0), (60, 120, 250), (150, 60, 220), (20, 140, 255)]   # BGR, doygun renkler
-ASPHALT = (68, 68, 68)
 
 
 # ----------------------------------------------------------------------------- yazı tipi / plaka
@@ -193,22 +191,6 @@ def lot_background(w: int, h: int, slots, disabled: set) -> np.ndarray:
     cv2.putText(bg, "DEMO - Doluluk kamerasi (sentetik, GAZI)", (20, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.8,
                 (255, 255, 255), 2)
     return bg
-
-
-def draw_car_top(frame: np.ndarray, poly: np.ndarray, color, alpha: float = 1.0) -> None:
-    """Cebin İÇİNE üstten görünüşlü araç çizer. alpha<1: araç park ediyor/ayrılıyor (belirip kaybolur);
-    araç hiçbir zaman komşu cebe taşmaz, böylece iki araç tek blok gibi görünmez."""
-    x, y, bw, bh = cv2.boundingRect(poly)
-    cw, ch = int(bw * 0.72), int(bh * 0.80)
-    cx, cy = x + (bw - cw) // 2, y + (bh - ch) // 2
-    roi = frame[cy:cy + ch, cx:cx + cw]
-    car = np.empty_like(roi)
-    car[:] = color
-    # ön/arka cam (koyu) — gövde rengi hâlâ baskın
-    cv2.rectangle(car, (6, int(ch * 0.18)), (cw - 6, int(ch * 0.32)), (60, 45, 35), -1)
-    cv2.rectangle(car, (6, int(ch * 0.72)), (cw - 6, int(ch * 0.82)), (60, 45, 35), -1)
-    a = float(max(0.0, min(1.0, alpha)))
-    frame[cy:cy + ch, cx:cx + cw] = cv2.addWeighted(car, a, roi, 1.0 - a, 0)
 
 
 def build_schedule(codes: Sequence[str], frames: int, fps: int, rng: random.Random) -> Dict[str, List[Tuple[int, int, int]]]:

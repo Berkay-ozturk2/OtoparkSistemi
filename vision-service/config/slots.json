@@ -1,9 +1,13 @@
 {
+  "id": "GAZI",
+  "lotCode": "GAZI",
+  "name": "Gazi Teknoloji Fakültesi Otoparkı (pilot) – doluluk kamerası",
+  "floor": 0,
   "imageWidth": 1280,
   "imageHeight": 720,
   "slots": [
-    {"code": "A01", "polygon": [[45, 60], [155, 60], [155, 240], [45, 240]]},
-    {"code": "A02", "polygon": [[165, 60], [275, 60], [275, 240], [165, 240]]},
+    {"code": "A01", "polygon": [[45, 60], [155, 60], [155, 240], [45, 240]], "disabled": true},
+    {"code": "A02", "polygon": [[165, 60], [275, 60], [275, 240], [165, 240]], "disabled": true},
     {"code": "A03", "polygon": [[285, 60], [395, 60], [395, 240], [285, 240]]},
     {"code": "A04", "polygon": [[405, 60], [515, 60], [515, 240], [405, 240]]},
     {"code": "A05", "polygon": [[525, 60], [635, 60], [635, 240], [525, 240]]},
