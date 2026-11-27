@@ -90,6 +90,7 @@ const OPERATOR_LINKS = [
   { to: '/operator/ihlaller', label: 'İhlaller', icon: 'bi-exclamation-diamond', badgeKey: 'violations' },
   { to: '/operator/manuel-gecis', label: 'Manuel Geçiş', icon: 'bi-sign-turn-right' },
   { to: '/operator/kamera-testi', label: 'Kamera Testi', icon: 'bi-camera-video' },
+  { to: '/operator/ajan-ofisi', label: 'Ajan Ofisi', icon: 'bi-people' },
 ];
 
 const ADMIN_LINKS = [
