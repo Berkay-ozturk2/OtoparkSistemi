@@ -127,8 +127,8 @@ function LayoutOptions({ layouts, lotName }) {
     <optgroup key={g.lot} label={lotName(g.lot)}>
       {g.items.map((l) => (
         <option key={l.id} value={l.id}>
-          {g.items.length > 1 ? `${floorLabel(l.floor)} — ` : ''}
-          {l.slotCount} cep ({l.id})
+          {lotName(g.lot)}
+          {g.items.length > 1 ? ` · ${floorLabel(l.floor)}` : ''} — {l.slotCount} cep
         </option>
       ))}
     </optgroup>
