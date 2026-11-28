@@ -65,10 +65,10 @@ function GateForm({ gate, lotCode, lotName, onDone }) {
   return (
     <div className="card h-100">
       <div className="card-header d-flex align-items-center gap-2">
-        <i className={`bi ${isEntry ? 'bi-box-arrow-in-right' : 'bi-box-arrow-right'} text-accent`} />
+        <i aria-hidden="true" className={`bi ${isEntry ? 'bi-box-arrow-in-right' : 'bi-box-arrow-right'} text-accent`} />
         Manuel {gateLabel(gate)}
         <span className="ms-auto small text-secondary fw-normal text-truncate">
-          <i className="bi bi-buildings me-1" />
+          <i aria-hidden="true" className="bi bi-buildings me-1" />
           {lotName}
         </span>
       </div>
@@ -87,7 +87,7 @@ function GateForm({ gate, lotCode, lotName, onDone }) {
               onChange={(e) => setPlate(e.target.value.toUpperCase())}
             />
             <button type="submit" className={`btn ${isEntry ? 'btn-accent' : 'btn-primary'}`} disabled={busy}>
-              {busy ? <span className="spinner-border spinner-border-sm" /> : <i className={`bi ${isEntry ? 'bi-door-open' : 'bi-door-closed'}`} />}
+              {busy ? <span className="spinner-border spinner-border-sm" /> : <i aria-hidden="true" className={`bi ${isEntry ? 'bi-door-open' : 'bi-door-closed'}`} />}
               <span className="ms-2 d-none d-sm-inline">{isEntry ? 'Giriş Yap' : 'Çıkış Yap'}</span>
             </button>
             <div className="invalid-feedback">{err}</div>
@@ -106,7 +106,7 @@ function GateForm({ gate, lotCode, lotName, onDone }) {
         {result && (
           <div className={`alert alert-${info.variant} mt-3 mb-0`}>
             <div className="fw-semibold">
-              <i className={`bi ${info.icon} me-1`} />
+              <i aria-hidden="true" className={`bi ${info.icon} me-1`} />
               {info.label}
             </div>
             {result.message && <div>{result.message}</div>}
@@ -176,7 +176,7 @@ export default function ManuelGecis() {
         <div className="col-lg-6 col-xxl-4">
           <PermitCheckBox />
           <div className="small text-secondary mt-2 px-1">
-            <i className="bi bi-info-circle me-1" />
+            <i aria-hidden="true" className="bi bi-info-circle me-1" />
             İzinsiz araçlar, otoparkta yalnızca engelli cepleri boşsa giriş alamaz. İzinli araçlara engelli cebi önerilir.
             Belge gişede görüldüyse yönetici &quot;Engelli İzinleri&quot; ekranından doğrudan onaylı izin ekleyebilir.
           </div>
@@ -186,17 +186,17 @@ export default function ManuelGecis() {
       <div className="card">
         <div className="card-header d-flex justify-content-between align-items-center">
           <span>
-            <i className="bi bi-clock-history me-2 text-accent" />
+            <i aria-hidden="true" className="bi bi-clock-history me-2 text-accent" />
             Son manuel geçişler
           </span>
-          <button type="button" className="btn btn-sm btn-light" onClick={loadEvents}>
-            <i className="bi bi-arrow-clockwise" />
+          <button type="button" className="btn btn-sm btn-light" onClick={loadEvents} aria-label="Listeyi yenile" title="Listeyi yenile">
+            <i aria-hidden="true" className="bi bi-arrow-clockwise" />
           </button>
         </div>
         <div className="card-body p-0">
           <ErrorAlert error={error} onRetry={loadEvents} className="m-3" />
           {events.length === 0 && !error ? (
-            <EmptyState icon="bi-sign-turn-right" title="Manuel geçiş kaydı yok" />
+            <EmptyState icon="bi-sign-turn-right" title="Henüz manuel geçiş yok">Yukarıdaki formla yaptığınız girişler ve çıkışlar burada listelenir.</EmptyState>
           ) : (
             <div className="table-responsive">
               <table className="table table-hover">

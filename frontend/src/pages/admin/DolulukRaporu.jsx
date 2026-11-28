@@ -133,11 +133,11 @@ export default function DolulukRaporu() {
         actions={
           <>
             <button type="button" className="btn btn-outline-secondary" onClick={exportCsv} disabled={!hasData}>
-              <i className="bi bi-filetype-csv me-1" />
+              <i aria-hidden="true" className="bi bi-filetype-csv me-1" />
               CSV indir
             </button>
-            <button type="button" className="btn btn-outline-secondary no-print" onClick={() => window.print()} disabled={!hasData}>
-              <i className="bi bi-printer" />
+            <button type="button" className="btn btn-outline-secondary no-print" onClick={() => window.print()} disabled={!hasData} aria-label="Raporu yazdır" title="Raporu yazdır">
+              <i aria-hidden="true" className="bi bi-printer" />
             </button>
           </>
         }
@@ -168,7 +168,7 @@ export default function DolulukRaporu() {
       ) : report && !hasData ? (
         <div className="card">
           <EmptyState icon="bi-bar-chart" title="Bu aralıkta veri yok">
-            Farklı bir tarih aralığı seçin veya Yönetim Paneli&apos;ndeki &quot;Demo verisi üret&quot; ile örnek veri oluşturun.
+            Seçilen tarihlerde giriş kaydı yok. Başka bir aralık seçin ya da Yönetim Paneli&apos;nden demo verisi üretin.
           </EmptyState>
         </div>
       ) : report ? (
@@ -202,7 +202,7 @@ export default function DolulukRaporu() {
 
           <div className="card mb-4">
             <div className="card-header">
-              <i className="bi bi-clock me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-clock me-2 text-accent" />
               Saatlik giriş ve ortalama doluluk
             </div>
             <div className="card-body">
@@ -214,12 +214,12 @@ export default function DolulukRaporu() {
 
           <div className="card">
             <div className="card-header">
-              <i className="bi bi-table me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-table me-2 text-accent" />
               Günlük özet
             </div>
             <div className="card-body p-0">
               {daily.length === 0 ? (
-                <EmptyState icon="bi-table" title="Günlük veri yok" />
+                <EmptyState icon="bi-table" title="Günlük veri yok">Bu aralıkta gün bazında kayıt oluşmamış.</EmptyState>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-hover">

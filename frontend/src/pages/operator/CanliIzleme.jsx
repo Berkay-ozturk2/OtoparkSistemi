@@ -7,7 +7,9 @@ import PermitCheckBox from '../../components/PermitCheckBox';
 import ViolationResolveModal from '../../components/ViolationResolveModal';
 import { useLot } from '../../lot/LotContext';
 import { isSoundOn, playAlert, setSoundOn as storeSound } from '../../utils/sound';
-import ParkingMap from '../../components/ParkingMap';
+import ParkingView from '../../components/ParkingView';
+import { DUR, EASE, dur, gsap } from '../../utils/motion';
+import AnimatedNumber from '../../components/AnimatedNumber';
 import StatCard from '../../components/StatCard';
 import LiveBadge from '../../components/LiveBadge';
 import BarrierIndicator from '../../components/BarrierIndicator';
@@ -61,6 +63,17 @@ export default function CanliIzleme() {
 
   const closeTimers = useRef({});
   const screenRef = useRef(null);
+  const feedRef = useRef(null);
+  const topKey = events[0]?._new ? events[0]._key : null;
+
+  // Yeni plaka okuması: kart yukarıdan kısa ve yumuşak belirir (azaltılmış harekette anında)
+  useEffect(() => {
+    if (!topKey || !feedRef.current) return undefined;
+    const el = feedRef.current.querySelector(`[data-ev-key="${CSS.escape(topKey)}"]`);
+    if (!el) return undefined;
+    const tween = gsap.fromTo(el, { autoAlpha: 0, y: -10, scale: 0.98 }, { autoAlpha: 1, y: 0, scale: 1, duration: dur(DUR.ui), ease: EASE.out, clearProps: 'transform,visibility' });
+    return () => tween.progress(1).kill();
+  }, [topKey]);
 
   // Ses ayarı (yerel depoda); kapalıyken playAlert sessiz kalır
   const beep = useCallback((decision) => playAlert(decision), []);
@@ -210,7 +223,7 @@ export default function CanliIzleme() {
       <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
         <div className="d-flex align-items-center gap-3">
           <div className="page-header-icon">
-            <i className="bi bi-broadcast" />
+            <i aria-hidden="true" className="bi bi-broadcast" />
           </div>
           <div>
             <h1 className="h3 mb-0">Canlı İzleme</h1>
@@ -223,22 +236,24 @@ export default function CanliIzleme() {
           <LotSelector label="Otopark" />
           <LiveBadge status={hubStatus} />
           <button type="button" className={`btn btn-sm ${soundOn ? 'btn-accent' : 'btn-outline-secondary'}`} onClick={toggleSound} title="Yeni olayda sesli uyarı">
-            <i className={`bi ${soundOn ? 'bi-volume-up-fill' : 'bi-volume-mute'} me-1`} />
+            <i aria-hidden="true" className={`bi ${soundOn ? 'bi-volume-up-fill' : 'bi-volume-mute'} me-1`} />
             Ses {soundOn ? 'açık' : 'kapalı'}
           </button>
           <button type="button" className="btn btn-sm btn-outline-secondary" onClick={toggleFullscreen}>
-            <i className={`bi ${isFullscreen ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen'} me-1`} />
+            <i aria-hidden="true" className={`bi ${isFullscreen ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen'} me-1`} />
             {isFullscreen ? 'Küçült' : 'Tam ekran'}
           </button>
           <button
             type="button"
             className="btn btn-sm btn-outline-primary"
+            aria-label="Verileri yenile"
+            title="Verileri yenile"
             onClick={() => {
               reload();
               loadSide();
             }}
           >
-            <i className="bi bi-arrow-clockwise" />
+            <i aria-hidden="true" className="bi bi-arrow-clockwise" />
           </button>
         </div>
       </div>
@@ -271,7 +286,7 @@ export default function CanliIzleme() {
           <StatCard
             icon="bi-pie-chart"
             label="Doluluk"
-            value={summary ? formatPercent(rate) : '—'}
+            value={summary ? <AnimatedNumber value={rate * 100} format={(v) => `%${Math.round(v)}`} /> : '—'}
             sub={summary ? `${summary.occupied}/${summary.total} cep` : null}
             variant="primary"
             size="lg"
@@ -304,7 +319,7 @@ export default function CanliIzleme() {
           <div className="card h-100">
             <div className="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
               <span>
-                <i className="bi bi-map me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-map me-2 text-accent" />
                 Otopark Krokisi
               </span>
               <span className="small text-secondary fw-normal">
@@ -313,21 +328,24 @@ export default function CanliIzleme() {
                     Önerilen: <strong className="text-accent">{recommendation.zoneCode}</strong> ({recommendation.freeSlots} boş) ·{' '}
                   </>
                 ) : null}
-                Cebe tıklayarak durumu el ile düzeltebilirsiniz
+                Cebe tıklayın: ayrıntı, araç atama, durum düzeltme
               </span>
             </div>
             <div className="card-body">
               {loading ? (
                 <Loading text="Kroki yükleniyor…" />
               ) : (
-                <ParkingMap
+                <ParkingView
                   lot={lot}
+                  lotCode={lotCode}
                   slots={slots}
                   zones={zones}
                   recommendedZone={recommendation?.zoneCode}
                   highlightSlot={recommendation?.slotCode}
                   violationSlots={violationCodes}
-                  onSlotClick={setSlotToEdit}
+                  canManage
+                  onOverride={setSlotToEdit}
+                  onSlotsPatched={(code, patch) => setSlots((list) => list.map((s) => (s.code === code ? { ...s, ...patch } : s)))}
                 />
               )}
 
@@ -356,7 +374,7 @@ export default function CanliIzleme() {
               {agents.length > 0 && (
                 <div className="mt-3">
                   <div className="small text-secondary fw-semibold mb-1">
-                    <i className="bi bi-cpu me-1" />
+                    <i aria-hidden="true" className="bi bi-cpu me-1" />
                     Görüntü ajanları
                   </div>
                   <div className="d-flex flex-wrap gap-2">
@@ -365,7 +383,7 @@ export default function CanliIzleme() {
                         <span className={`badge rounded-pill text-bg-${agentStatusVariant(a.status)}`}>{a.status || '?'}</span>
                         <strong>{a.id}</strong>
                         {a.fps != null && <span className="text-secondary">{Number(a.fps).toFixed(1)} fps</span>}
-                        {a.lastError && <i className="bi bi-exclamation-triangle text-danger" />}
+                        {a.lastError && <i aria-hidden="true" className="bi bi-exclamation-triangle text-danger" />}
                       </span>
                     ))}
                   </div>
@@ -380,7 +398,7 @@ export default function CanliIzleme() {
           <div className={`card ${violations.length ? 'border-danger' : ''}`}>
             <div className={`card-header d-flex justify-content-between align-items-center ${violations.length ? 'bg-danger-subtle' : ''}`}>
               <span>
-                <i className={`bi bi-exclamation-diamond me-2 ${violations.length ? 'text-danger' : 'text-accent'}`} />
+                <i aria-hidden="true" className={`bi bi-exclamation-diamond me-2 ${violations.length ? 'text-danger' : 'text-accent'}`} />
                 Engelli Yeri İhlalleri
                 {violations.length > 0 && <span className="badge rounded-pill text-bg-danger ms-2 pulse-badge">{violations.length}</span>}
               </span>
@@ -391,7 +409,7 @@ export default function CanliIzleme() {
             <div className="card-body py-2" style={{ maxHeight: 260, overflowY: 'auto' }}>
               {violations.length === 0 ? (
                 <div className="text-secondary small py-2 text-center">
-                  <i className="bi bi-shield-check text-success me-1" />
+                  <i aria-hidden="true" className="bi bi-shield-check text-success me-1" />
                   Bu otoparkta açık ihlal yok.
                 </div>
               ) : (
@@ -415,7 +433,7 @@ export default function CanliIzleme() {
                           setViolationToResolve(v);
                         }}
                       >
-                        <i className="bi bi-check2 me-1" />
+                        <i aria-hidden="true" className="bi bi-check2 me-1" />
                         Çözüldü
                       </button>
                       <button
@@ -426,7 +444,7 @@ export default function CanliIzleme() {
                           setViolationToResolve(v);
                         }}
                       >
-                        <i className="bi bi-bell-slash me-1" />
+                        <i aria-hidden="true" className="bi bi-bell-slash me-1" />
                         Yanlış alarm
                       </button>
                     </div>
@@ -448,7 +466,7 @@ export default function CanliIzleme() {
           <div className="card flex-grow-1">
             <div className="card-header d-flex justify-content-between align-items-center">
               <span>
-                <i className="bi bi-activity me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-activity me-2 text-accent" />
                 Son Geçiş Olayları
                 {newBadge > 0 && (
                   <button type="button" className="badge rounded-pill text-bg-danger ms-2 border-0" onClick={() => setNewBadge(0)} title="Okundu say">
@@ -457,30 +475,30 @@ export default function CanliIzleme() {
                 )}
               </span>
               <Link to="/operator/manuel-gecis" className="btn btn-sm btn-light">
-                <i className="bi bi-sign-turn-right me-1" />
+                <i aria-hidden="true" className="bi bi-sign-turn-right me-1" />
                 Manuel
               </Link>
             </div>
-            <div className="card-body event-feed" onMouseEnter={() => setNewBadge(0)}>
+            <div className="card-body event-feed" ref={feedRef} role="log" aria-live="polite" aria-relevant="additions" aria-label="Son geçiş olayları" onMouseEnter={() => setNewBadge(0)}>
               <ErrorAlert error={eventsError} onRetry={loadSide} />
               {events.length === 0 && !eventsError && (
                 <div className="text-center text-secondary py-4">
-                  <i className="bi bi-hourglass d-block fs-2 mb-2" />
+                  <i aria-hidden="true" className="bi bi-hourglass d-block fs-2 mb-2" />
                   Henüz geçiş olayı yok. Kameralar plaka okudukça burada görünecek.
                 </div>
               )}
               {events.map((ev) => {
                 const info = decisionInfo(ev.decision);
                 return (
-                  <div key={ev._key || ev.id} className={`event-item ev-${ev.decision} ${ev._new ? 'ev-new' : ''}`}>
+                  <div key={ev._key || ev.id} data-ev-key={ev._key || undefined} className={`event-item ev-${ev.decision} ${ev._new ? 'ev-new' : ''}`}>
                     <div className="d-flex align-items-center gap-2 flex-wrap">
                       <span className={`badge text-bg-${ev.gate === 'Exit' ? 'dark' : 'primary'}`}>
-                        <i className={`bi ${ev.gate === 'Exit' ? 'bi-box-arrow-right' : 'bi-box-arrow-in-right'} me-1`} />
+                        <i aria-hidden="true" className={`bi ${ev.gate === 'Exit' ? 'bi-box-arrow-right' : 'bi-box-arrow-in-right'} me-1`} />
                         {gateLabel(ev.gate)}
                       </span>
                       <PlateBadge plate={ev.plate} size="sm" />
                       <span className={`badge text-bg-${info.variant}`}>
-                        <i className={`bi ${info.icon} me-1`} />
+                        <i aria-hidden="true" className={`bi ${info.icon} me-1`} />
                         {info.label}
                       </span>
                       {ev.isManual && <span className="badge text-bg-light border">Manuel</span>}
@@ -562,7 +580,7 @@ export default function CanliIzleme() {
               if (!v && !slotToEdit.hasViolation) return null;
               return (
                 <div className="alert alert-danger py-2 small mb-0 d-flex align-items-center gap-2">
-                  <i className="bi bi-exclamation-triangle-fill" />
+                  <i aria-hidden="true" className="bi bi-exclamation-triangle-fill" />
                   Bu cepte açık engelli yeri ihlali var.
                   {v && (
                     <button

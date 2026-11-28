@@ -307,6 +307,28 @@ public record ManualPlateRequest(string? Plate, string? LotCode = null);
 
 public record SlotOverrideRequest(bool Occupied);
 
+/// <summary>Krokide tıklanan cebin ayrıntısı (görevli/yönetici). Plaka kişisel veri olduğu için herkese açık uçta yoktur.</summary>
+public record SlotDetailDto(
+    int Id,
+    string Code,
+    string LotCode,
+    string ZoneCode,
+    string? ZoneName,
+    int Floor,
+    SlotType Type,
+    bool IsOccupied,
+    bool IsReserved,
+    bool HasViolation,
+    bool IsActive,
+    DateTime UpdatedAt,
+    int? SessionId,
+    string? Plate,
+    DateTime? EntryTime,
+    bool? IsDisabledPermit);
+
+/// <summary>Aktif oturumdaki aracı cebe atama.</summary>
+public record AssignSlotRequest(string? Plate);
+
 public record GateEventDto(
     int Id,
     string CameraId,

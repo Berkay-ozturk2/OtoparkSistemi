@@ -36,7 +36,7 @@ export default function RejectSubscriptionModal({ subscription, busy, onConfirm,
             Vazgeç
           </button>
           <button type="submit" form={`${id}-form`} className="btn btn-danger" disabled={busy}>
-            {busy ? <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" /> : <i className="bi bi-x-circle me-2" />}
+            {busy ? <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" /> : <i aria-hidden="true" className="bi bi-x-circle me-2" />}
             Başvuruyu reddet
           </button>
         </>

@@ -19,13 +19,13 @@ export default function ProtectedRoute({ roles, children }) {
     return (
       <div className="container py-5">
         <div className="empty-state card-soft p-5 text-center mx-auto" style={{ maxWidth: 560 }}>
-          <i className="bi bi-shield-lock display-4 text-danger" />
-          <h2 className="h4 mt-3">Bu sayfaya erişim yetkiniz yok</h2>
+          <i aria-hidden="true" className="bi bi-shield-lock display-4 text-danger" />
+          <h1 className="h4 mt-3">Bu sayfaya erişim yetkiniz yok</h1>
           <p className="text-secondary mb-4">
-            Bu bölüm yalnızca yetkili roller tarafından görüntülenebilir.
+            Hesabınızın rolü bu bölümü açmaya yetmiyor. Yetki gerekiyorsa yöneticinize başvurun.
           </p>
           <Link to={homePathForRole(user?.role)} className="btn btn-primary">
-            <i className="bi bi-house-door me-2" />
+            <i aria-hidden="true" className="bi bi-house-door me-2" />
             Kendi panelime dön
           </Link>
         </div>

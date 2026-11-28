@@ -52,7 +52,7 @@ function BasvuruFormu() {
   if (done) {
     return (
       <div className="text-center py-4">
-        <i className="bi bi-envelope-check display-4 text-success" />
+        <i aria-hidden="true" className="bi bi-envelope-check display-4 text-success" />
         <h3 className="h5 mt-3">Başvurunuz alındı</h3>
         <p className="text-secondary mb-3">
           KVKK md. 13 uyarınca başvurunuz en geç <strong>30 gün</strong> içinde sonuçlandırılarak e-posta adresinize
@@ -116,7 +116,7 @@ function BasvuruFormu() {
         <div className="invalid-feedback">{errors.message}</div>
       </div>
       <button type="submit" className="btn btn-primary w-100" disabled={busy}>
-        {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-send me-2" />}
+        {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-send me-2" />}
         Başvuruyu Gönder
       </button>
     </form>
@@ -209,7 +209,7 @@ export default function KvkkAydinlatma() {
         <div className="col-lg-5">
           <div className="card position-sticky" style={{ top: 90 }}>
             <div className="card-header">
-              <i className="bi bi-envelope-paper me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-envelope-paper me-2 text-accent" />
               İlgili Kişi Başvuru Formu
             </div>
             <div className="card-body">

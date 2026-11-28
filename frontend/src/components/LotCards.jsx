@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useLot } from '../lot/LotContext';
 import { formatPercent } from '../utils/format';
 import { freeBadgeClass } from './LotSelector';
+import MeterBar from './MeterBar';
 
 /**
  * Otopark kartları ızgarası (ana sayfa): ad, adres, doluluk çubuğu, boş normal yer, boş engelli yer (♿), "Krokiyi gör".
@@ -31,7 +32,7 @@ export default function LotCards({ onShowMap }) {
   if (lots.length === 0) {
     return error ? (
       <div className="alert alert-warning d-flex align-items-center gap-2 mb-0">
-        <i className="bi bi-wifi-off" />
+        <i aria-hidden="true" className="bi bi-wifi-off" />
         Otopark listesi alınamadı.
         <button type="button" className="btn btn-sm btn-outline-dark ms-auto" onClick={reloadLots}>
           Tekrar dene
@@ -45,7 +46,6 @@ export default function LotCards({ onShowMap }) {
       {lots.map((l) => {
         const total = Number(l.totalSlots) || 0;
         const rate = l.occupancyRate ?? (total ? 1 - (Number(l.freeSlots) || 0) / total : 0);
-        const pct = Math.round(rate * 100);
         const active = l.code === lotCode;
         const floorCount = Array.isArray(l.floors) ? l.floors.length : 0;
         return (
@@ -54,18 +54,18 @@ export default function LotCards({ onShowMap }) {
               <div className="card-body d-flex flex-column">
                 <div className="d-flex align-items-start gap-3 mb-2">
                   <span className="lot-card-icon flex-shrink-0">
-                    <i className={`bi ${floorCount > 1 ? 'bi-building' : 'bi-p-square'}`} />
+                    <i aria-hidden="true" className={`bi ${floorCount > 1 ? 'bi-building' : 'bi-p-square'}`} />
                   </span>
                   <div className="min-w-0">
                     <div className="fw-bold lh-sm">{l.name}</div>
                     <div className="small text-secondary text-truncate" title={l.address}>
-                      <i className="bi bi-geo-alt me-1" />
+                      <i aria-hidden="true" className="bi bi-geo-alt me-1" />
                       {l.address || '—'}
                     </div>
                   </div>
                   {active && (
                     <span className="badge text-bg-primary ms-auto flex-shrink-0" title="Seçili otopark">
-                      <i className="bi bi-check2" />
+                      <i aria-hidden="true" className="bi bi-check2" />
                     </span>
                   )}
                 </div>
@@ -74,9 +74,7 @@ export default function LotCards({ onShowMap }) {
                   <span>Doluluk</span>
                   <span className="fw-semibold">{formatPercent(rate)}</span>
                 </div>
-                <div className="progress zone-progress mb-3" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-                  <div className={`progress-bar ${rate >= 0.9 ? 'bg-danger' : rate >= 0.6 ? 'bg-warning' : 'bg-success'}`} style={{ width: `${pct}%` }} />
-                </div>
+                <MeterBar className="zone-progress mb-3" value={rate} label={`${l.name} doluluk`} barClassName={rate >= 0.9 ? 'bg-danger' : rate >= 0.6 ? 'bg-warning' : 'bg-success'} />
 
                 <div className="row g-2 text-center mb-3">
                   <div className="col-6">
@@ -110,12 +108,12 @@ export default function LotCards({ onShowMap }) {
                       onShowMap?.(l.code);
                     }}
                   >
-                    <i className="bi bi-map me-1" />
+                    <i aria-hidden="true" className="bi bi-map me-1" />
                     Krokiyi gör
                   </button>
                   {Number.isFinite(l.latitude) && (
                     <Link className="btn btn-sm btn-outline-secondary" to={`/yol-tarifi?lot=${l.code}`} title="Bulunduğunuz yerden yol tarifi">
-                      <i className="bi bi-signpost-split" />
+                      <i aria-hidden="true" className="bi bi-signpost-split" />
                       <span className="visually-hidden">Yol tarifi</span>
                     </Link>
                   )}

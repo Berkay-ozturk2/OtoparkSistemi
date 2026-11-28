@@ -74,7 +74,7 @@ Videolar **bitince başa sarar**, sistem sürekli canlı kamera gibi çalışır
 
 1. Arayüzde **üst menüden otoparkı seçin.** Kamera Testi olayları artık seçili otoparka gönderir.
 2. **Operatör → Kamera Testi** sayfasındaki **Plaka Tanıma Testi** kartını açın.
-3. `vision-service\samples\demo\plaka_01_34DMO101.jpg` gibi bir fotoğraf seçin (ya da gerçek bir araç fotoğrafı).
+3. `vision-service\samples\demo\plaka_01_34KLM482.jpg` gibi bir fotoğraf seçin (ya da gerçek bir araç fotoğrafı).
 4. Kapı listesinden **Giriş kapısı**'nı seçin. "Backend'e olay olarak gönder" kutusunu açarsanız gerçek bir giriş oluşur.
 5. **Tanı** düğmesine basın. Okunan plaka, güven değerleri, kutu çizilmiş görüntü ve backend kararı (Allowed / PendingReview…) görünür.
 6. Aynı fotoğrafla **Çıkış kapısı**'nı seçerek çıkışı deneyin.

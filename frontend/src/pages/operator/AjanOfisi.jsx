@@ -490,7 +490,7 @@ export default function AjanOfisi() {
                 </div>
               </div>
               <div className="office-clock">
-                <i className="bi bi-clock me-1" />
+                <i aria-hidden="true" className="bi bi-clock me-1" />
                 {formatTime(now, true)}
               </div>
               <div className="office-plant" aria-hidden="true">🪴</div>
@@ -545,7 +545,7 @@ export default function AjanOfisi() {
                     />
                     <div className="office-nameplate">
                       <strong>
-                        <i className={`bi ${p.icon} me-1`} />
+                        <i aria-hidden="true" className={`bi ${p.icon} me-1`} />
                         {p.name}
                       </strong>
                       <span>
@@ -561,7 +561,7 @@ export default function AjanOfisi() {
 
           <div className="card mt-4">
             <div className="card-header">
-              <i className="bi bi-activity me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-activity me-2 text-accent" />
               Ofis Akışı
             </div>
             <ul className="list-group list-group-flush office-feed">
@@ -571,7 +571,7 @@ export default function AjanOfisi() {
                 feed.map((f, i) => (
                   <li key={`${f.time}-${i}`} className="list-group-item small d-flex gap-2">
                     <span className="text-secondary">{formatTime(f.time, true)}</span>
-                    <i className={`bi ${f.icon} text-accent`} />
+                    <i aria-hidden="true" className={`bi ${f.icon} text-accent`} />
                     <span>{f.text}</span>
                   </li>
                 ))
@@ -690,24 +690,24 @@ function TaskPanel({ agent, persona, logs, busy, lots, layouts, lotName, layoutN
         <div className="d-flex flex-wrap gap-2 mb-3">
           {running ? (
             <button type="button" className="btn btn-outline-danger btn-sm" disabled={busy} onClick={() => onGive(agent.id, 'Molaya çık', { type: 'stop' })}>
-              <i className="bi bi-pause-fill me-1" />
+              <i aria-hidden="true" className="bi bi-pause-fill me-1" />
               Molaya gönder
             </button>
           ) : (
             <button type="button" className="btn btn-success btn-sm" disabled={busy} onClick={() => onGive(agent.id, 'İşe başla', { type: 'start' })}>
-              <i className="bi bi-play-fill me-1" />
+              <i aria-hidden="true" className="bi bi-play-fill me-1" />
               İşe başlat
             </button>
           )}
           <button type="button" className="btn btn-outline-primary btn-sm" disabled={busy} onClick={() => fileRef.current?.click()}>
-            <i className={`bi ${isOcc ? 'bi-image' : 'bi-upc-scan'} me-1`} />
+            <i aria-hidden="true" className={`bi ${isOcc ? 'bi-image' : 'bi-upc-scan'} me-1`} />
             {isOcc ? 'Fotoğrafla say' : 'Plaka oku'}
           </button>
           <button type="button" className="btn btn-outline-secondary btn-sm" disabled={busy} onClick={() => onGive(agent.id, 'Durum raporu ver', { type: 'status' })}>
-            <i className="bi bi-clipboard-data me-1" />
+            <i aria-hidden="true" className="bi bi-clipboard-data me-1" />
             Rapor iste
           </button>
-          <input ref={fileRef} type="file" accept="image/*" className="d-none" onChange={pickFile} />
+          <input ref={fileRef} type="file" aria-label="Test görüntüsü seç" tabIndex={-1} accept="image/*" className="d-none" onChange={pickFile} />
         </div>
 
         <div className="mb-3">
@@ -758,7 +758,7 @@ function TaskPanel({ agent, persona, logs, busy, lots, layouts, lotName, layoutN
                 disabled={busy}
                 onClick={() => onGive(agent.id, `Örnek görüntüyle doluluğu say (%${ratio})`, { type: 'sample', ratio }, { forward, ratio })}
               >
-                <i className="bi bi-magic me-1" />
+                <i aria-hidden="true" className="bi bi-magic me-1" />
                 Örnekle say
               </button>
             </div>
@@ -794,7 +794,7 @@ function TaskPanel({ agent, persona, logs, busy, lots, layouts, lotName, layoutN
               aria-label="Görev"
             />
             <button type="submit" className="btn btn-primary" disabled={busy || !text.trim()}>
-              {busy ? <span className="spinner-border spinner-border-sm" /> : <i className="bi bi-send" />}
+              {busy ? <span className="spinner-border spinner-border-sm" /> : <i aria-hidden="true" className="bi bi-send" />}
             </button>
           </div>
           <div className="d-flex flex-wrap gap-1 mt-2">
@@ -823,15 +823,15 @@ function ChiefPanel({ logs, busy, onTask }) {
       <div className="card-body">
         <div className="d-grid gap-2 mb-3">
           <button type="button" className="btn btn-success" disabled={busy} onClick={() => onTask('all')}>
-            <i className="bi bi-play-fill me-1" />
+            <i aria-hidden="true" className="bi bi-play-fill me-1" />
             Herkes işe başlasın
           </button>
           <button type="button" className="btn btn-outline-danger" disabled={busy} onClick={() => onTask('none')}>
-            <i className="bi bi-pause-fill me-1" />
+            <i aria-hidden="true" className="bi bi-pause-fill me-1" />
             Herkes molaya çıksın
           </button>
           <button type="button" className="btn btn-outline-secondary" disabled={busy} onClick={() => onTask('report')}>
-            <i className="bi bi-clipboard-data me-1" />
+            <i aria-hidden="true" className="bi bi-clipboard-data me-1" />
             Ekip durum raporu
           </button>
         </div>

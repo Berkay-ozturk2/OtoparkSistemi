@@ -130,7 +130,7 @@ export default function AktifAraclar() {
             <LotSelector value={lot} onChange={setLot} allowAll />
             <LiveBadge status={status} />
             <button type="button" className="btn btn-outline-primary" onClick={load}>
-              <i className="bi bi-arrow-clockwise me-1" />
+              <i aria-hidden="true" className="bi bi-arrow-clockwise me-1" />
               Yenile
             </button>
           </>
@@ -143,7 +143,7 @@ export default function AktifAraclar() {
             <div className="col-md-5">
               <div className="input-group">
                 <span className="input-group-text">
-                  <i className="bi bi-search" />
+                  <i aria-hidden="true" className="bi bi-search" />
                 </span>
                 <input
                   className="form-control text-uppercase"
@@ -154,7 +154,7 @@ export default function AktifAraclar() {
                 />
                 {query && (
                   <button type="button" className="btn btn-outline-secondary" onClick={() => setQuery('')} aria-label="Temizle">
-                    <i className="bi bi-x" />
+                    <i aria-hidden="true" className="bi bi-x" />
                   </button>
                 )}
               </div>
@@ -235,12 +235,12 @@ export default function AktifAraclar() {
                       <td className="text-end text-nowrap">
                         {!s.isPaid && due(s) > 0 && (
                           <button type="button" className="btn btn-sm btn-success me-1" onClick={() => setCashFor(s)}>
-                            <i className="bi bi-cash-coin me-1" />
+                            <i aria-hidden="true" className="bi bi-cash-coin me-1" />
                             Nakit Al
                           </button>
                         )}
                         <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => setExitFor(s)}>
-                          <i className="bi bi-box-arrow-right me-1" />
+                          <i aria-hidden="true" className="bi bi-box-arrow-right me-1" />
                           Çıkış
                         </button>
                       </td>
@@ -292,7 +292,7 @@ export default function AktifAraclar() {
             </p>
             {!exitFor.isPaid && due(exitFor) > 0 && (
               <div className="alert alert-warning small mb-0">
-                <i className="bi bi-exclamation-triangle me-1" />
+                <i aria-hidden="true" className="bi bi-exclamation-triangle me-1" />
                 Bu aracın {formatCurrency(due(exitFor))} ödenmemiş ücreti var; sistem çıkışı reddedebilir. Önce nakit
                 ödeme alın.
               </div>

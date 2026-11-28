@@ -3,7 +3,7 @@ import Modal from './Modal';
 /** Onay penceresi */
 export default function ConfirmModal({
   show,
-  title = 'Emin misiniz?',
+  title = 'İşlemi onaylayın',
   children,
   message,
   confirmText = 'Onayla',

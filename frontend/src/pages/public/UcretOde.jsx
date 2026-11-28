@@ -16,7 +16,7 @@ function Steps({ step }) {
         <span key={label} className="d-flex align-items-center gap-2">
           {i > 0 && <span className="sep" />}
           <span className={`step ${step === i ? 'active' : step > i ? 'done' : ''}`}>
-            <span className="num">{step > i ? <i className="bi bi-check" /> : i + 1}</span>
+            <span className="num">{step > i ? <i aria-hidden="true" className="bi bi-check" /> : i + 1}</span>
             {label}
           </span>
         </span>
@@ -130,7 +130,7 @@ export default function UcretOde() {
               </div>
               <div className="col-md-4 d-grid">
                 <button className="btn btn-primary btn-lg" type="submit" disabled={busy}>
-                  {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-calculator me-2" />}
+                  {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-calculator me-2" />}
                   Ücreti Sorgula
                 </button>
               </div>
@@ -143,7 +143,7 @@ export default function UcretOde() {
 
       {notFound && (
         <div className="alert alert-secondary d-flex align-items-center gap-3">
-          <i className="bi bi-search fs-4" />
+          <i aria-hidden="true" className="bi bi-search fs-4" />
           <div>
             Bu plakaya ait açık bir park kaydı bulunamadı. Aracınız içeride değilse ödeme yapmanız gerekmez.
           </div>
@@ -155,7 +155,7 @@ export default function UcretOde() {
           <div className="col-lg-5">
             <div className="card h-100">
               <div className="card-header">
-                <i className="bi bi-receipt me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-receipt me-2 text-accent" />
                 Park Özeti
               </div>
               <div className="card-body">
@@ -182,7 +182,7 @@ export default function UcretOde() {
             {quote.isPaid ? (
               <div className="card h-100">
                 <div className="card-body text-center py-5">
-                  <i className="bi bi-check-circle-fill display-4 text-success" />
+                  <i aria-hidden="true" className="bi bi-check-circle-fill display-4 text-success" />
                   <h2 className="h5 mt-3">Ücret ödenmiş</h2>
                   <p className="text-secondary mb-0">
                     Bu park oturumu için ödeme alınmıştır. Ödeme sonrası tanınan süre içinde çıkış yapabilirsiniz.
@@ -192,7 +192,7 @@ export default function UcretOde() {
             ) : Number(quote.amount) <= 0 ? (
               <div className="card h-100">
                 <div className="card-body text-center py-5">
-                  <i className="bi bi-gift display-4 text-accent" />
+                  <i aria-hidden="true" className="bi bi-gift display-4 text-accent" />
                   <h2 className="h5 mt-3">Ödeme gerekmiyor</h2>
                   <p className="text-secondary mb-0">Ücretsiz süre içindesiniz; çıkışta bariyer otomatik açılır.</p>
                 </div>
@@ -200,7 +200,7 @@ export default function UcretOde() {
             ) : (
               <div className="card">
                 <div className="card-header">
-                  <i className="bi bi-credit-card-2-front me-2 text-accent" />
+                  <i aria-hidden="true" className="bi bi-credit-card-2-front me-2 text-accent" />
                   Kart ile Ödeme
                 </div>
                 <div className="card-body">
@@ -216,7 +216,7 @@ export default function UcretOde() {
       {receipt && (
         <div className="card mx-auto" style={{ maxWidth: 560 }}>
           <div className="card-body p-4 text-center">
-            <i className="bi bi-check-circle-fill display-3 text-success" />
+            <i aria-hidden="true" className="bi bi-check-circle-fill display-3 text-success" />
             <h2 className="h4 mt-3">Ödeme başarılı</h2>
             <p className="text-secondary">{receipt.message || 'Çıkışta bariyer otomatik olarak açılacaktır.'}</p>
             <div className="receipt text-start mt-3">
@@ -241,7 +241,7 @@ export default function UcretOde() {
             </div>
             <div className="d-flex gap-2 justify-content-center mt-4 no-print">
               <button type="button" className="btn btn-outline-primary" onClick={() => window.print()}>
-                <i className="bi bi-printer me-2" />
+                <i aria-hidden="true" className="bi bi-printer me-2" />
                 Yazdır
               </button>
               <button type="button" className="btn btn-primary" onClick={reset}>

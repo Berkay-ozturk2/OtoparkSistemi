@@ -106,6 +106,7 @@ const PUBLIC_LINKS = [
   { to: '/aracim-nerede', label: 'Aracım Nerede?', icon: 'bi-geo-alt' },
   { to: '/yol-tarifi', label: 'Yol Tarifi', icon: 'bi-signpost-split' },
   { to: '/ucret-ode', label: 'Ücret Öde', icon: 'bi-credit-card' },
+  { to: '/nasil-calisir', label: 'Nasıl Çalışır?', icon: 'bi-play-circle' },
 ];
 
 const DRIVER_LINKS = [
@@ -187,7 +188,7 @@ function NavDropdown({ item, pathname, badges = {} }) {
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        <i className={`bi ${item.icon} me-1`} />
+        <i aria-hidden="true" className={`bi ${item.icon} me-1`} />
         {item.label}
         <CountBadge count={total} className="ms-1" />
       </button>
@@ -200,7 +201,7 @@ function NavDropdown({ item, pathname, badges = {} }) {
           ) : (
             <li key={l.to}>
               <NavLink to={l.to} end={l.end} className="dropdown-item d-flex align-items-center gap-2">
-                <i className={`bi ${l.icon}`} />
+                <i aria-hidden="true" className={`bi ${l.icon}`} />
                 {l.label}
                 {l.badgeKey && <CountBadge count={badges[l.badgeKey]} variant={l.badgeVariant || 'danger'} className="ms-auto" />}
               </NavLink>
@@ -255,7 +256,7 @@ export default function Navbar() {
       <div className="container-fluid px-3 px-lg-4">
         <Link className="navbar-brand d-flex align-items-center gap-2" to={isAuthenticated ? homePathForRole(user?.role) : '/'}>
           <span className="brand-logo">
-            <i className="bi bi-p-square-fill" />
+            <i aria-hidden="true" className="bi bi-p-square-fill" />
           </span>
           <span className="brand-text">
             Akıllı<span className="brand-accent">Park</span>
@@ -281,7 +282,7 @@ export default function Navbar() {
               ) : (
                 <li className="nav-item" key={item.to}>
                   <NavLink to={item.to} end={item.end} className="nav-link">
-                    <i className={`bi ${item.icon} me-1`} />
+                    <i aria-hidden="true" className={`bi ${item.icon} me-1`} />
                     {item.label}
                     {item.badgeKey && <CountBadge count={badges[item.badgeKey]} variant={item.badgeVariant || 'danger'} className="ms-1" />}
                   </NavLink>
@@ -306,19 +307,19 @@ export default function Navbar() {
                   <span className="fw-semibold small">{user?.fullName || user?.email}</span>
                   <span className="user-role">{roleLabel(user?.role)}</span>
                 </span>
-                <i className="bi bi-chevron-down small" />
+                <i aria-hidden="true" className="bi bi-chevron-down small" />
               </button>
               <ul className={`dropdown-menu dropdown-menu-end shadow ${userOpen ? 'show' : ''}`}>
                 <li className="px-3 py-2 small text-secondary">{user?.email}</li>
                 <li>
                   <Link className="dropdown-item" to={homePathForRole(user?.role)}>
-                    <i className="bi bi-speedometer2 me-2" />
+                    <i aria-hidden="true" className="bi bi-speedometer2 me-2" />
                     Panelim
                   </Link>
                 </li>
                 <li>
                   <Link className="dropdown-item" to="/kvkk">
-                    <i className="bi bi-shield-check me-2" />
+                    <i aria-hidden="true" className="bi bi-shield-check me-2" />
                     KVKK Aydınlatma Metni
                   </Link>
                 </li>
@@ -327,7 +328,7 @@ export default function Navbar() {
                 </li>
                 <li>
                   <button type="button" className="dropdown-item text-danger" onClick={doLogout}>
-                    <i className="bi bi-box-arrow-right me-2" />
+                    <i aria-hidden="true" className="bi bi-box-arrow-right me-2" />
                     Çıkış Yap
                   </button>
                 </li>
@@ -336,11 +337,11 @@ export default function Navbar() {
           ) : (
             <div className="d-flex gap-2">
               <NavLink to="/giris" className="btn btn-outline-light btn-sm">
-                <i className="bi bi-box-arrow-in-right me-1" />
+                <i aria-hidden="true" className="bi bi-box-arrow-in-right me-1" />
                 Giriş Yap
               </NavLink>
               <NavLink to="/kayit" className="btn btn-accent btn-sm">
-                <i className="bi bi-person-plus me-1" />
+                <i aria-hidden="true" className="bi bi-person-plus me-1" />
                 Kayıt Ol
               </NavLink>
             </div>

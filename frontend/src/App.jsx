@@ -5,6 +5,7 @@ import { ROLES } from './auth/roles';
 
 // Herkese açık
 import AnaSayfa from './pages/public/AnaSayfa';
+import NasilCalisir from './pages/public/NasilCalisir';
 import AracimNerede from './pages/public/AracimNerede';
 import UcretOde from './pages/public/UcretOde';
 import Giris from './pages/public/Giris';
@@ -46,7 +47,7 @@ function NotFound() {
       <h1 className="h4">Sayfa bulunamadı</h1>
       <p className="text-secondary">Aradığınız sayfa taşınmış veya hiç var olmamış olabilir.</p>
       <Link to="/" className="btn btn-primary">
-        <i className="bi bi-house-door me-2" />
+        <i aria-hidden="true" className="bi bi-house-door me-2" />
         Ana sayfaya dön
       </Link>
     </div>
@@ -59,6 +60,7 @@ export default function App() {
       <Route element={<Layout />}>
         {/* Herkese açık sayfalar */}
         <Route index element={<AnaSayfa />} />
+        <Route path="nasil-calisir" element={<NasilCalisir />} />
         <Route path="aracim-nerede" element={<AracimNerede />} />
         <Route path="ucret-ode" element={<UcretOde />} />
         <Route path="yol-tarifi" element={<YolTarifi />} />

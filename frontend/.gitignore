@@ -4,3 +4,6 @@ dist
 .env.local
 *.log
 .vite
+
+# polycars modelleri: lisans açık depoda paylaşımı yasaklar; scripts/convert-polycars.mjs ile üretin
+public/models/polycars/

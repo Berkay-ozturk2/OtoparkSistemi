@@ -63,12 +63,12 @@ export default function ViolationResolveModal({ violation, initialStatus = 'Reso
           <div className="btn-group w-100 mb-3" role="group">
             <input type="radio" className="btn-check" id="vr-resolved" checked={status === 'Resolved'} onChange={() => setStatus('Resolved')} />
             <label className="btn btn-outline-success" htmlFor="vr-resolved">
-              <i className="bi bi-check-circle me-1" />
+              <i aria-hidden="true" className="bi bi-check-circle me-1" />
               Çözüldü
             </label>
             <input type="radio" className="btn-check" id="vr-false" checked={status === 'FalseAlarm'} onChange={() => setStatus('FalseAlarm')} />
             <label className="btn btn-outline-secondary" htmlFor="vr-false">
-              <i className="bi bi-bell-slash me-1" />
+              <i aria-hidden="true" className="bi bi-bell-slash me-1" />
               Yanlış alarm
             </label>
           </div>

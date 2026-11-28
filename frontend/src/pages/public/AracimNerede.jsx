@@ -95,7 +95,7 @@ export default function AracimNerede() {
             </div>
             <div className="col-md-4 d-grid">
               <button type="submit" className="btn btn-primary btn-lg" disabled={busy}>
-                {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-search me-2" />}
+                {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-search me-2" />}
                 Sorgula
               </button>
             </div>
@@ -108,7 +108,7 @@ export default function AracimNerede() {
       {notFound && (
         <div className="card mb-4">
           <div className="card-body text-center py-5">
-            <i className="bi bi-car-front display-5 text-secondary" />
+            <i aria-hidden="true" className="bi bi-car-front display-5 text-secondary" />
             <h2 className="h5 mt-3">Araç içeride bulunamadı</h2>
             <p className="text-secondary mb-0">
               <PlateBadge plate={plate} size="sm" className="me-1" /> plakalı araç için açık bir park kaydı yok. Plakayı doğru
@@ -128,12 +128,12 @@ export default function AracimNerede() {
                   <div className="mt-3">
                     {result.isPaid ? (
                       <span className="badge text-bg-success fs-6">
-                        <i className="bi bi-check-circle me-1" />
+                        <i aria-hidden="true" className="bi bi-check-circle me-1" />
                         Ödendi
                       </span>
                     ) : (
                       <span className="badge text-bg-warning fs-6">
-                        <i className="bi bi-hourglass-split me-1" />
+                        <i aria-hidden="true" className="bi bi-hourglass-split me-1" />
                         Ödeme bekleniyor
                       </span>
                     )}
@@ -145,7 +145,7 @@ export default function AracimNerede() {
                     <div>
                       {result.lotName && (
                         <div className="fw-semibold text-accent">
-                          <i className="bi bi-buildings me-1" />
+                          <i aria-hidden="true" className="bi bi-buildings me-1" />
                           {result.lotName}
                         </div>
                       )}
@@ -172,13 +172,13 @@ export default function AracimNerede() {
                   </div>
                   {result.lotCode && (
                     <Link to={`/yol-tarifi?lot=${result.lotCode}`} className="btn btn-outline-primary mt-3 me-2">
-                      <i className="bi bi-signpost-split me-1" />
+                      <i aria-hidden="true" className="bi bi-signpost-split me-1" />
                       Otoparka yol tarifi
                     </Link>
                   )}
                   {!result.isPaid && Number(result.currentFee) > 0 && (
                     <Link to={`/ucret-ode?plaka=${normalizePlate(result.plate)}`} className="btn btn-accent mt-3">
-                      <i className="bi bi-credit-card me-2" />
+                      <i aria-hidden="true" className="bi bi-credit-card me-2" />
                       Şimdi öde
                     </Link>
                   )}
@@ -190,7 +190,7 @@ export default function AracimNerede() {
           {slots.length > 0 && (
             <div className="card">
               <div className="card-header">
-                <i className="bi bi-map me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-map me-2 text-accent" />
                 Krokide konum{result.lotName ? ` — ${result.lotName}` : ''}
               </div>
               <div className="card-body">

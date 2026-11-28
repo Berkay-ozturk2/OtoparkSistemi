@@ -121,7 +121,7 @@ export default function EngelliIzinleri() {
     const { permit, kind } = action;
     const nextStatus = kind === 'Edit' ? permit.status : kind;
     if ((kind === 'Rejected' || kind === 'Revoked') && actNote.trim().length < 3) {
-      toast.warning('Lütfen ret / iptal gerekçesini not olarak yazın.');
+      toast.warning('Reddetmek ya da iptal etmek için gerekçeyi not alanına yazın.');
       return;
     }
     setActBusy(true);
@@ -209,15 +209,15 @@ export default function EngelliIzinleri() {
           <>
             <LiveBadge status={hubStatus} />
             <button type="button" className="btn btn-accent" onClick={() => setShowNew(true)}>
-              <i className="bi bi-plus-lg me-1" />
+              <i aria-hidden="true" className="bi bi-plus-lg me-1" />
               Yeni izin ekle
             </button>
             <button type="button" className="btn btn-outline-secondary" onClick={exportCsv} disabled={rows.length === 0}>
-              <i className="bi bi-filetype-csv me-1" />
+              <i aria-hidden="true" className="bi bi-filetype-csv me-1" />
               CSV
             </button>
-            <button type="button" className="btn btn-outline-primary" onClick={load} title="Yenile">
-              <i className="bi bi-arrow-clockwise" />
+            <button type="button" className="btn btn-outline-primary" onClick={load} title="Yenile" aria-label="Yenile">
+              <i aria-hidden="true" className="bi bi-arrow-clockwise" />
             </button>
           </>
         }
@@ -229,7 +229,7 @@ export default function EngelliIzinleri() {
             {TABS.map((t) => (
               <li className="nav-item" key={t.value || 'all'}>
                 <button type="button" className={`nav-link py-1 ${status === t.value ? 'active' : ''}`} onClick={() => setStatus(t.value)}>
-                  <i className={`bi ${t.icon} me-1`} />
+                  <i aria-hidden="true" className={`bi ${t.icon} me-1`} />
                   {t.label}
                   {t.value === 'Pending' && pendingCount > 0 && <span className="badge rounded-pill text-bg-warning ms-1">{pendingCount}</span>}
                 </button>
@@ -238,9 +238,9 @@ export default function EngelliIzinleri() {
           </ul>
           <div className="input-group ms-auto" style={{ maxWidth: 320 }}>
             <span className="input-group-text">
-              <i className="bi bi-search" />
+              <i aria-hidden="true" className="bi bi-search" />
             </span>
-            <input className="form-control" placeholder="Plaka, ad, e-posta, belge no…" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <input className="form-control" type="search" aria-label="İzinlerde ara" placeholder="Plaka, ad, e-posta, belge no…" value={query} onChange={(e) => setQuery(e.target.value)} />
           </div>
         </div>
       </div>
@@ -252,7 +252,9 @@ export default function EngelliIzinleri() {
           {loading && list.length === 0 ? (
             <Loading text="İzinler yükleniyor…" />
           ) : rows.length === 0 ? (
-            <EmptyState icon="bi-person-wheelchair" title={status === 'Pending' ? 'Bekleyen başvuru yok' : 'Kayıt bulunamadı'} />
+            <EmptyState icon="bi-person-wheelchair" title={status === 'Pending' ? 'Bekleyen başvuru yok' : 'Bu filtrede izin yok'}>
+              {status === 'Pending' ? 'Yeni başvurular geldiğinde burada listelenir.' : 'Başka bir durum seçin ya da aramayı temizleyin.'}
+            </EmptyState>
           ) : (
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0">
@@ -287,12 +289,12 @@ export default function EngelliIzinleri() {
                         <td className="small">{p.documentNo || '—'}</td>
                         <td>
                           <span className={`badge text-bg-${expired ? 'secondary' : st.variant}`}>
-                            <i className={`bi ${st.icon} me-1`} />
+                            <i aria-hidden="true" className={`bi ${st.icon} me-1`} />
                             {expired ? 'Süresi doldu' : st.label}
                           </span>
                           {p.note && (
                             <div className="small text-secondary mt-1 text-truncate" style={{ maxWidth: 220 }} title={p.note}>
-                              <i className="bi bi-chat-left-text me-1" />
+                              <i aria-hidden="true" className="bi bi-chat-left-text me-1" />
                               {p.note}
                             </div>
                           )}
@@ -309,7 +311,7 @@ export default function EngelliIzinleri() {
                         <td className="text-end text-nowrap">
                           {p.status !== 'Approved' && (
                             <button type="button" className="btn btn-sm btn-success me-1" onClick={() => openAction(p, 'Approved')}>
-                              <i className="bi bi-check2 me-1" />
+                              <i aria-hidden="true" className="bi bi-check2 me-1" />
                               Onayla
                             </button>
                           )}
@@ -320,8 +322,8 @@ export default function EngelliIzinleri() {
                           )}
                           {p.status === 'Approved' && (
                             <>
-                              <button type="button" className="btn btn-sm btn-light border me-1" onClick={() => openAction(p, 'Edit')} title="Geçerlilik tarihini düzenle">
-                                <i className="bi bi-calendar-event" />
+                              <button type="button" className="btn btn-sm btn-light border me-1" onClick={() => openAction(p, 'Edit')} title="Geçerlilik tarihini düzenle" aria-label="Geçerlilik tarihini düzenle">
+                                <i aria-hidden="true" className="bi bi-calendar-event" />
                               </button>
                               <button type="button" className="btn btn-sm btn-outline-dark" onClick={() => openAction(p, 'Revoked')}>
                                 İptal et
@@ -420,7 +422,7 @@ export default function EngelliIzinleri() {
       >
         <form id="permit-new" onSubmit={submitNew} noValidate>
           <div className="alert alert-info small py-2">
-            <i className="bi bi-info-circle me-1" />
+            <i aria-hidden="true" className="bi bi-info-circle me-1" />
             Gişede engelli kimlik kartı / sağlık kurulu raporu görüldüğünde kullanılır; izin doğrudan <strong>onaylı</strong> olarak
             kaydedilir.
           </div>

@@ -54,7 +54,7 @@ export default function Giris() {
             <div>
               <div className="d-flex align-items-center gap-2 mb-4">
                 <span className="brand-logo">
-                  <i className="bi bi-p-square-fill" />
+                  <i aria-hidden="true" className="bi bi-p-square-fill" />
                 </span>
                 <span className="brand-text fw-bold">
                   Akıllı<span className="brand-accent">Park</span>
@@ -68,15 +68,15 @@ export default function Giris() {
             </div>
             <ul className="list-unstyled small text-white-50 mb-0 mt-4">
               <li className="mb-2">
-                <i className="bi bi-camera-video me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-camera-video me-2 text-accent" />
                 Plaka tanıma ile temassız giriş-çıkış
               </li>
               <li className="mb-2">
-                <i className="bi bi-broadcast me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-broadcast me-2 text-accent" />
                 Anlık doluluk ve kroki
               </li>
               <li>
-                <i className="bi bi-shield-lock me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-shield-lock me-2 text-accent" />
                 KVKK uyumlu veri işleme
               </li>
             </ul>
@@ -91,7 +91,7 @@ export default function Giris() {
                 </label>
                 <div className="input-group">
                   <span className="input-group-text">
-                    <i className="bi bi-envelope" />
+                    <i aria-hidden="true" className="bi bi-envelope" />
                   </span>
                   <input
                     id="login-email"
@@ -110,7 +110,7 @@ export default function Giris() {
                 </label>
                 <div className="input-group">
                   <span className="input-group-text">
-                    <i className="bi bi-key" />
+                    <i aria-hidden="true" className="bi bi-key" />
                   </span>
                   <input
                     id="login-pw"
@@ -126,12 +126,12 @@ export default function Giris() {
                     onClick={() => setShowPw((s) => !s)}
                     aria-label={showPw ? 'Parolayı gizle' : 'Parolayı göster'}
                   >
-                    <i className={`bi ${showPw ? 'bi-eye-slash' : 'bi-eye'}`} />
+                    <i aria-hidden="true" className={`bi ${showPw ? 'bi-eye-slash' : 'bi-eye'}`} />
                   </button>
                 </div>
               </div>
               <button type="submit" className="btn btn-primary btn-lg w-100" disabled={busy}>
-                {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-box-arrow-in-right me-2" />}
+                {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-box-arrow-in-right me-2" />}
                 Giriş Yap
               </button>
             </form>
@@ -141,7 +141,7 @@ export default function Giris() {
 
             <hr className="my-4" />
             <div className="small text-secondary mb-2">
-              <i className="bi bi-info-circle me-1" />
+              <i aria-hidden="true" className="bi bi-info-circle me-1" />
               Demo hesapları (tıklayınca form doldurulur):
             </div>
             <div className="d-flex flex-column gap-1">
@@ -156,7 +156,7 @@ export default function Giris() {
                     setError(null);
                   }}
                 >
-                  <i className={`bi ${a.icon} fs-4 text-primary`} />
+                  <i aria-hidden="true" className={`bi ${a.icon} fs-4 text-primary`} />
                   <span className="flex-grow-1">
                     <span className="d-block fw-semibold small">{roleLabel(a.role)}</span>
                     <span className="d-block small text-secondary">

@@ -216,7 +216,7 @@ export default function Abonelik() {
                           className="visually-hidden"
                         />
                         <span className="plan-option-check" aria-hidden="true">
-                          <i className="bi bi-check-lg" />
+                          <i aria-hidden="true" className="bi bi-check-lg" />
                         </span>
                         <span className="plan-option-name">{p.name}</span>
                         <span className="plan-option-price">{formatCurrency(p.price)}</span>

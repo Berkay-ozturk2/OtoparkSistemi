@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useParkingLive from '../../realtime/useParkingLive';
 import { getPublicTariffs } from '../../api/parking';
-import ParkingMap from '../../components/ParkingMap';
+import ParkingView from '../../components/ParkingView';
+import MeterBar from '../../components/MeterBar';
+import AnimatedNumber from '../../components/AnimatedNumber';
 import StatCard from '../../components/StatCard';
 import LiveBadge from '../../components/LiveBadge';
 import Loading from '../../components/Loading';
@@ -22,6 +24,7 @@ export default function AnaSayfa() {
   const lotName = lot?.name || currentLot?.name;
   const floorName = (f) => lot?.floors?.find((x) => Number(x.floor) === Number(f))?.name || `Kat ${f}`;
   const { user } = useAuth();
+  const isStaff = user?.role === 'Operator' || user?.role === 'Admin';
   const [tariffs, setTariffs] = useState([]);
   const [tariffError, setTariffError] = useState(null);
 
@@ -51,15 +54,15 @@ export default function AnaSayfa() {
             </p>
             <div className="d-flex flex-wrap gap-2">
               <Link to="/aracim-nerede" className="btn btn-accent btn-lg">
-                <i className="bi bi-geo-alt me-2" />
+                <i aria-hidden="true" className="bi bi-geo-alt me-2" />
                 Aracım Nerede?
               </Link>
               <Link to="/ucret-ode" className="btn btn-outline-light btn-lg">
-                <i className="bi bi-credit-card me-2" />
+                <i aria-hidden="true" className="bi bi-credit-card me-2" />
                 Ücret Öde
               </Link>
               <Link to={user?.role === 'Driver' ? '/surucu/rezervasyon' : '/giris'} className="btn btn-outline-light btn-lg">
-                <i className="bi bi-calendar-check me-2" />
+                <i aria-hidden="true" className="bi bi-calendar-check me-2" />
                 Rezervasyon
               </Link>
             </div>
@@ -83,10 +86,8 @@ export default function AnaSayfa() {
               </div>
               <div className="col-6">
                 <div className="small text-uppercase text-white-50 fw-semibold">Doluluk</div>
-                <div className="hero-occupancy">{summary ? formatPercent(rate) : '—'}</div>
-                <div className="progress mt-3" role="progressbar" aria-valuenow={Math.round(rate * 100)} aria-valuemin={0} aria-valuemax={100}>
-                  <div className="progress-bar" style={{ width: `${Math.round(rate * 100)}%` }} />
-                </div>
+                <div className="hero-occupancy">{summary ? <AnimatedNumber value={rate * 100} format={(v) => `%${Math.round(v)}`} /> : '—'}</div>
+                <MeterBar className="mt-3" value={rate} label="Genel doluluk" />
               </div>
             </div>
           </div>
@@ -97,7 +98,7 @@ export default function AnaSayfa() {
       <section className="mb-4">
         <div className="d-flex align-items-center justify-content-between mb-3">
           <h2 className="h5 mb-0">
-            <i className="bi bi-buildings me-2 text-accent" />
+            <i aria-hidden="true" className="bi bi-buildings me-2 text-accent" />
             Otoparklar
           </h2>
           <span className="small text-secondary">Boş yer sayıları normal araçlar içindir; ♿ engelli park yerleri ayrıca gösterilir.</span>
@@ -139,7 +140,7 @@ export default function AnaSayfa() {
           <div className="card h-100">
             <div className="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
               <span>
-                <i className="bi bi-map me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-map me-2 text-accent" />
                 Otopark Krokisi
               </span>
               <div className="d-flex align-items-center gap-2">
@@ -155,8 +156,9 @@ export default function AnaSayfa() {
                   Cep bilgileri henüz tanımlanmamış.
                 </EmptyState>
               ) : (
-                <ParkingMap
+                <ParkingView
                   lot={lot}
+                  canManage={isStaff}
                   slots={slots}
                   zones={zones}
                   recommendedZone={recommendation?.zoneCode}
@@ -172,7 +174,7 @@ export default function AnaSayfa() {
           <div className="card rec-card">
             <div className="card-body">
               <div className="text-secondary small fw-semibold text-uppercase mb-2">
-                <i className="bi bi-stars me-1 text-accent" />
+                <i aria-hidden="true" className="bi bi-stars me-1 text-accent" />
                 Önerilen bölge
               </div>
               {recommendation ? (
@@ -193,7 +195,7 @@ export default function AnaSayfa() {
                 </div>
               ) : isFull ? (
                 <div className="text-danger fw-semibold">
-                  <i className="bi bi-x-octagon me-2" />
+                  <i aria-hidden="true" className="bi bi-x-octagon me-2" />
                   Otopark şu anda dolu.
                   {summary?.disabledFree > 0 && (
                     <div className="small text-secondary fw-normal mt-1">
@@ -209,7 +211,7 @@ export default function AnaSayfa() {
 
           <div className="card">
             <div className="card-header">
-              <i className="bi bi-layers me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-layers me-2 text-accent" />
               Bölgeler
             </div>
             <ul className="list-group list-group-flush">
@@ -227,9 +229,7 @@ export default function AnaSayfa() {
                       <span className="small text-secondary">{floorName(z.floor)}</span>
                     </div>
                     <div className="d-flex align-items-center gap-2">
-                      <div className="progress zone-progress flex-grow-1">
-                        <div className={`progress-bar ${variant}`} style={{ width: `${Math.round(occ * 100)}%` }} />
-                      </div>
+                      <MeterBar className="zone-progress flex-grow-1" value={occ} label={`${z.name} doluluk`} barClassName={variant} />
                       <span className="small fw-semibold text-nowrap">
                         {z.freeSlots}/{z.totalSlots} boş
                       </span>
@@ -252,7 +252,7 @@ export default function AnaSayfa() {
         <div className="col-lg-7">
           <div className="card h-100">
             <div className="card-header">
-              <i className="bi bi-tags me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-tags me-2 text-accent" />
               Ücret Tarifesi
             </div>
             <div className="card-body p-0">
@@ -284,7 +284,7 @@ export default function AnaSayfa() {
                 </div>
               )}
               <div className="small text-secondary px-3 py-2 border-top">
-                <i className="bi bi-info-circle me-1" />
+                <i aria-hidden="true" className="bi bi-info-circle me-1" />
                 İlk 15 dakika ücretsizdir; 24 saati aşan sürelerde günlük tavan ücret uygulanır.
               </div>
             </div>
@@ -301,13 +301,13 @@ export default function AnaSayfa() {
                 <Link to={q.to} className="card card-hover quick-link-card">
                   <div className="card-body d-flex gap-3 align-items-center">
                     <span className="qi">
-                      <i className={`bi ${q.icon}`} />
+                      <i aria-hidden="true" className={`bi ${q.icon}`} />
                     </span>
                     <div>
                       <div className="fw-semibold">{q.title}</div>
                       <div className="small text-secondary">{q.text}</div>
                     </div>
-                    <i className="bi bi-chevron-right ms-auto text-secondary" />
+                    <i aria-hidden="true" className="bi bi-chevron-right ms-auto text-secondary" />
                   </div>
                 </Link>
               </div>

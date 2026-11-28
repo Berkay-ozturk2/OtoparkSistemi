@@ -168,11 +168,11 @@ export default function GelirRaporu() {
         actions={
           <>
             <button type="button" className="btn btn-outline-secondary" onClick={exportCsv} disabled={!hasData}>
-              <i className="bi bi-filetype-csv me-1" />
+              <i aria-hidden="true" className="bi bi-filetype-csv me-1" />
               CSV indir
             </button>
-            <button type="button" className="btn btn-outline-secondary no-print" onClick={() => window.print()} disabled={!hasData}>
-              <i className="bi bi-printer" />
+            <button type="button" className="btn btn-outline-secondary no-print" onClick={() => window.print()} disabled={!hasData} aria-label="Raporu yazdır" title="Raporu yazdır">
+              <i aria-hidden="true" className="bi bi-printer" />
             </button>
           </>
         }
@@ -223,7 +223,7 @@ export default function GelirRaporu() {
       ) : report && !hasData ? (
         <div className="card">
           <EmptyState icon="bi-cash" title="Bu aralıkta gelir yok">
-            Farklı bir tarih aralığı seçin veya Yönetim Paneli&apos;ndeki &quot;Demo verisi üret&quot; ile örnek veri oluşturun.
+            Seçilen tarihlerde ödeme alınmamış. Başka bir aralık seçin ya da Yönetim Paneli&apos;nden demo verisi üretin.
           </EmptyState>
         </div>
       ) : report ? (
@@ -254,15 +254,15 @@ export default function GelirRaporu() {
               <div className="card h-100">
                 <div className="card-header d-flex justify-content-between align-items-center">
                   <span>
-                    <i className="bi bi-graph-up me-2 text-accent" />
+                    <i aria-hidden="true" className="bi bi-graph-up me-2 text-accent" />
                     {GROUPS.find((g) => g.value === loadedGroup)?.label} gelir serisi
                   </span>
                   <div className="btn-group btn-group-sm" role="group" aria-label="Grafik türü">
-                    <button type="button" className={`btn ${chartType === 'bar' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setChartType('bar')}>
-                      <i className="bi bi-bar-chart" />
+                    <button type="button" className={`btn ${chartType === 'bar' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setChartType('bar')} aria-label="Sütun grafik" title="Sütun grafik" aria-pressed={chartType === 'bar'}>
+                      <i aria-hidden="true" className="bi bi-bar-chart" />
                     </button>
-                    <button type="button" className={`btn ${chartType === 'line' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setChartType('line')}>
-                      <i className="bi bi-graph-up" />
+                    <button type="button" className={`btn ${chartType === 'line' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setChartType('line')} aria-label="Çizgi grafik" title="Çizgi grafik" aria-pressed={chartType === 'line'}>
+                      <i aria-hidden="true" className="bi bi-graph-up" />
                     </button>
                   </div>
                 </div>
@@ -276,12 +276,12 @@ export default function GelirRaporu() {
             <div className="col-xl-4">
               <div className="card h-100">
                 <div className="card-header">
-                  <i className="bi bi-pie-chart me-2 text-accent" />
+                  <i aria-hidden="true" className="bi bi-pie-chart me-2 text-accent" />
                   Ödeme yöntemine göre
                 </div>
                 <div className="card-body">
                   {byMethod.length === 0 ? (
-                    <EmptyState icon="bi-pie-chart" title="Yöntem verisi yok" />
+                    <EmptyState icon="bi-pie-chart" title="Ödeme yöntemi verisi yok">Bu aralıkta ödeme alınmamış.</EmptyState>
                   ) : (
                     <>
                       <div className="chart-box sm">
@@ -310,7 +310,7 @@ export default function GelirRaporu() {
 
           <div className="card">
             <div className="card-header">
-              <i className="bi bi-table me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-table me-2 text-accent" />
               Dönem tablosu
             </div>
             <div className="card-body p-0">

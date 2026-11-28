@@ -51,8 +51,8 @@ export default function CardPaymentForm({ amount, onPay, busy = false, submitLab
 
   const raw = number.replace(/\D/g, '');
   const errors = {
-    holderName: holderName.trim().length < 3 ? 'Kart üzerindeki adı giriniz.' : null,
-    number: !luhnValid(raw) ? 'Geçerli bir kart numarası giriniz.' : null,
+    holderName: holderName.trim().length < 3 ? 'Kart üzerindeki adı girin.' : null,
+    number: !luhnValid(raw) ? 'Geçerli bir kart numarası girin.' : null,
     cvc: !/^\d{3,4}$/.test(cvc) ? 'CVC 3 veya 4 haneli olmalıdır.' : null,
     expire:
       Number(expireYear) === THIS_YEAR && Number(expireMonth) < new Date().getMonth() + 1
@@ -88,7 +88,7 @@ export default function CardPaymentForm({ amount, onPay, busy = false, submitLab
     <form onSubmit={submit} noValidate className="card-payment-form">
       <div className="credit-card-preview mb-3" aria-hidden="true">
         <div className="d-flex justify-content-between align-items-start">
-          <i className="bi bi-cpu fs-3" />
+          <i aria-hidden="true" className="bi bi-cpu fs-3" />
           <span className="fw-semibold small">AkıllıPark Sanal POS</span>
         </div>
         <div className="cc-number">{number || '•••• •••• •••• ••••'}</div>
@@ -121,7 +121,7 @@ export default function CardPaymentForm({ amount, onPay, busy = false, submitLab
         </label>
         <div className="input-group has-validation">
           <span className="input-group-text">
-            <i className="bi bi-credit-card" />
+            <i aria-hidden="true" className="bi bi-credit-card" />
           </span>
           <input
             id="cc-number"
@@ -184,19 +184,19 @@ export default function CardPaymentForm({ amount, onPay, busy = false, submitLab
         {busy ? (
           <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />
         ) : (
-          <i className="bi bi-lock-fill me-2" />
+          <i aria-hidden="true" className="bi bi-lock-fill me-2" />
         )}
         {submitLabel || `${formatCurrency(amount)} Öde`}
       </button>
       <div className="text-secondary small mt-2 text-center">
-        <i className="bi bi-shield-check me-1" />
+        <i aria-hidden="true" className="bi bi-shield-check me-1" />
         Kart bilgileriniz saklanmaz; yalnızca ödeme kuruluşuna iletilir (KVKK).
       </div>
 
       {showTestCards && (
         <div className="test-cards mt-4">
           <div className="fw-semibold small mb-2">
-            <i className="bi bi-info-circle me-1" />
+            <i aria-hidden="true" className="bi bi-info-circle me-1" />
             iyzico sandbox test kartları (gerçek ödeme alınmaz)
           </div>
           <ul className="list-unstyled mb-0 small">

@@ -63,3 +63,19 @@ export function resolveViolation(id, { status, note }) {
 export function checkPermit(plate) {
   return api.get(`/api/permits/check/${encodeURIComponent(plate)}`);
 }
+
+// ---- Krokiden cep ayrıntısı ve araç ataması (aşama 3) ----
+
+/** { id, code, lotCode, zoneCode, zoneName, floor, type, isOccupied, isReserved, hasViolation, isActive, updatedAt, sessionId, plate, entryTime, isDisabledPermit } */
+export function getSlotDetail(slotId) {
+  return api.get(`/api/operator/slots/${slotId}/detail`);
+}
+
+/** Aktif oturumdaki aracı cebe atar. Normal araç engelli cebe atanamaz → 422 { message } */
+export function assignSlot(slotId, plate) {
+  return api.post(`/api/operator/slots/${slotId}/assign`, { plate });
+}
+
+export function unassignSlot(slotId) {
+  return api.del(`/api/operator/slots/${slotId}/assign`);
+}

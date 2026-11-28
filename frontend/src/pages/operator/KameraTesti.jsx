@@ -63,7 +63,7 @@ function SnapshotPreview({ agentId, running }) {
     return (
       <div className="snapshot-frame">
         <span>
-          <i className="bi bi-camera-video-off me-2" />
+          <i aria-hidden="true" className="bi bi-camera-video-off me-2" />
           Önizleme için bir ajan seçin
         </span>
       </div>
@@ -75,7 +75,7 @@ function SnapshotPreview({ agentId, running }) {
       <div className="snapshot-frame">
         {failed ? (
           <span className="text-center px-3">
-            <i className="bi bi-image-alt d-block fs-2 mb-2" />
+            <i aria-hidden="true" className="bi bi-image-alt d-block fs-2 mb-2" />
             Kare alınamadı (ajan çalışmıyor olabilir)
           </span>
         ) : null}
@@ -95,12 +95,12 @@ function SnapshotPreview({ agentId, running }) {
           </label>
         </div>
         <button type="button" className="btn btn-sm btn-light" onClick={() => setStamp(Date.now())}>
-          <i className="bi bi-arrow-clockwise me-1" />
+          <i aria-hidden="true" className="bi bi-arrow-clockwise me-1" />
           {auto ? 'Akışı yeniden bağlan' : 'Şimdi yenile'}
         </button>
       </div>
       <div className="small text-secondary mt-1">
-        <i className="bi bi-shield-lock me-1" />
+        <i aria-hidden="true" className="bi bi-shield-lock me-1" />
         Kareler yalnızca bellekte tutulur, kaydedilmez (KVKK).
       </div>
     </div>
@@ -148,7 +148,7 @@ function FilePicker({ id, file, onChange }) {
   }, [file]);
   return (
     <div>
-      <input id={id} type="file" accept="image/*" className="form-control" onChange={(e) => onChange(e.target.files?.[0] || null)} />
+      <input id={id} type="file" aria-label="Test görüntüsü seç (JPG ya da PNG)" accept="image/*" className="form-control" onChange={(e) => onChange(e.target.files?.[0] || null)} />
       {preview && <img src={preview} alt="Seçilen görsel" className="annotated-img mt-2" style={{ maxHeight: 200, objectFit: 'contain' }} />}
     </div>
   );
@@ -185,7 +185,7 @@ function RecognizeTest() {
   return (
     <div className="card h-100">
       <div className="card-header">
-        <i className="bi bi-123 me-2 text-accent" />
+        <i aria-hidden="true" className="bi bi-123 me-2 text-accent" />
         Plaka Tanıma Testi
       </div>
       <div className="card-body">
@@ -219,13 +219,13 @@ function RecognizeTest() {
           </div>
           {forward && (
             <div className="alert alert-warning small mt-2 mb-0 py-2">
-              <i className="bi bi-exclamation-triangle me-1" />
+              <i aria-hidden="true" className="bi bi-exclamation-triangle me-1" />
               <strong>{lotName(lotCode)}</strong> otoparkında gerçek bir {gateLabel(gate).toLocaleLowerCase('tr-TR')} olayı
               oluşturulur (oturum açılır/kapanır).
             </div>
           )}
           <button type="submit" className="btn btn-primary w-100 mt-3" disabled={!file || busy}>
-            {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-play-fill me-2" />}
+            {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-play-fill me-2" />}
             Tanı
           </button>
         </form>
@@ -282,7 +282,7 @@ function RecognizeTest() {
             {br && (
               <div className={`alert alert-${brInfo.variant} mt-3 mb-0`}>
                 <div className="fw-semibold">
-                  <i className="bi bi-hdd-network me-1" />
+                  <i aria-hidden="true" className="bi bi-hdd-network me-1" />
                   Backend yanıtı: {brInfo.label}
                 </div>
                 {br.message && <div>{br.message}</div>}
@@ -372,7 +372,7 @@ function OccupancyTest({ layouts, layoutsError }) {
   return (
     <div className="card h-100">
       <div className="card-header">
-        <i className="bi bi-grid-3x3-gap me-2 text-accent" />
+        <i aria-hidden="true" className="bi bi-grid-3x3-gap me-2 text-accent" />
         Doluluk Analizi Testi
       </div>
       <div className="card-body">
@@ -403,7 +403,7 @@ function OccupancyTest({ layouts, layoutsError }) {
                 Örnek doluluk: <strong>%{ratio}</strong>
               </label>
               <button type="button" className="btn btn-sm btn-outline-primary" onClick={makeSample} disabled={!layout || sampleBusy}>
-                {sampleBusy ? <span className="spinner-border spinner-border-sm me-1" /> : <i className="bi bi-magic me-1" />}
+                {sampleBusy ? <span className="spinner-border spinner-border-sm me-1" /> : <i aria-hidden="true" className="bi bi-magic me-1" />}
                 Örnek görüntü oluştur
               </button>
             </div>
@@ -441,7 +441,7 @@ function OccupancyTest({ layouts, layoutsError }) {
             </label>
           </div>
           <button type="submit" className="btn btn-primary w-100 mt-3" disabled={!file || !layout || busy}>
-            {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-play-fill me-2" />}
+            {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-play-fill me-2" />}
             Analiz Et
           </button>
         </form>
@@ -465,7 +465,7 @@ function OccupancyTest({ layouts, layoutsError }) {
             </div>
             {result.backendResponse && (
               <div className={`small mb-2 ${result.backendResponse.sent ? 'text-success' : 'text-danger'}`}>
-                <i className={`bi ${result.backendResponse.sent ? 'bi-check-circle' : 'bi-x-circle'} me-1`} />
+                <i aria-hidden="true" className={`bi ${result.backendResponse.sent ? 'bi-check-circle' : 'bi-x-circle'} me-1`} />
                 {result.backendResponse.sent
                   ? `${lotName(result.lotCode)} krokisi güncellendi.`
                   : `Backend'e gönderilemedi: ${result.backendResponse.error || 'bilinmeyen hata'}`}
@@ -497,6 +497,7 @@ function AgentTarget({ agent, layouts, lots, lotName, busy, onAssign }) {
     const known = layouts.some((l) => l.id === agent.layout);
     return (
       <select
+        aria-label={`${agent.id} kamerasının izleyeceği kroki`}
         className="form-select form-select-sm"
         style={{ minWidth: 170 }}
         value={agent.layout || ''}
@@ -513,6 +514,7 @@ function AgentTarget({ agent, layouts, lots, lotName, busy, onAssign }) {
   const code = agent.lotCode || 'GAZI';
   return (
     <select
+      aria-label={`${agent.id} kamerasının otoparkı`}
       className="form-select form-select-sm"
       style={{ minWidth: 150 }}
       value={code}
@@ -648,7 +650,7 @@ export default function KameraTesti() {
         subtitle="Görüntü işleme servisinin durumu, kamera ajanlarının yönetimi ve örnek görsellerle test."
         actions={
           <button type="button" className="btn btn-outline-primary" onClick={load}>
-            <i className="bi bi-arrow-clockwise me-1" />
+            <i aria-hidden="true" className="bi bi-arrow-clockwise me-1" />
             Yenile
           </button>
         }
@@ -661,7 +663,7 @@ export default function KameraTesti() {
         <div className="col-lg-4">
           <div className="card h-100">
             <div className="card-header">
-              <i className="bi bi-heart-pulse me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-heart-pulse me-2 text-accent" />
               Servis Durumu
             </div>
             <div className="card-body">
@@ -678,11 +680,11 @@ export default function KameraTesti() {
                   <ul className="list-group list-group-flush">
                     <li className="list-group-item px-0 d-flex justify-content-between">
                       Plaka tespit modeli
-                      {models.plateDetector ? <i className="bi bi-check-circle-fill text-success" /> : <i className="bi bi-x-circle-fill text-danger" />}
+                      {models.plateDetector ? <i aria-hidden="true" className="bi bi-check-circle-fill text-success" /> : <i aria-hidden="true" className="bi bi-x-circle-fill text-danger" />}
                     </li>
                     <li className="list-group-item px-0 d-flex justify-content-between">
                       Araç tespit modeli
-                      {models.vehicleDetector ? <i className="bi bi-check-circle-fill text-success" /> : <i className="bi bi-x-circle-fill text-danger" />}
+                      {models.vehicleDetector ? <i aria-hidden="true" className="bi bi-check-circle-fill text-success" /> : <i aria-hidden="true" className="bi bi-x-circle-fill text-danger" />}
                     </li>
                     <li className="list-group-item px-0 d-flex justify-content-between">
                       OCR motoru
@@ -706,13 +708,13 @@ export default function KameraTesti() {
         <div className="col-lg-8">
           <div className="card h-100">
             <div className="card-header">
-              <i className="bi bi-cpu me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-cpu me-2 text-accent" />
               Kamera Ajanları
             </div>
             <div className="card-body p-0">
               {agents.length === 0 ? (
                 <EmptyState icon="bi-camera-video-off" title={loading ? 'Yükleniyor…' : 'Tanımlı ajan yok'}>
-                  {!loading && 'Ajanlar vision-service yapılandırmasında tanımlanır.'}
+                  {!loading && 'Kamera ajanları görüntü servisinin cameras.yaml dosyasında tanımlanır. Servisin çalıştığından emin olun.'}
                 </EmptyState>
               ) : (
                 <div className="table-responsive">
@@ -738,7 +740,7 @@ export default function KameraTesti() {
                           onClick={() => setSelected(a.id)}
                         >
                           <td className="fw-semibold">
-                            <i className={`bi ${a.type === 'Occupancy' ? 'bi-grid-3x3-gap' : 'bi-upc-scan'} me-1 text-accent`} />
+                            <i aria-hidden="true" className={`bi ${a.type === 'Occupancy' ? 'bi-grid-3x3-gap' : 'bi-upc-scan'} me-1 text-accent`} />
                             {a.id}
                           </td>
                           <td className="small">
@@ -754,7 +756,7 @@ export default function KameraTesti() {
                             <span className={`badge text-bg-${statusVariant(a.status)}`} title={a.lastError || ''}>
                               {a.status || '—'}
                             </span>
-                            {a.lastError && <i className="bi bi-exclamation-triangle text-danger ms-1" title={a.lastError} />}
+                            {a.lastError && <i aria-hidden="true" className="bi bi-exclamation-triangle text-danger ms-1" title={a.lastError} />}
                           </td>
                           <td title="Kamera okuma hızı / plaka tespit hızı">
                             {a.cameraFps != null ? Number(a.cameraFps).toFixed(0) : '—'}
@@ -776,12 +778,12 @@ export default function KameraTesti() {
                                 <span className="spinner-border spinner-border-sm" />
                               ) : isRunning(a) ? (
                                 <>
-                                  <i className="bi bi-stop-fill me-1" />
+                                  <i aria-hidden="true" className="bi bi-stop-fill me-1" />
                                   Durdur
                                 </>
                               ) : (
                                 <>
-                                  <i className="bi bi-play-fill me-1" />
+                                  <i aria-hidden="true" className="bi bi-play-fill me-1" />
                                   Başlat
                                 </>
                               )}
@@ -802,7 +804,7 @@ export default function KameraTesti() {
         <div className="col-xl-4">
           <div className="card h-100">
             <div className="card-header">
-              <i className="bi bi-display me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-display me-2 text-accent" />
               Canlı Kare {selected ? `— ${selected}` : ''}
             </div>
             <div className="card-body">

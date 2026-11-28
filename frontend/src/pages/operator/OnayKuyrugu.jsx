@@ -24,7 +24,7 @@ function ReviewCard({ item, onResolved, lotLabel }) {
 
   const resolve = async (approve) => {
     if (approve && !valid) {
-      toast.warning('Onaylamak için geçerli bir plaka giriniz.');
+      toast.warning('Onaylamak için geçerli bir plaka girin (ör. 34 ABC 123).');
       return;
     }
     setBusy(approve ? 'approve' : 'reject');
@@ -47,17 +47,17 @@ function ReviewCard({ item, onResolved, lotLabel }) {
       <div className="card-body d-flex flex-column">
         <div className="d-flex justify-content-between align-items-center mb-2">
           <span className={`badge text-bg-${item.gate === 'Exit' ? 'dark' : 'primary'}`}>
-            <i className={`bi ${item.gate === 'Exit' ? 'bi-box-arrow-right' : 'bi-box-arrow-in-right'} me-1`} />
+            <i aria-hidden="true" className={`bi ${item.gate === 'Exit' ? 'bi-box-arrow-right' : 'bi-box-arrow-in-right'} me-1`} />
             {gateLabel(item.gate)}
           </span>
           <span className="small text-secondary" title={formatDateTime(item.createdAt)}>
-            <i className="bi bi-clock me-1" />
+            <i aria-hidden="true" className="bi bi-clock me-1" />
             {timeAgo(item.createdAt)}
           </span>
         </div>
         {lotLabel && (
           <div className="small text-secondary mb-2 text-truncate" title={lotLabel}>
-            <i className="bi bi-buildings me-1" />
+            <i aria-hidden="true" className="bi bi-buildings me-1" />
             {lotLabel}
           </div>
         )}
@@ -67,7 +67,7 @@ function ReviewCard({ item, onResolved, lotLabel }) {
         ) : (
           <div className="plate-crop-empty mb-2">
             <span>
-              <i className="bi bi-image me-1" />
+              <i aria-hidden="true" className="bi bi-image me-1" />
               Görüntü yok
             </span>
           </div>
@@ -105,11 +105,11 @@ function ReviewCard({ item, onResolved, lotLabel }) {
 
         <div className="d-flex gap-2 mt-auto">
           <button type="button" className="btn btn-success flex-grow-1" disabled={!!busy || !valid} onClick={() => resolve(true)}>
-            {busy === 'approve' ? <span className="spinner-border spinner-border-sm me-1" /> : <i className="bi bi-check-lg me-1" />}
+            {busy === 'approve' ? <span className="spinner-border spinner-border-sm me-1" /> : <i aria-hidden="true" className="bi bi-check-lg me-1" />}
             Onayla
           </button>
           <button type="button" className="btn btn-outline-danger flex-grow-1" disabled={!!busy} onClick={() => resolve(false)}>
-            {busy === 'reject' ? <span className="spinner-border spinner-border-sm me-1" /> : <i className="bi bi-x-lg me-1" />}
+            {busy === 'reject' ? <span className="spinner-border spinner-border-sm me-1" /> : <i aria-hidden="true" className="bi bi-x-lg me-1" />}
             Reddet
           </button>
         </div>
@@ -167,7 +167,7 @@ export default function OnayKuyrugu() {
             <LotSelector value={lot} onChange={setLot} allowAll />
             <LiveBadge status={status} />
             <button type="button" className="btn btn-outline-primary" onClick={load}>
-              <i className="bi bi-arrow-clockwise me-1" />
+              <i aria-hidden="true" className="bi bi-arrow-clockwise me-1" />
               Yenile
             </button>
           </>
@@ -178,7 +178,7 @@ export default function OnayKuyrugu() {
 
       {lot && totalAll != null && totalAll > items.length && (
         <div className="alert alert-warning d-flex align-items-center gap-2 py-2">
-          <i className="bi bi-info-circle" />
+          <i aria-hidden="true" className="bi bi-info-circle" />
           Diğer otoparklarda {totalAll - items.length} okuma daha onay bekliyor.
           <button type="button" className="btn btn-sm btn-warning ms-auto" onClick={() => setLot('')}>
             Tümünü göster

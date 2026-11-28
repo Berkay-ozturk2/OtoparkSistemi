@@ -36,7 +36,7 @@ export default function PermitCheckBox({ className = '', compact = false }) {
   return (
     <div className={`card ${className}`}>
       <div className="card-header">
-        <i className="bi bi-person-wheelchair me-2 text-accent" />
+        <i aria-hidden="true" className="bi bi-person-wheelchair me-2 text-accent" />
         Engelli izni kontrolü
       </div>
       <div className="card-body">
@@ -53,7 +53,7 @@ export default function PermitCheckBox({ className = '', compact = false }) {
             aria-label="İzin kontrolü için plaka"
           />
           <button type="submit" className={`btn btn-primary ${compact ? 'btn-sm' : ''} text-nowrap`} disabled={busy}>
-            {busy ? <span className="spinner-border spinner-border-sm" /> : <i className="bi bi-search me-1" />}
+            {busy ? <span className="spinner-border spinner-border-sm" /> : <i aria-hidden="true" className="bi bi-search me-1" />}
             Kontrol
           </button>
         </form>
@@ -65,12 +65,12 @@ export default function PermitCheckBox({ className = '', compact = false }) {
               <PlateBadge plate={result.plate} size="sm" />
               {result.valid ? (
                 <span className="fw-bold text-success">
-                  <i className="bi bi-patch-check-fill me-1" />
+                  <i aria-hidden="true" className="bi bi-patch-check-fill me-1" />
                   Geçerli engelli izni var <span aria-hidden="true">♿</span>
                 </span>
               ) : (
                 <span className="fw-bold text-danger">
-                  <i className="bi bi-x-octagon-fill me-1" />
+                  <i aria-hidden="true" className="bi bi-x-octagon-fill me-1" />
                   Geçerli izin yok
                 </span>
               )}

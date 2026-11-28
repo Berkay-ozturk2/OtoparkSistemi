@@ -40,7 +40,7 @@ export default function DateRangeBar({ from, to, onChange, onSubmit, busy, child
           {children}
           <div className="col-12 col-md-auto">
             <button type="submit" className="btn btn-primary w-100" disabled={busy || invalid}>
-              {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-funnel me-2" />}
+              {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-funnel me-2" />}
               Raporla
             </button>
           </div>

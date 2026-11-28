@@ -42,7 +42,7 @@ export function isValidPlate(value) {
 /** Form alanı için kullanıcıya gösterilecek doğrulama mesajı (geçerliyse null) */
 export function plateError(value) {
   const n = normalizePlate(value);
-  if (!n) return 'Plaka giriniz.';
-  if (!isValidPlate(n)) return 'Geçerli bir Türk plakası giriniz (ör. 34 ABC 123).';
+  if (!n) return 'Plaka girin.';
+  if (!isValidPlate(n)) return 'Geçerli bir Türk plakası girin (ör. 34 ABC 123).';
   return null;
 }

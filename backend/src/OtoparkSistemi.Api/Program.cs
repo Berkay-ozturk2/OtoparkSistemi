@@ -198,6 +198,7 @@ builder.Services.AddSingleton<AgentStatusStore>();
 builder.Services.AddSingleton<IRealtimeNotifier, RealtimeNotifier>();
 builder.Services.AddSingleton<IPaymentProvider, MockPaymentProvider>();
 builder.Services.AddScoped<ParkingService>();
+builder.Services.AddScoped<SlotAssignmentService>();
 builder.Services.AddScoped<GateService>();
 builder.Services.AddScoped<ReservationService>();
 builder.Services.AddScoped<PermitService>();

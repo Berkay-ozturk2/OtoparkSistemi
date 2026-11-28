@@ -147,7 +147,7 @@ export default function YolTarifi() {
         <div className="card shadow-sm mb-3 border-primary">
           <div className="card-body py-2">
             <div className="fw-semibold mb-1">
-              <i className="bi bi-calendar-check me-2 text-primary" />
+              <i aria-hidden="true" className="bi bi-calendar-check me-2 text-primary" />
               Rezervasyonlarınız
             </div>
             <div className="d-flex flex-wrap gap-2">
@@ -158,7 +158,7 @@ export default function YolTarifi() {
                   className={`btn btn-sm ${r.lotCode === selected ? 'btn-primary' : 'btn-outline-primary'}`}
                   onClick={() => selectLot(r.lotCode)}
                 >
-                  <i className="bi bi-signpost me-1" />
+                  <i aria-hidden="true" className="bi bi-signpost me-1" />
                   {r.lotName || r.lotCode} · {r.zoneCode} · {formatDateTime(r.startTime)}
                   {r.slotType === 'Disabled' ? ' · ♿' : ''}
                 </button>
@@ -173,14 +173,14 @@ export default function YolTarifi() {
           {/* Başlangıç */}
           <div className="card shadow-sm mb-3">
             <div className="card-header fw-semibold">
-              <i className="bi bi-geo me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-geo me-2 text-accent" />
               Başlangıç noktası
             </div>
             <div className="card-body">
               <div className="small mb-2">
                 {origin ? (
                   <>
-                    <i className="bi bi-record-circle text-primary me-1" />
+                    <i aria-hidden="true" className="bi bi-record-circle text-primary me-1" />
                     {originLabel}
                   </>
                 ) : (
@@ -189,7 +189,7 @@ export default function YolTarifi() {
               </div>
               <div className="d-flex flex-wrap gap-2">
                 <button type="button" className="btn btn-sm btn-primary" onClick={useMyLocation} disabled={locating}>
-                  {locating ? <span className="spinner-border spinner-border-sm me-1" /> : <i className="bi bi-crosshair me-1" />}
+                  {locating ? <span className="spinner-border spinner-border-sm me-1" /> : <i aria-hidden="true" className="bi bi-crosshair me-1" />}
                   Konumumu kullan
                 </button>
                 <button
@@ -197,7 +197,7 @@ export default function YolTarifi() {
                   className={`btn btn-sm ${pickMode ? 'btn-warning' : 'btn-outline-secondary'}`}
                   onClick={() => setPickMode((v) => !v)}
                 >
-                  <i className="bi bi-hand-index me-1" />
+                  <i aria-hidden="true" className="bi bi-hand-index me-1" />
                   {pickMode ? 'Haritaya tıklayın…' : 'Haritadan seç'}
                 </button>
                 <select
@@ -228,11 +228,11 @@ export default function YolTarifi() {
           {/* Otoparklar */}
           <div className="card shadow-sm">
             <div className="card-header fw-semibold d-flex align-items-center">
-              <i className="bi bi-p-square me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-p-square me-2 text-accent" />
               Otoparklar
               {nearestFree && (
                 <button type="button" className="btn btn-sm btn-success ms-auto" onClick={() => selectLot(nearestFree.code)}>
-                  <i className="bi bi-lightning-charge me-1" />
+                  <i aria-hidden="true" className="bi bi-lightning-charge me-1" />
                   En yakın boş
                 </button>
               )}
@@ -274,7 +274,7 @@ export default function YolTarifi() {
         <div className="col-lg-8">
           {pickMode && (
             <div className="alert alert-info py-2 small mb-2">
-              <i className="bi bi-hand-index me-1" />
+              <i aria-hidden="true" className="bi bi-hand-index me-1" />
               Başlangıç noktası için haritada bir yere tıklayın.
             </div>
           )}
@@ -371,18 +371,18 @@ export default function YolTarifi() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <i className="bi bi-google me-1" />
+                    <i aria-hidden="true" className="bi bi-google me-1" />
                     Google Haritalar&apos;da aç
                   </a>
                   {isDriver && (
                     <Link className="btn btn-outline-secondary btn-sm" to="/surucu/rezervasyon" onClick={() => setLotCode(target.code)}>
-                      <i className="bi bi-calendar-plus me-1" />
+                      <i aria-hidden="true" className="bi bi-calendar-plus me-1" />
                       Bu otoparkta rezervasyon yap
                     </Link>
                   )}
                   {route && route.steps.length > 0 && (
                     <button type="button" className="btn btn-light btn-sm ms-auto" onClick={() => setShowSteps((v) => !v)}>
-                      <i className={`bi ${showSteps ? 'bi-chevron-up' : 'bi-chevron-down'} me-1`} />
+                      <i aria-hidden="true" className={`bi ${showSteps ? 'bi-chevron-up' : 'bi-chevron-down'} me-1`} />
                       Adım adım tarif ({route.steps.length})
                     </button>
                   )}
@@ -403,7 +403,7 @@ export default function YolTarifi() {
           )}
           {!target && (
             <div className="alert alert-light border mt-3 small">
-              <i className="bi bi-info-circle me-1" />
+              <i aria-hidden="true" className="bi bi-info-circle me-1" />
               Rota için soldaki listeden ya da haritadaki <strong>P</strong> işaretlerinden bir otopark seçin.
             </div>
           )}

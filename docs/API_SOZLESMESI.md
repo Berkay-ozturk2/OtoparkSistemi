@@ -366,3 +366,22 @@ Varsayılan konumlar (seed, yaklaşık; yönetici panelinden düzeltilebilir):
 - Yerleşim ile `lot` farklı otoparklara aitse istek 400 ile reddedilir.
 - Sentetik örnek görüntü (`/occupancy/sample`) yalnızca test içindir. Bu görüntüde araçlar renkli bloklardır, bu yüzden analizde `detector=color` kullanılır. Gerçek fotoğraflarda YOLO kullanılır.
 - Kamera ataması (`/agents/{id}/assign`) çalışma anı ayarıdır. Servis yeniden başlayınca `cameras.yaml` ayarına döner.
+
+## 14. Otopark krokisi 2D + 3D ve cep ataması (aşama 3)
+
+Arayüz krokiyi varsayılan olarak 3D (three.js) gösterir; WebGL yoksa, cihaz düşük donanımlıysa ya da 3D ilk saniyelerde
+20 FPS'in altında kalırsa 2D SVG krokiye geçer. Kullanıcının seçimi `localStorage["akillipark_map_mode"]` içinde saklanır.
+
+`ParkingSession.SlotId` (nullable) eklendi; eski veritabanında `SchemaGuard` sütunu veri silmeden ekler.
+
+| Yöntem | Yol | Rol | Açıklama |
+|---|---|---|---|
+| GET | `/api/operator/slots/{id}/detail` | Operator, Admin | `SlotDetailDto`: durum + atanmış aracın `plate`, `entryTime`, `isDisabledPermit` (yoksa null) |
+| POST | `/api/operator/slots/{id}/assign` | Operator, Admin | `{ plate }` — otoparktaki aktif oturumu cebe atar; önceki cebi boşaltır |
+| DELETE | `/api/operator/slots/{id}/assign` | Operator, Admin | Cepteki atamayı kaldırır, cebi boş işaretler |
+
+Kurallar:
+- **Normal araç engelli cebe atanamaz** → `422 { message: "Normal araç engelli park yerine atanamaz. …" }`.
+  İzin: girişteki `IsDisabledPermit` ya da şu an geçerli engelli izni. Arayüz de atamayı engeller ve aynı uyarıyı gösterir.
+- Aktif oturum yok → 404; cep kullanım dışı ya da başka araç kayıtlı → 409.
+- Plaka kişisel veri olduğundan herkese açık `SlotDto` değişmedi; plaka ve giriş saati yalnızca bu uçlardan döner.

@@ -113,11 +113,11 @@ export default function Ihlaller() {
         actions={
           <>
             <button type="button" className="btn btn-outline-primary" onClick={exportCsv} disabled={list.length === 0}>
-              <i className="bi bi-download me-1" />
+              <i aria-hidden="true" className="bi bi-download me-1" />
               CSV
             </button>
-            <button type="button" className="btn btn-outline-primary" onClick={load} title="Yenile">
-              <i className="bi bi-arrow-clockwise" />
+            <button type="button" className="btn btn-outline-primary" onClick={load} title="Yenile" aria-label="Yenile">
+              <i aria-hidden="true" className="bi bi-arrow-clockwise" />
             </button>
           </>
         }
@@ -163,8 +163,8 @@ export default function Ihlaller() {
           {loading && list.length === 0 ? (
             <Loading text="İhlaller yükleniyor…" />
           ) : list.length === 0 ? (
-            <EmptyState icon="bi-shield-check" title={status === 'Open' ? 'Açık ihlal yok' : 'Kayıt bulunamadı'}>
-              Engelli park yerleri kurallara uygun kullanılıyor.
+            <EmptyState icon="bi-shield-check" title={status === 'Open' ? 'Açık ihlal yok' : 'Bu filtrede ihlal yok'}>
+              {status === 'Open' ? 'Engelli park yerleri kurala uygun kullanılıyor.' : 'Başka bir durum seçin.'}
             </EmptyState>
           ) : (
             <div className="table-responsive">
@@ -202,7 +202,7 @@ export default function Ihlaller() {
                         </td>
                         <td>
                           <span className={`badge text-bg-${st.variant}`}>
-                            <i className={`bi ${st.icon} me-1`} />
+                            <i aria-hidden="true" className={`bi ${st.icon} me-1`} />
                             {st.label}
                           </span>
                           {v.resolvedAt && <div className="small text-secondary">{formatDateTime(v.resolvedAt)}</div>}
@@ -215,13 +215,13 @@ export default function Ihlaller() {
                           <button
                             type="button"
                             className="btn btn-sm btn-light me-1"
-                            title="Canlı izlemede krokide göster"
+                            title="Canlı izlemede krokide göster" aria-label="Canlı izlemede krokide göster"
                             onClick={() => {
                               setLotCode(v.lotCode || 'GAZI');
                               navigate('/operator');
                             }}
                           >
-                            <i className="bi bi-map" />
+                            <i aria-hidden="true" className="bi bi-map" />
                           </button>
                           {v.status === 'Open' && (
                             <>
@@ -257,7 +257,7 @@ export default function Ihlaller() {
           )}
         </div>
         <div className="card-footer small text-secondary">
-          <i className="bi bi-info-circle me-1" />
+          <i aria-hidden="true" className="bi bi-info-circle me-1" />
           Durumlar: {Object.values(VIOLATION_STATUS).map((x) => x.label).join(' · ')}. Yanlış alarm: araç izinli olduğu hâlde oturumla
           eşleşmediyse (ör. plaka okunamadı).
         </div>

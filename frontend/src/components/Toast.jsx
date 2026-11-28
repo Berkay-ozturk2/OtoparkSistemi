@@ -33,7 +33,7 @@ export function ToastProvider({ children }) {
     () => ({
       show,
       success: (m) => show(m, 'success'),
-      error: (m) => show(typeof m === 'string' ? m : m?.message || 'Hata oluştu', 'danger', 6000),
+      error: (m) => show(typeof m === 'string' ? m : m?.message || 'İşlem tamamlanamadı. Tekrar deneyin.', 'danger', 6000),
       warning: (m) => show(m, 'warning'),
       info: (m) => show(m, 'info'),
       dismiss,
@@ -44,11 +44,11 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="toast-container position-fixed bottom-0 end-0 p-3" style={{ zIndex: 1100 }}>
+      <div className="toast-container position-fixed bottom-0 end-0 p-3" style={{ zIndex: 1100 }} aria-live="polite" aria-relevant="additions">
         {toasts.map((t) => (
-          <div key={t.id} className={`toast show app-toast toast-${t.variant}`} role="status" aria-live="polite">
+          <div key={t.id} className={`toast show app-toast toast-${t.variant}`} role={t.variant === 'danger' ? 'alert' : 'status'}>
             <div className="d-flex align-items-center p-3 gap-2">
-              <i className={`bi ${ICONS[t.variant] || ICONS.info} fs-5`} />
+              <i aria-hidden="true" className={`bi ${ICONS[t.variant] || ICONS.info} fs-5`} />
               <div className="flex-grow-1">{t.message}</div>
               <button type="button" className="btn-close ms-2" aria-label="Kapat" onClick={() => dismiss(t.id)} />
             </div>

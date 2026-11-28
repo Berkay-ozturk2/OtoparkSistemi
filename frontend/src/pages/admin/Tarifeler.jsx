@@ -136,10 +136,10 @@ export default function Tarifeler() {
       };
       if (editing.id) {
         await updateTariff(editing.id, { id: editing.id, ...body });
-        toast.success('Tarife güncellendi.');
+        toast.success('Tarife dilimi güncellendi.');
       } else {
         await createTariff(body);
-        toast.success('Tarife eklendi.');
+        toast.success('Tarife dilimi eklendi.');
       }
       setEditing(null);
       const t = await getTariffs();
@@ -165,7 +165,7 @@ export default function Tarifeler() {
     try {
       await deleteTariff(toDelete.id);
       setTariffs((list) => list.filter((x) => x.id !== toDelete.id));
-      toast.success('Tarife silindi.');
+      toast.success('Tarife dilimi silindi.');
       setToDelete(null);
     } catch (err) {
       toast.error(err);
@@ -185,7 +185,7 @@ export default function Tarifeler() {
     for (const f of SETTING_FIELDS) {
       const v = settings[f.key];
       if (v === '' || v === undefined || Number.isNaN(Number(v)) || v < f.min || v > f.max) {
-        toast.warning(`${f.label}: ${f.min} ile ${f.max} arasında bir değer giriniz.`);
+        toast.warning(`${f.label}: ${f.min} ile ${f.max} arasında bir değer girin.`);
         return;
       }
     }
@@ -220,7 +220,7 @@ export default function Tarifeler() {
               setEditing({ ...EMPTY_TARIFF, minMinutes: last ? last.maxMinutes : 0, maxMinutes: last ? last.maxMinutes + 60 : 60 });
             }}
           >
-            <i className="bi bi-plus-lg me-1" />
+            <i aria-hidden="true" className="bi bi-plus-lg me-1" />
             Yeni Dilim
           </button>
         }
@@ -232,19 +232,19 @@ export default function Tarifeler() {
         <div className="col-xl-7">
           <div className="card">
             <div className="card-header">
-              <i className="bi bi-list-ol me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-list-ol me-2 text-accent" />
               Süre Dilimi Tarifeleri
             </div>
             <div className="card-body p-0">
               {warnings.length > 0 && (
                 <div className="alert alert-warning m-3 small">
-                  <i className="bi bi-exclamation-triangle me-1" />
+                  <i aria-hidden="true" className="bi bi-exclamation-triangle me-1" />
                   {warnings.join(' ')}
                 </div>
               )}
               {sorted.length === 0 ? (
                 <EmptyState icon="bi-tags" title="Tarife tanımlı değil">
-                  &quot;Yeni Dilim&quot; ile ilk tarifeyi ekleyin.
+                  Ücret hesaplanabilmesi için en az bir dilim gerekir. &quot;Yeni Dilim&quot; ile ilk dilimi ekleyin.
                 </EmptyState>
               ) : (
                 <div className="table-responsive">
@@ -289,12 +289,12 @@ export default function Tarifeler() {
                                 setFormError(null);
                                 setEditing({ ...t });
                               }}
-                              title="Düzenle"
+                              title="Düzenle" aria-label="Düzenle"
                             >
-                              <i className="bi bi-pencil" />
+                              <i aria-hidden="true" className="bi bi-pencil" />
                             </button>
-                            <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => setToDelete(t)} title="Sil">
-                              <i className="bi bi-trash" />
+                            <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => setToDelete(t)} title="Sil" aria-label="Sil">
+                              <i aria-hidden="true" className="bi bi-trash" />
                             </button>
                           </td>
                         </tr>
@@ -304,7 +304,7 @@ export default function Tarifeler() {
                 </div>
               )}
               <div className="small text-secondary px-3 py-2 border-top">
-                <i className="bi bi-info-circle me-1" />
+                <i aria-hidden="true" className="bi bi-info-circle me-1" />
                 Ücretsiz süre altı ücretsizdir; aksi hâlde süreyi kapsayan aktif dilim uygulanır. 24 saati aşan sürelerde her
                 tam gün için günlük azami ücret + kalan süre dilimi uygulanır.
               </div>
@@ -316,7 +316,7 @@ export default function Tarifeler() {
           <div className="card">
             <div className="card-header d-flex justify-content-between align-items-center">
               <span>
-                <i className="bi bi-sliders me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-sliders me-2 text-accent" />
                 Sistem Ayarları
               </span>
               {settingsDirty && <span className="badge text-bg-warning">Kaydedilmedi</span>}
@@ -349,7 +349,7 @@ export default function Tarifeler() {
                     </div>
                   ))}
                   <button type="submit" className="btn btn-primary w-100" disabled={settingsSaving || !settingsDirty}>
-                    {settingsSaving ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-save me-2" />}
+                    {settingsSaving ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-save me-2" />}
                     Ayarları Kaydet
                   </button>
                 </form>
@@ -388,14 +388,14 @@ export default function Tarifeler() {
 
       <ConfirmModal
         show={!!toDelete}
-        title="Tarifeyi sil"
+        title="Tarife dilimini sil"
         icon="bi-trash"
         variant="danger"
-        confirmText="Sil"
+        confirmText="Dilimi sil"
         busy={deleting}
         onConfirm={doDelete}
         onCancel={() => setToDelete(null)}
-        message={toDelete ? `"${toDelete.name}" dilimini silmek istediğinize emin misiniz? Silmek yerine pasif yapmayı da düşünebilirsiniz.` : ''}
+        message={toDelete ? `"${toDelete.name}" dilimi silinecek ve geri alınamaz. Yalnızca kullanımdan kaldırmak istiyorsanız dilimi pasif yapın.` : ''}
       />
     </div>
   );

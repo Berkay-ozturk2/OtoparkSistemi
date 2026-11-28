@@ -73,7 +73,7 @@ export default function LotSelector({
         onClick={() => setOpen((o) => !o)}
         title="Otopark seçin"
       >
-        <i className={`bi ${isAll ? 'bi-collection' : 'bi-buildings'} flex-shrink-0`} />
+        <i aria-hidden="true" className={`bi ${isAll ? 'bi-collection' : 'bi-buildings'} flex-shrink-0`} />
         <span className="d-flex flex-column lh-sm min-w-0">
           {label && <span className="lot-selector-label">{label}</span>}
           <span className="fw-semibold text-truncate lot-selector-name">{btnName}</span>
@@ -90,14 +90,14 @@ export default function LotSelector({
             )}
           </span>
         )}
-        <i className="bi bi-chevron-down small ms-auto flex-shrink-0" />
+        <i aria-hidden="true" className="bi bi-chevron-down small ms-auto flex-shrink-0" />
       </button>
 
       <ul className={`dropdown-menu ${align === 'end' ? 'dropdown-menu-end' : ''} shadow lot-selector-menu ${open ? 'show' : ''}`} role="listbox">
         {allowAll && (
           <li>
             <button type="button" className={`dropdown-item d-flex align-items-center gap-2 ${isAll ? 'active' : ''}`} onClick={() => pick('')}>
-              <i className="bi bi-collection" />
+              <i aria-hidden="true" className="bi bi-collection" />
               <span className="fw-semibold">{allLabel}</span>
             </button>
           </li>
