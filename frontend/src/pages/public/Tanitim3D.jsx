@@ -93,7 +93,7 @@ export default function Tanitim3D({ onFail }) {
     canvasHost.current.appendChild(canvas);
     try {
       scene = createIntroScene(canvas, {
-        accent: cssToken('--ap-accent', '#0a7590'),
+        accent: cssToken('--ap-brand-vivid', '#e2620e'),
         onHud: (s) => applyHud(hud.current, s),
       });
     } catch (err) {
