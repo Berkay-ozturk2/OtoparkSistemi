@@ -68,7 +68,7 @@ export default function KvkkTalepleri() {
         subtitle="İlgili kişi başvuruları (KVKK md. 11). Başvurular en geç 30 gün içinde sonuçlandırılmalıdır."
         actions={
           <button type="button" className="btn btn-outline-primary" onClick={load}>
-            <i className="bi bi-arrow-clockwise me-1" />
+            <i aria-hidden="true" className="bi bi-arrow-clockwise me-1" />
             Yenile
           </button>
         }
@@ -92,8 +92,8 @@ export default function KvkkTalepleri() {
           {loading ? (
             <Loading />
           ) : rows.length === 0 ? (
-            <EmptyState icon="bi-shield-check" title="Talep bulunamadı">
-              {statusFilter === 'Open' ? 'Bekleyen KVKK başvurusu yok.' : null}
+            <EmptyState icon="bi-shield-check" title={statusFilter === 'Open' ? 'Bekleyen KVKK başvurusu yok' : 'Bu filtrede talep yok'}>
+              {statusFilter === 'Open' ? 'Yeni başvurular geldiğinde burada listelenir.' : 'Başka bir durum seçin.'}
             </EmptyState>
           ) : (
             <div className="table-responsive">
@@ -120,7 +120,7 @@ export default function KvkkTalepleri() {
                           {formatDateTime(r.createdAt)}
                           {overdue && (
                             <div className="text-danger small fw-semibold">
-                              <i className="bi bi-alarm me-1" />
+                              <i aria-hidden="true" className="bi bi-alarm me-1" />
                               {daysOpen} gündür açık
                             </div>
                           )}
@@ -144,7 +144,7 @@ export default function KvkkTalepleri() {
                         </td>
                         <td className="text-end">
                           <button type="button" className="btn btn-sm btn-outline-primary text-nowrap" onClick={() => setEditing({ ...r, status: r.status || 'Open', note: r.note || '' })}>
-                            <i className="bi bi-pencil-square me-1" />
+                            <i aria-hidden="true" className="bi bi-pencil-square me-1" />
                             İşle
                           </button>
                         </td>
@@ -196,7 +196,7 @@ export default function KvkkTalepleri() {
             </dl>
             {editing.type === 'Delete' && (
               <div className="alert alert-info small">
-                <i className="bi bi-info-circle me-1" />
+                <i aria-hidden="true" className="bi bi-info-circle me-1" />
                 Silme talebinde plakaya ait giriş-çıkış kayıtları, yasal saklama yükümlülüğü olmayanlar için anonimleştirilmelidir.
               </div>
             )}

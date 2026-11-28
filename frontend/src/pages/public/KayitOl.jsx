@@ -10,9 +10,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function validate(f) {
   const e = {};
   if (f.fullName.trim().length < 3) e.fullName = 'Ad soyad en az 3 karakter olmalıdır.';
-  if (!EMAIL_RE.test(f.email.trim())) e.email = 'Geçerli bir e-posta adresi giriniz.';
+  if (!EMAIL_RE.test(f.email.trim())) e.email = 'Geçerli bir e-posta adresi girin.';
   const phone = f.phone.replace(/\D/g, '');
-  if (phone.length < 10 || phone.length > 12) e.phone = 'Geçerli bir telefon numarası giriniz (ör. 0532 123 45 67).';
+  if (phone.length < 10 || phone.length > 12) e.phone = 'Geçerli bir telefon numarası girin (ör. 0532 123 45 67).';
   if (f.password.length < 8) e.password = 'Parola en az 8 karakter olmalıdır.';
   else if (!/[A-ZÇĞİÖŞÜ]/.test(f.password) || !/\d/.test(f.password))
     e.password = 'Parola en az bir büyük harf ve bir rakam içermelidir.';
@@ -75,7 +75,7 @@ export default function KayitOl() {
         <div className="card-body p-4 p-lg-5">
           <div className="d-flex align-items-center gap-3 mb-4">
             <div className="page-header-icon">
-              <i className="bi bi-person-plus" />
+              <i aria-hidden="true" className="bi bi-person-plus" />
             </div>
             <div>
               <h1 className="h4 mb-0">Sürücü Kaydı</h1>
@@ -171,7 +171,7 @@ export default function KayitOl() {
             </div>
 
             <button type="submit" className="btn btn-primary btn-lg w-100 mt-4" disabled={busy}>
-              {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-check2-circle me-2" />}
+              {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-check2-circle me-2" />}
               Kayıt Ol
             </button>
           </form>

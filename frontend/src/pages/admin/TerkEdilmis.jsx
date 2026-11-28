@@ -97,11 +97,11 @@ export default function TerkEdilmis() {
           <>
             <LotSelector value={lot} onChange={setLot} allowAll />
             <button type="button" className="btn btn-outline-secondary" onClick={exportCsv} disabled={list.length === 0}>
-              <i className="bi bi-filetype-csv me-1" />
+              <i aria-hidden="true" className="bi bi-filetype-csv me-1" />
               CSV
             </button>
             <button type="button" className="btn btn-outline-primary" onClick={load}>
-              <i className="bi bi-arrow-clockwise me-1" />
+              <i aria-hidden="true" className="bi bi-arrow-clockwise me-1" />
               Yenile
             </button>
           </>
@@ -155,7 +155,7 @@ export default function TerkEdilmis() {
                         <td>{s.isPaid ? <span className="badge text-bg-success">Ödendi</span> : <span className="badge text-bg-warning">Ödenmedi</span>}</td>
                         <td className="text-end">
                           <button type="button" className="btn btn-sm btn-outline-primary text-nowrap" onClick={() => setExitFor(s)}>
-                            <i className="bi bi-box-arrow-right me-1" />
+                            <i aria-hidden="true" className="bi bi-box-arrow-right me-1" />
                             Çıkış
                           </button>
                         </td>
@@ -170,7 +170,7 @@ export default function TerkEdilmis() {
       </div>
 
       <div className="small text-secondary mt-3">
-        <i className="bi bi-info-circle me-1" />
+        <i aria-hidden="true" className="bi bi-info-circle me-1" />
         Eşik değeri <strong>Tarifeler ve Ayarlar</strong> sayfasındaki &quot;Terk edilmiş araç eşiği&quot; alanından değiştirilebilir.
       </div>
 

@@ -16,20 +16,23 @@ export default function Layout() {
 
   return (
     <div className="app-shell d-flex flex-column min-vh-100">
+      <a href="#main-content" className="skip-link">
+        İçeriğe geç
+      </a>
       <Navbar />
       <ServerStatusBanner />
       {sessionExpired && (
         <div className="alert alert-info rounded-0 mb-0 border-0 d-flex align-items-center justify-content-center gap-2 py-2">
-          <i className="bi bi-clock-history" />
-          Oturumunuzun süresi doldu. Lütfen
+          <i className="bi bi-clock-history" aria-hidden="true" />
+          Oturumunuz kapandı. Devam etmek için
           <Link to="/giris" onClick={clearSessionExpired} className="alert-link">
-            tekrar giriş yapın
+            yeniden giriş yapın
           </Link>
           .
           <button type="button" className="btn-close ms-2" aria-label="Kapat" onClick={clearSessionExpired} />
         </div>
       )}
-      <main className={`flex-grow-1 py-4 ${wide ? 'container-fluid px-3 px-lg-4' : 'container-xl'}`}>
+      <main id="main-content" tabIndex={-1} className={`flex-grow-1 py-4 ${wide ? 'container-fluid px-3 px-lg-4' : 'container-xl'}`}>
         {/* Sayfa değişince içerik bir kez yumuşakça belirir */}
         <div key={location.pathname} className="page-enter">
           <Outlet />
@@ -38,7 +41,7 @@ export default function Layout() {
       <footer className="app-footer py-3 mt-auto">
         <div className="container-xl d-flex flex-wrap justify-content-between align-items-center gap-2 small">
           <span>
-            <i className="bi bi-p-square-fill me-1 text-accent" />
+            <i aria-hidden="true" className="bi bi-p-square-fill me-1 text-accent" />
             AkıllıPark — Görüntü İşleme Destekli Akıllı Otopark Sistemi · Gazi Üniversitesi BMT-315
           </span>
           <span className="d-flex gap-3">

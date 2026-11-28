@@ -126,6 +126,20 @@ public class OperatorController(
         return Ok(slot);
     }
 
+    /// <summary>Krokide tıklanan cebin ayrıntısı: durum, atanmış aracın plakası ve giriş saati.</summary>
+    [HttpGet("slots/{id:int}/detail")]
+    public async Task<ActionResult<SlotDetailDto>> SlotDetail(int id, [FromServices] SlotAssignmentService slots, CancellationToken ct) =>
+        Ok(await slots.GetDetailAsync(id, ct));
+
+    /// <summary>Aktif oturumdaki aracı cebe atar. Normal araç engelli cebe atanamaz → 422.</summary>
+    [HttpPost("slots/{id:int}/assign")]
+    public async Task<ActionResult<SlotDetailDto>> AssignSlot(int id, [FromBody] AssignSlotRequest request, [FromServices] SlotAssignmentService slots, CancellationToken ct) =>
+        Ok(await slots.AssignAsync(id, request.Plate, User.GetEmail(), ct));
+
+    [HttpDelete("slots/{id:int}/assign")]
+    public async Task<ActionResult<SlotDetailDto>> UnassignSlot(int id, [FromServices] SlotAssignmentService slots, CancellationToken ct) =>
+        Ok(await slots.UnassignAsync(id, User.GetEmail(), ct));
+
     [HttpGet("agents")]
     public ActionResult<IReadOnlyList<AgentStatusDto>> Agents([FromQuery] string? lot) =>
         Ok(agents.GetAll(clock.GetUtcNow().UtcDateTime, LotDefaults.NormalizeOptional(lot)));

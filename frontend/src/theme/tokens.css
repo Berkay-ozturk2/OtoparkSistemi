@@ -92,7 +92,7 @@
   --ap-text: #172033;
   --ap-text-secondary: #344158;
   --ap-text-muted: #5a6478;
-  --ap-text-subtle: #8b95a7;
+  --ap-text-subtle: #657084;      /* AA: zemin üzerinde 4.5:1 */
   --ap-text-inverse: #ffffff;
 
   /* Kenarlıklar */
@@ -110,7 +110,7 @@
   --ap-on-brand: #ffffff;
 
   /* Vurgu: camgöbeği (çağrı butonları, odak, aktif göstergeler) */
-  --ap-accent: #0b7c96;         /* beyaz metinle 4.9:1 */
+  --ap-accent: #0a7590;         /* beyaz metinle 5.3:1, zeminde 4.9:1 */
   --ap-accent-strong: #086478;
   --ap-accent-soft: #e3f5f9;
   --ap-accent-soft-2: #bfe9f2;
@@ -229,7 +229,7 @@
   --ap-text: #e4e9f2;
   --ap-text-secondary: #c2cad8;
   --ap-text-muted: #98a3b6;
-  --ap-text-subtle: #6f7b90;
+  --ap-text-subtle: #7d899e;      /* AA: koyu yüzeyde 4.8:1 */
   --ap-text-inverse: #0c1220;
 
   --ap-border: #263349;

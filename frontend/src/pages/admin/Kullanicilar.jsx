@@ -120,8 +120,8 @@ export default function Kullanicilar() {
 
   const save = async () => {
     const isNew = !editing.id;
-    if (String(editing.fullName).trim().length < 3) return setFormError('Ad soyad giriniz.');
-    if (isNew && !EMAIL_RE.test(String(editing.email).trim())) return setFormError('Geçerli bir e-posta giriniz.');
+    if (String(editing.fullName).trim().length < 3) return setFormError('Ad soyad girin.');
+    if (isNew && !EMAIL_RE.test(String(editing.email).trim())) return setFormError('Geçerli bir e-posta girin.');
     if (isNew && String(editing.password).length < 8) return setFormError('Parola en az 8 karakter olmalıdır.');
     if (!isNew && isMe(editing) && (editing.role !== 'Admin' || !editing.isActive))
       return setFormError('Kendi yönetici yetkinizi kaldıramaz veya hesabınızı pasif yapamazsınız.');
@@ -199,7 +199,7 @@ export default function Kullanicilar() {
               setEditing({ fullName: '', email: '', phone: '', password: '', role: 'Operator', isActive: true });
             }}
           >
-            <i className="bi bi-person-plus me-1" />
+            <i aria-hidden="true" className="bi bi-person-plus me-1" />
             Yeni Kullanıcı
           </button>
         }
@@ -211,9 +211,9 @@ export default function Kullanicilar() {
             <div className="col-md-6">
               <div className="input-group">
                 <span className="input-group-text">
-                  <i className="bi bi-search" />
+                  <i aria-hidden="true" className="bi bi-search" />
                 </span>
-                <input className="form-control" placeholder="Ad, e-posta veya telefon ara…" value={query} onChange={(e) => setQuery(e.target.value)} />
+                <input className="form-control" type="search" aria-label="Kullanıcılarda ara" placeholder="Ad, e-posta veya telefon ara…" value={query} onChange={(e) => setQuery(e.target.value)} />
               </div>
             </div>
             <div className="col-md-6">
@@ -239,7 +239,7 @@ export default function Kullanicilar() {
           {loading ? (
             <Loading />
           ) : rows.length === 0 ? (
-            <EmptyState icon="bi-people" title="Kullanıcı bulunamadı" />
+            <EmptyState icon="bi-people" title="Aramaya uyan kullanıcı yok">Farklı bir ad, e-posta ya da rol deneyin.</EmptyState>
           ) : (
             <div className="table-responsive">
               <table className="table table-hover">
@@ -284,16 +284,16 @@ export default function Kullanicilar() {
                         <button
                           type="button"
                           className="btn btn-sm btn-light me-1"
-                          title="Düzenle"
+                          title="Düzenle" aria-label="Düzenle"
                           onClick={() => {
                             setFormError(null);
                             setEditing({ ...u, phone: u.phone || '' });
                           }}
                         >
-                          <i className="bi bi-pencil" />
+                          <i aria-hidden="true" className="bi bi-pencil" />
                         </button>
-                        <button type="button" className="btn btn-sm btn-outline-danger" title="Sil" disabled={isMe(u)} onClick={() => setToDelete(u)}>
-                          <i className="bi bi-trash" />
+                        <button type="button" className="btn btn-sm btn-outline-danger" title="Sil" aria-label="Sil" disabled={isMe(u)} onClick={() => setToDelete(u)}>
+                          <i aria-hidden="true" className="bi bi-trash" />
                         </button>
                       </td>
                     </tr>
@@ -335,11 +335,12 @@ export default function Kullanicilar() {
         title="Kullanıcıyı sil"
         icon="bi-person-x"
         variant="danger"
-        confirmText="Sil"
+        confirmText="Kullanıcıyı sil"
+        cancelText="Kullanıcıyı tut"
         busy={deleting}
         onConfirm={doDelete}
         onCancel={() => setToDelete(null)}
-        message={toDelete ? `${toDelete.fullName} (${toDelete.email}) kullanıcısını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.` : ''}
+        message={toDelete ? `${toDelete.fullName} (${toDelete.email}) kullanıcısı silinecek. Bu işlem geri alınamaz.` : ''}
       />
     </div>
   );

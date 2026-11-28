@@ -44,7 +44,7 @@ function SlotPanel({ slot, zoneName, floorName, onClose, onSaved }) {
   return (
     <div className="card border-primary-subtle shadow-sm">
       <div className="card-header d-flex align-items-center gap-2">
-        <i className="bi bi-pencil-square text-accent" />
+        <i aria-hidden="true" className="bi bi-pencil-square text-accent" />
         <span>
           Cep <strong>{slot.code}</strong>
         </span>
@@ -73,7 +73,7 @@ function SlotPanel({ slot, zoneName, floorName, onClose, onSaved }) {
         <div className="btn-group w-100 mb-3" role="group" aria-label="Cep türü">
           <input type="radio" className="btn-check" id="sp-std" checked={type === 'Standard'} onChange={() => setType('Standard')} />
           <label className="btn btn-outline-success" htmlFor="sp-std">
-            <i className="bi bi-p-square me-1" />
+            <i aria-hidden="true" className="bi bi-p-square me-1" />
             Standart
           </label>
           <input type="radio" className="btn-check" id="sp-dis" checked={type === 'Disabled'} onChange={() => setType('Disabled')} />
@@ -100,7 +100,7 @@ function SlotPanel({ slot, zoneName, floorName, onClose, onSaved }) {
 
         <div className="d-flex gap-2">
           <button type="button" className="btn btn-primary flex-grow-1" disabled={!dirty || busy} onClick={() => save()}>
-            {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-check2 me-1" />}
+            {busy ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-check2 me-1" />}
             Kaydet
           </button>
           <button
@@ -295,9 +295,9 @@ export default function Otoparklar() {
               loadLots();
               reload();
             }}
-            title="Yenile"
+            title="Yenile" aria-label="Yenile"
           >
-            <i className="bi bi-arrow-clockwise" />
+            <i aria-hidden="true" className="bi bi-arrow-clockwise" />
           </button>
         }
       />
@@ -309,7 +309,7 @@ export default function Otoparklar() {
           {lotsLoading ? (
             <Loading text="Otoparklar yükleniyor…" />
           ) : rows.length === 0 ? (
-            <EmptyState icon="bi-buildings" title="Otopark bulunamadı" />
+            <EmptyState icon="bi-buildings" title="Tanımlı otopark yok">Otoparklar sunucu ilk açıldığında hazır verilerle eklenir. Sunucu kayıtlarını kontrol edin.</EmptyState>
           ) : (
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0">
@@ -328,7 +328,20 @@ export default function Otoparklar() {
                   {rows.map((l) => {
                     const active = l.code === selected;
                     return (
-                      <tr key={l.code} className={active ? 'table-active' : ''} style={{ cursor: 'pointer' }} onClick={() => setSelected(l.code)}>
+                      <tr
+                        key={l.code}
+                        className={active ? 'table-active' : ''}
+                        style={{ cursor: 'pointer' }}
+                        tabIndex={0}
+                        aria-current={active ? 'true' : undefined}
+                        onClick={() => setSelected(l.code)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelected(l.code);
+                          }
+                        }}
+                      >
                         <td>
                           <span className="badge text-bg-primary">{l.code}</span>
                         </td>
@@ -358,7 +371,7 @@ export default function Otoparklar() {
                               setSelected(l.code);
                             }}
                           >
-                            <i className="bi bi-map me-1" />
+                            <i aria-hidden="true" className="bi bi-map me-1" />
                             Kroki
                           </button>
                           <button
@@ -369,7 +382,7 @@ export default function Otoparklar() {
                               setEditLot(l);
                             }}
                           >
-                            <i className="bi bi-pencil me-1" />
+                            <i aria-hidden="true" className="bi bi-pencil me-1" />
                             Düzenle
                           </button>
                         </td>
@@ -388,7 +401,7 @@ export default function Otoparklar() {
           <div className="card">
             <div className="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
               <span>
-                <i className="bi bi-map me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-map me-2 text-accent" />
                 {lot?.name || selected} krokisi
               </span>
               <span className="d-flex align-items-center gap-2 small fw-normal text-secondary">
@@ -411,7 +424,7 @@ export default function Otoparklar() {
                 />
               )}
               <div className="small text-secondary mt-2">
-                <i className="bi bi-hand-index me-1" />
+                <i aria-hidden="true" className="bi bi-hand-index me-1" />
                 Düzenlemek için bir cebe tıklayın. Değişiklik krokide anında görünür ve denetim kaydına yazılır.
               </div>
             </div>

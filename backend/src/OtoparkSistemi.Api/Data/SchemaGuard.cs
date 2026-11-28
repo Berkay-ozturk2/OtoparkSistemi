@@ -44,11 +44,17 @@ public static class SchemaGuard
     /// </summary>
     public static async Task AddMissingColumnsAsync(AppDbContext db, ILogger logger, CancellationToken ct = default)
     {
-        var columns = new[] { ("ParkingLots", "Latitude"), ("ParkingLots", "Longitude") };
-        foreach (var (table, column) in columns)
+        var sqlite = db.Database.IsSqlite();
+        var columns = new[]
+        {
+            ("ParkingLots", "Latitude", sqlite ? "REAL" : "double precision"),
+            ("ParkingLots", "Longitude", sqlite ? "REAL" : "double precision"),
+            // Krokiden cep ataması: eski veritabanında FK kısıtı olmadan eklenir, ilişki EF tarafında çalışır.
+            ("ParkingSessions", "SlotId", sqlite ? "INTEGER" : "integer"),
+        };
+        foreach (var (table, column, type) in columns)
         {
             if (await ColumnExistsAsync(db, table, column, ct)) continue;
-            var type = db.Database.IsSqlite() ? "REAL" : "double precision";
             // Tablo/sütun adları sabit listeden gelir (kullanıcı girdisi değildir)
 #pragma warning disable EF1002
             await db.Database.ExecuteSqlRawAsync($"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {type} NULL", ct);

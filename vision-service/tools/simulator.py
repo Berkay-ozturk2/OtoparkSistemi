@@ -423,9 +423,11 @@ class FullDemoScenario:
         return body if st == 200 and isinstance(body, list) else []
 
     def new_plate(self) -> str:
+        """Senaryo için gerçekçi, her seferinde farklı plaka (otoparkta zaten içeride olanlarla çakışmaz)."""
+        taken = set(self.parked) | set(self.active_plates() if self.op_token else {})
         while True:
-            p = f"{self.rng.choice(['06', '34', '35', '16'])}DMO{self.rng.randint(100, 999)}"
-            if is_valid(p):
+            p = random_plate(self.rng)
+            if p not in taken and p != PERMIT_PLATE:
                 return p
 
     def free_slot(self, slots: Dict[str, dict], prefer: Optional[str], slot_type: str = "Standard") -> Optional[str]:

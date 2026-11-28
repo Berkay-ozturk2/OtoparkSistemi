@@ -19,6 +19,7 @@ import ParkingMap from '../../components/ParkingMap';
 import ErrorAlert from '../../components/ErrorAlert';
 import ConfirmModal from '../../components/ConfirmModal';
 import { useToast } from '../../components/Toast';
+import MeterBar from '../../components/MeterBar';
 import { addDays, formatCurrency, formatDate, formatDuration, formatHour, formatPercent, toDateInput } from '../../utils/format';
 
 const QUICK_LINKS = [
@@ -210,11 +211,11 @@ export default function Dashboard() {
             <LotSelector value={dashLot} onChange={setDashLot} allowAll label="Panel filtresi" />
             <LiveBadge status={hubStatus} />
             <button type="button" className="btn btn-outline-accent" onClick={() => setConfirmDemo(true)}>
-              <i className="bi bi-magic me-1" />
+              <i aria-hidden="true" className="bi bi-magic me-1" />
               Demo verisi üret
             </button>
-            <button type="button" className="btn btn-outline-primary" onClick={load} disabled={loading}>
-              <i className="bi bi-arrow-clockwise" />
+            <button type="button" className="btn btn-outline-primary" onClick={load} disabled={loading} aria-label="Yenile" title="Yenile">
+              <i aria-hidden="true" className="bi bi-arrow-clockwise" />
             </button>
           </>
         }
@@ -373,7 +374,7 @@ export default function Dashboard() {
           <div className="card h-100">
             <div className="card-header d-flex justify-content-between">
               <span>
-                <i className="bi bi-cash-coin me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-cash-coin me-2 text-accent" />
                 Son 7 gün gelir
               </span>
               <span className="fw-bold">{weekRevenue ? formatCurrency(weekRevenue.total) : ''}</span>
@@ -381,7 +382,7 @@ export default function Dashboard() {
             <div className="card-body">
               {series.length === 0 ? (
                 <div className="text-center text-secondary py-5">
-                  <i className="bi bi-bar-chart fs-1 d-block mb-2" />
+                  <i aria-hidden="true" className="bi bi-bar-chart fs-1 d-block mb-2" />
                   Bu dönem için gelir verisi yok. Rapor demosu için &quot;Demo verisi üret&quot; düğmesini kullanabilirsiniz.
                 </div>
               ) : (
@@ -402,7 +403,7 @@ export default function Dashboard() {
           <div className="card h-100">
             <div className="card-header d-flex justify-content-between">
               <span>
-                <i className="bi bi-clock me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-clock me-2 text-accent" />
                 Saatlik giriş dağılımı (7 gün)
               </span>
               <span className="small text-secondary fw-normal">
@@ -413,7 +414,7 @@ export default function Dashboard() {
             <div className="card-body">
               {hourly.length === 0 ? (
                 <div className="text-center text-secondary py-5">
-                  <i className="bi bi-graph-up fs-1 d-block mb-2" />
+                  <i aria-hidden="true" className="bi bi-graph-up fs-1 d-block mb-2" />
                   Giriş verisi yok.
                 </div>
               ) : (
@@ -434,7 +435,7 @@ export default function Dashboard() {
           <div className="card h-100" ref={mapRef}>
             <div className="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
               <span>
-                <i className="bi bi-map me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-map me-2 text-accent" />
                 Anlık kroki — {lot?.name || lotName(dashLot || ctxLot)}
               </span>
               {!dashLot && <LotSelector />}
@@ -458,12 +459,12 @@ export default function Dashboard() {
                           <td className="small fw-semibold">{l.name}</td>
                           <td style={{ minWidth: 140 }}>
                             <div className="d-flex align-items-center gap-2">
-                              <div className="progress zone-progress flex-grow-1">
-                                <div
-                                  className={`progress-bar ${l.occupancyRate >= 0.9 ? 'bg-danger' : l.occupancyRate >= 0.6 ? 'bg-warning' : 'bg-success'}`}
-                                  style={{ width: `${Math.round((l.occupancyRate || 0) * 100)}%` }}
-                                />
-                              </div>
+                              <MeterBar
+                                className="zone-progress flex-grow-1"
+                                value={l.occupancyRate || 0}
+                                label={`${l.name} doluluk`}
+                                barClassName={l.occupancyRate >= 0.9 ? "bg-danger" : l.occupancyRate >= 0.6 ? "bg-warning" : "bg-success"}
+                              />
                               <span className="small">{formatPercent(l.occupancyRate || 0)}</span>
                             </div>
                           </td>
@@ -483,7 +484,7 @@ export default function Dashboard() {
         <div className="col-xl-4">
           <div className="card h-100">
             <div className="card-header">
-              <i className="bi bi-lightning me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-lightning me-2 text-accent" />
               Hızlı erişim
             </div>
             <div className="list-group list-group-flush">
@@ -491,7 +492,7 @@ export default function Dashboard() {
                 <Link key={q.to} to={q.to} className="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
                   <span className="quick-link-card">
                     <span className="qi">
-                      <i className={`bi ${q.icon}`} />
+                      <i aria-hidden="true" className={`bi ${q.icon}`} />
                     </span>
                   </span>
                   <span className="flex-grow-1 fw-semibold">{q.label}</span>
@@ -510,7 +511,7 @@ export default function Dashboard() {
         title="Demo verisi üret"
         icon="bi-magic"
         variant="primary"
-        confirmText="Üret"
+        confirmText="Demo verisi üret"
         busy={demoBusy}
         onConfirm={runDemo}
         onCancel={() => setConfirmDemo(false)}

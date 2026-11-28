@@ -169,11 +169,11 @@ export default function SurucuPanel() {
         actions={
           <>
             <Link to="/surucu/rezervasyon" className="btn btn-accent">
-              <i className="bi bi-calendar-plus me-2" />
+              <i aria-hidden="true" className="bi bi-calendar-plus me-2" />
               Yeni Rezervasyon
             </Link>
-            <button type="button" className="btn btn-outline-primary" onClick={load}>
-              <i className="bi bi-arrow-clockwise" />
+            <button type="button" className="btn btn-outline-primary" onClick={load} aria-label="Yenile" title="Yenile">
+              <i aria-hidden="true" className="bi bi-arrow-clockwise" />
             </button>
           </>
         }
@@ -201,7 +201,7 @@ export default function SurucuPanel() {
         <div className="col-lg-5">
           <div className="card h-100">
             <div className="card-header">
-              <i className="bi bi-car-front me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-car-front me-2 text-accent" />
               Araçlarım
             </div>
             <div className="card-body">
@@ -229,7 +229,7 @@ export default function SurucuPanel() {
                 </div>
                 <div className="col-sm-3 d-grid">
                   <button type="submit" className="btn btn-primary" disabled={adding}>
-                    {adding ? <span className="spinner-border spinner-border-sm" /> : <i className="bi bi-plus-lg me-1" />}
+                    {adding ? <span className="spinner-border spinner-border-sm" /> : <i aria-hidden="true" className="bi bi-plus-lg me-1" />}
                     Ekle
                   </button>
                 </div>
@@ -250,7 +250,7 @@ export default function SurucuPanel() {
                           <div className="fw-semibold text-truncate">{v.nickname || 'Araç'}</div>
                           {inside ? (
                             <span className="badge text-bg-primary">
-                              <i className="bi bi-p-circle me-1" />
+                              <i aria-hidden="true" className="bi bi-p-circle me-1" />
                               İçeride · {inside.lotName ? `${inside.lotName} · ` : ''}
                               {inside.zoneCode} bölgesi
                             </span>
@@ -271,11 +271,11 @@ export default function SurucuPanel() {
                             );
                           })()}
                         </div>
-                        <Link to={`/aracim-nerede?plaka=${normalizePlate(v.plate)}`} className="btn btn-sm btn-light" title="Konum sorgula">
-                          <i className="bi bi-geo-alt" />
+                        <Link to={`/aracim-nerede?plaka=${normalizePlate(v.plate)}`} className="btn btn-sm btn-light" title="Konum sorgula" aria-label="Konum sorgula">
+                          <i aria-hidden="true" className="bi bi-geo-alt" />
                         </Link>
-                        <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => setToDelete(v)} title="Sil">
-                          <i className="bi bi-trash" />
+                        <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => setToDelete(v)} title="Sil" aria-label="Sil">
+                          <i aria-hidden="true" className="bi bi-trash" />
                         </button>
                       </li>
                     );
@@ -291,7 +291,7 @@ export default function SurucuPanel() {
           <div className="card h-100">
             <div className="card-header d-flex justify-content-between align-items-center">
               <span>
-                <i className="bi bi-p-circle me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-p-circle me-2 text-accent" />
                 Aktif Park Oturumlarım
               </span>
               <span className="badge text-bg-primary rounded-pill">{active.length}</span>
@@ -311,7 +311,7 @@ export default function SurucuPanel() {
                         <div className="flex-grow-1">
                           {s.lotName && <div className="small text-secondary fw-semibold">{s.lotName}</div>}
                           <div className="fw-semibold">
-                            <i className="bi bi-geo-alt-fill text-accent me-1" />
+                            <i aria-hidden="true" className="bi bi-geo-alt-fill text-accent me-1" />
                             {s.zoneCode ? `${s.zoneCode} Bölgesi` : 'Bölge belirtilmemiş'}
                             {s.isDisabledPermit && (
                               <span className="badge badge-disabled ms-2" title="Engelli izinli giriş">
@@ -343,7 +343,7 @@ export default function SurucuPanel() {
               {upcoming.length > 0 && (
                 <div className="mt-4">
                   <div className="fw-semibold mb-2">
-                    <i className="bi bi-calendar-check me-2 text-accent" />
+                    <i aria-hidden="true" className="bi bi-calendar-check me-2 text-accent" />
                     Yaklaşan rezervasyonlar
                   </div>
                   <ul className="list-group">
@@ -380,7 +380,7 @@ export default function SurucuPanel() {
           <div className="card">
             <div className="card-header d-flex align-items-center justify-content-between">
               <span>
-                <i className="bi bi-person-wheelchair me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-person-wheelchair me-2 text-accent" />
                 Engelli Park İzni
               </span>
               <span className="small text-secondary fw-normal">Onaylı izinli araçlar ♿ engelli park yerlerini kullanabilir ve rezerve edebilir.</span>
@@ -443,11 +443,11 @@ export default function SurucuPanel() {
                       </div>
                       {permitErr && <div className="alert alert-danger py-2 small">{permitErr}</div>}
                       <button type="submit" className="btn btn-primary" disabled={applying}>
-                        {applying ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-send me-2" />}
+                        {applying ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-send me-2" />}
                         Başvur
                       </button>
                       <div className="form-text mt-2">
-                        <i className="bi bi-shield-lock me-1" />
+                        <i aria-hidden="true" className="bi bi-shield-lock me-1" />
                         Belge bilgisi yalnızca izin doğrulaması için kullanılır (KVKK). Başvuru yönetici onayına düşer.
                       </div>
                     </form>
@@ -456,7 +456,9 @@ export default function SurucuPanel() {
                 <div className="col-lg-7">
                   <h3 className="h6 fw-bold mb-3">Başvurularım</h3>
                   {permits.length === 0 ? (
-                    <EmptyState icon="bi-person-wheelchair" title="Henüz başvurunuz yok" className="py-3" />
+                    <EmptyState icon="bi-person-wheelchair" title="Henüz başvurunuz yok" className="py-3">
+                      Engelli park yerlerini kullanmak için yukarıdaki formdan izin başvurusu yapın.
+                    </EmptyState>
                   ) : (
                     <div className="table-responsive">
                       <table className="table table-sm align-middle">
@@ -483,12 +485,12 @@ export default function SurucuPanel() {
                                   <td className="small">{p.holderName}</td>
                                   <td>
                                     <span className={`badge text-bg-${expired ? 'secondary' : st.variant}`}>
-                                      <i className={`bi ${st.icon} me-1`} />
+                                      <i aria-hidden="true" className={`bi ${st.icon} me-1`} />
                                       {expired ? 'Süresi doldu' : st.label}
                                     </span>
                                     {p.note && (
                                       <div className="small text-secondary mt-1" title="Yönetici notu">
-                                        <i className="bi bi-chat-left-text me-1" />
+                                        <i aria-hidden="true" className="bi bi-chat-left-text me-1" />
                                         {p.note}
                                       </div>
                                     )}
@@ -512,12 +514,12 @@ export default function SurucuPanel() {
         <div className="col-12">
           <div className="card">
             <div className="card-header">
-              <i className="bi bi-clock-history me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-clock-history me-2 text-accent" />
               Park Geçmişi
             </div>
             <div className="card-body p-0">
               {history.length === 0 ? (
-                <EmptyState icon="bi-clock-history" title="Geçmiş kaydınız yok" />
+                <EmptyState icon="bi-clock-history" title="Henüz park geçmişiniz yok">Aracınız otoparktan ilk kez çıktığında kayıt burada görünür.</EmptyState>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-hover">
@@ -576,14 +578,14 @@ export default function SurucuPanel() {
         title="Aracı sil"
         icon="bi-trash"
         variant="danger"
-        confirmText="Sil"
+        confirmText="Aracı sil"
         busy={deleting}
         onConfirm={onDelete}
         onCancel={() => setToDelete(null)}
       >
         {toDelete && (
           <p className="mb-0">
-            <PlateBadge plate={toDelete.plate} size="sm" /> plakalı aracı listenizden silmek istediğinize emin misiniz?
+            <PlateBadge plate={toDelete.plate} size="sm" /> plakalı araç listenizden kaldırılacak.
           </p>
         )}
       </ConfirmModal>

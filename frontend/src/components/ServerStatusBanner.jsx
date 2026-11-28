@@ -39,11 +39,11 @@ export default function ServerStatusBanner() {
 
   return (
     <div className="server-banner alert alert-warning rounded-0 mb-0 border-0 border-bottom d-flex flex-wrap align-items-center justify-content-center gap-2 py-2" role="alert">
-      <i className="bi bi-wifi-off fs-5" />
+      <i aria-hidden="true" className="bi bi-wifi-off fs-5" />
       <strong>Sunucuya ulaşılamıyor.</strong>
       <span className="d-none d-sm-inline">Backend servisi (http://localhost:5080) kapalı olabilir; veriler güncel olmayabilir.</span>
       <button type="button" className="btn btn-sm btn-dark ms-2" onClick={retry} disabled={checking}>
-        {checking ? <span className="spinner-border spinner-border-sm" aria-hidden="true" /> : <i className="bi bi-arrow-clockwise" />}
+        {checking ? <span className="spinner-border spinner-border-sm" aria-hidden="true" /> : <i aria-hidden="true" className="bi bi-arrow-clockwise" />}
         <span className="ms-1">Tekrar dene</span>
       </button>
     </div>

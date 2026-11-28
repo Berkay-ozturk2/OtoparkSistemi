@@ -140,7 +140,7 @@ export default function Abonelikler() {
           <>
             <LotSelector value={lot} onChange={setLot} allowAll label="Otopark" />
             <button type="button" className="btn btn-outline-primary" onClick={load} disabled={loading} aria-label="Yenile">
-              <i className="bi bi-arrow-clockwise" />
+              <i aria-hidden="true" className="bi bi-arrow-clockwise" />
             </button>
           </>
         }

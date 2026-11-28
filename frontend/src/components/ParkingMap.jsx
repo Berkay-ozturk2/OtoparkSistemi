@@ -509,7 +509,7 @@ export default function ParkingMap({
                       className={`nav-link py-1 px-3 ${f.floor === activeFloor ? 'active' : ''}`}
                       onClick={() => selectFloor(f.floor)}
                     >
-                      <i className="bi bi-layers me-1" />
+                      <i aria-hidden="true" className="bi bi-layers me-1" />
                       {f.name}
                       <span className="badge rounded-pill text-bg-light ms-2">{st.free}</span>
                       {st.disabledFree > 0 && (
@@ -525,17 +525,17 @@ export default function ParkingMap({
           )}
           {showControls && (
             <div className="btn-group btn-group-sm ms-auto pm-zoom" role="group" aria-label="Yakınlaştırma">
-              <button type="button" className="btn btn-light border" onClick={zoomOut} disabled={zoom <= 1} title="Uzaklaştır">
-                <i className="bi bi-dash-lg" />
+              <button type="button" className="btn btn-light border" onClick={zoomOut} disabled={zoom <= 1} title="Uzaklaştır" aria-label="Uzaklaştır">
+                <i aria-hidden="true" className="bi bi-dash-lg" />
               </button>
               <span className="btn btn-light border disabled pm-zoom-level" aria-live="polite">
                 %{Math.round(zoom * 100)}
               </span>
               <button type="button" className="btn btn-light border" onClick={zoomIn} disabled={zoom >= ZOOM_STEPS[ZOOM_STEPS.length - 1]} title="Yakınlaştır">
-                <i className="bi bi-plus-lg" />
+                <i aria-hidden="true" className="bi bi-plus-lg" />
               </button>
               <button type="button" className="btn btn-light border" onClick={zoomFit} disabled={zoom === 1} title="Sığdır">
-                <i className="bi bi-arrows-angle-contract me-1" />
+                <i aria-hidden="true" className="bi bi-arrows-angle-contract me-1" />
                 Sığdır
               </button>
             </div>
@@ -647,7 +647,7 @@ export default function ParkingMap({
             const label = `${slot.code}, ${dis ? 'engelli cebi' : 'standart cep'}, ${STATE_LABEL[st]}${viol ? ', ihlal' : ''}`;
             return (
               <g
-                key={`${slot.code}-${slot._flash || 0}`}
+                key={slot.code}
                 className={cls}
                 onClick={clickable ? () => fireClick(slot) : undefined}
                 onMouseEnter={(e) => showTip(e, it)}
@@ -668,6 +668,9 @@ export default function ParkingMap({
                 }
               >
                 <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={clamp(short * 0.1, 3, 8)} className="pm-slot-rect" />
+                {flash && (
+                  <rect key={slot._flash} x={g.x} y={g.y} width={g.w} height={g.h} rx={clamp(short * 0.1, 3, 8)} className="pm-flash-ring" aria-hidden="true" />
+                )}
                 {st === 'reserved' && (
                   <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={clamp(short * 0.1, 3, 8)} fill="url(#pm-stripes)" className="pm-slot-pattern" />
                 )}
@@ -782,7 +785,7 @@ export default function ParkingMap({
           </div>
           {hover.item.viol && (
             <div className="text-danger fw-semibold">
-              <i className="bi bi-exclamation-triangle-fill me-1" />
+              <i aria-hidden="true" className="bi bi-exclamation-triangle-fill me-1" />
               İzinsiz park ihlali
             </div>
           )}

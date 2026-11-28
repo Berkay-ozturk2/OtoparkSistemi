@@ -66,11 +66,11 @@ export default function DenetimKayitlari() {
         actions={
           <>
             <button type="button" className="btn btn-outline-secondary" onClick={exportCsv} disabled={rows.length === 0}>
-              <i className="bi bi-filetype-csv me-1" />
+              <i aria-hidden="true" className="bi bi-filetype-csv me-1" />
               CSV
             </button>
             <button type="button" className="btn btn-outline-primary" onClick={() => load(limit)}>
-              <i className="bi bi-arrow-clockwise me-1" />
+              <i aria-hidden="true" className="bi bi-arrow-clockwise me-1" />
               Yenile
             </button>
           </>
@@ -83,9 +83,9 @@ export default function DenetimKayitlari() {
             <div className="col-md-8">
               <div className="input-group">
                 <span className="input-group-text">
-                  <i className="bi bi-search" />
+                  <i aria-hidden="true" className="bi bi-search" />
                 </span>
-                <input className="form-control" placeholder="Kullanıcı, işlem, ayrıntı veya IP ara…" value={query} onChange={(e) => setQuery(e.target.value)} />
+                <input className="form-control" type="search" aria-label="Denetim kayıtlarında ara" placeholder="Kullanıcı, işlem, ayrıntı veya IP ara…" value={query} onChange={(e) => setQuery(e.target.value)} />
               </div>
             </div>
             <div className="col-md-4">
@@ -108,7 +108,9 @@ export default function DenetimKayitlari() {
           {loading ? (
             <Loading />
           ) : rows.length === 0 ? (
-            <EmptyState icon="bi-journal" title="Kayıt bulunamadı" />
+            <EmptyState icon="bi-journal" title="Bu ölçütlere uyan kayıt yok">
+              Tarih aralığını genişletin ya da aramayı temizleyin.
+            </EmptyState>
           ) : (
             <div className="table-responsive">
               <table className="table table-hover table-sm">

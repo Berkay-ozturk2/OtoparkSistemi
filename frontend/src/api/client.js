@@ -68,21 +68,21 @@ function extractMessage(data, status) {
   }
   switch (status) {
     case 400:
-      return 'Geçersiz istek. Lütfen girdiğiniz bilgileri kontrol edin.';
+      return 'Bilgiler eksik ya da hatalı. İşaretli alanları kontrol edip tekrar deneyin.';
     case 401:
-      return 'Oturumunuzun süresi doldu veya giriş yapmanız gerekiyor.';
+      return 'Oturumunuz kapandı. Devam etmek için yeniden giriş yapın.';
     case 403:
-      return 'Bu işlem için yetkiniz yok.';
+      return 'Bu işlem için yetkiniz yok. Gerekirse yöneticinizden yetki isteyin.';
     case 404:
-      return 'Kayıt bulunamadı.';
+      return 'Aradığınız kayıt bulunamadı. Silinmiş ya da taşınmış olabilir.';
     case 409:
-      return 'İşlem mevcut kayıtlarla çakışıyor.';
+      return 'Bu işlem mevcut bir kayıtla çakışıyor. Sayfayı yenileyip tekrar deneyin.';
     case 502:
     case 503:
     case 504:
-      return 'Sunucuya ulaşılamıyor. Servisin çalıştığından emin olun.';
+      return 'Sunucu şu anda yanıt vermiyor. Biraz bekleyip tekrar deneyin.';
     default:
-      return `İstek başarısız oldu (HTTP ${status}).`;
+      return `İşlem tamamlanamadı (hata kodu ${status}). Tekrar deneyin; sorun sürerse yöneticiye bildirin.`;
   }
 }
 
@@ -137,8 +137,8 @@ export async function request(path, opts = {}) {
     emitServerStatus(source, false);
     throw new ApiError(
       source === 'vision'
-        ? 'Görüntü işleme servisine ulaşılamıyor. Servisin (port 8000) çalıştığından emin olun.'
-        : 'Sunucuya ulaşılamıyor. Backend servisinin (port 5080) çalıştığından emin olun.',
+        ? 'Görüntü işleme servisine bağlanılamadı. Kameralar şu an plaka okuyamaz; servisin açık olduğunu kontrol edin.'
+        : 'Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.',
       0,
     );
   }

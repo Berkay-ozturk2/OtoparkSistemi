@@ -128,10 +128,10 @@ export default function Rezervasyon() {
   const durationMin = startIso && endIso ? (new Date(endIso) - new Date(startIso)) / 60000 : 0;
 
   const formError = useMemo(() => {
-    if (!zoneCode) return 'Bölge seçiniz.';
+    if (!zoneCode) return 'Bölge seçin.';
     if (slotType === 'Disabled' && !hasPermit) return 'Engelli park yeri için onaylı engelli izni gerekir.';
     if (slotType === 'Disabled' && selectedZone && !(selectedZone.disabledTotal > 0)) return 'Seçilen bölgede engelli park yeri yok.';
-    if (!startIso || !endIso) return 'Başlangıç ve bitiş zamanını giriniz.';
+    if (!startIso || !endIso) return 'Başlangıç ve bitiş zamanını girin.';
     if (new Date(startIso) < new Date(Date.now() - 5 * 60000)) return 'Başlangıç zamanı geçmişte olamaz.';
     if (durationMin <= 0) return 'Bitiş zamanı başlangıçtan sonra olmalıdır.';
     if (durationMin < 30) return 'Rezervasyon en az 30 dakika olmalıdır.';
@@ -237,13 +237,13 @@ export default function Rezervasyon() {
         <div className="col-lg-5">
           <div className="card">
             <div className="card-header">
-              <i className="bi bi-calendar-plus me-2 text-accent" />
+              <i aria-hidden="true" className="bi bi-calendar-plus me-2 text-accent" />
               Yeni Rezervasyon
             </div>
             <div className="card-body">
               {vehicles.length === 0 && (
                 <div className="alert alert-warning small">
-                  <i className="bi bi-exclamation-triangle me-1" />
+                  <i aria-hidden="true" className="bi bi-exclamation-triangle me-1" />
                   Rezervasyon için önce <Link to="/surucu">panelinizden</Link> bir araç eklemelisiniz.
                 </div>
               )}
@@ -290,7 +290,7 @@ export default function Rezervasyon() {
                     </div>
                   ) : (
                     <div className="small text-secondary mt-1">
-                      <i className="bi bi-info-circle me-1" />
+                      <i aria-hidden="true" className="bi bi-info-circle me-1" />
                       Engelli park yerleri yalnızca <strong>onaylı engelli izni</strong> olan araçlar içindir.
                       {pendingPermit ? (
                         <> Bu plaka için başvurunuz yönetici onayı bekliyor.</>
@@ -373,7 +373,7 @@ export default function Rezervasyon() {
                 <div className="border rounded-3 p-3 mb-3 bg-light">
                   {formError ? (
                     <div className="text-danger small">
-                      <i className="bi bi-exclamation-circle me-1" />
+                      <i aria-hidden="true" className="bi bi-exclamation-circle me-1" />
                       {formError}
                     </div>
                   ) : quoting ? (
@@ -384,7 +384,7 @@ export default function Rezervasyon() {
                     <div className="d-flex align-items-center justify-content-between gap-2">
                       <div>
                         <div className={`small fw-semibold ${quote.available ? 'text-success' : 'text-danger'}`}>
-                          <i className={`bi ${quote.available ? 'bi-check-circle' : 'bi-x-circle'} me-1`} />
+                          <i aria-hidden="true" className={`bi ${quote.available ? 'bi-check-circle' : 'bi-x-circle'} me-1`} />
                           {quote.available ? 'Bu aralıkta yer müsait' : 'Bu aralıkta yer yok'}
                         </div>
                         {quote.message && <div className="small text-secondary">{quote.message}</div>}
@@ -401,11 +401,11 @@ export default function Rezervasyon() {
                   className="btn btn-accent btn-lg w-100"
                   disabled={!!formError || !quote?.available || creating || vehicles.length === 0}
                 >
-                  {creating ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="bi bi-arrow-right-circle me-2" />}
+                  {creating ? <span className="spinner-border spinner-border-sm me-2" /> : <i aria-hidden="true" className="bi bi-arrow-right-circle me-2" />}
                   Rezervasyon Oluştur ve Öde
                 </button>
                 <div className="small text-secondary mt-2">
-                  <i className="bi bi-info-circle me-1" />
+                  <i aria-hidden="true" className="bi bi-info-circle me-1" />
                   Ön ödenen tutar, çıkışta park ücretinizden düşülür.
                 </div>
               </form>
@@ -417,11 +417,11 @@ export default function Rezervasyon() {
           <div className="card">
             <div className="card-header d-flex justify-content-between align-items-center">
               <span>
-                <i className="bi bi-list-check me-2 text-accent" />
+                <i aria-hidden="true" className="bi bi-list-check me-2 text-accent" />
                 Rezervasyonlarım
               </span>
-              <button type="button" className="btn btn-sm btn-light" onClick={load} title="Yenile">
-                <i className="bi bi-arrow-clockwise" />
+              <button type="button" className="btn btn-sm btn-light" onClick={load} title="Yenile" aria-label="Yenile">
+                <i aria-hidden="true" className="bi bi-arrow-clockwise" />
               </button>
             </div>
             <div className="card-body p-0">
@@ -488,7 +488,7 @@ export default function Rezervasyon() {
                               )}
                               {['PendingPayment', 'Confirmed', 'CheckedIn'].includes(r.status) && r.lotCode && (
                                 <Link className="btn btn-sm btn-outline-primary me-1" to={`/yol-tarifi?lot=${r.lotCode}`} title="Otoparka yol tarifi">
-                                  <i className="bi bi-signpost-split me-1" />
+                                  <i aria-hidden="true" className="bi bi-signpost-split me-1" />
                                   Yol tarifi
                                 </Link>
                               )}
@@ -547,7 +547,7 @@ export default function Rezervasyon() {
         )}
         {paidResult && (
           <div className="text-center py-3">
-            <i className="bi bi-check-circle-fill display-3 text-success" />
+            <i aria-hidden="true" className="bi bi-check-circle-fill display-3 text-success" />
             <h3 className="h5 mt-3">Yeriniz ayrıldı!</h3>
             <p className="text-secondary">
               {paidResult.message || 'Rezervasyonunuz onaylandı. Girişte plakanız tanınarak bariyer otomatik açılacaktır.'}
@@ -577,16 +577,16 @@ export default function Rezervasyon() {
         title="Rezervasyonu iptal et"
         icon="bi-x-circle"
         variant="danger"
-        confirmText="İptal Et"
-        cancelText="Vazgeç"
+        confirmText="Rezervasyonu iptal et"
+        cancelText="Rezervasyonu tut"
         busy={cancelling}
         onConfirm={onCancel}
         onCancel={() => setToCancel(null)}
       >
         {toCancel && (
           <p className="mb-0">
-            #{toCancel.id} numaralı ({toCancel.zoneCode} bölgesi, {formatDateTime(toCancel.startTime)}) rezervasyonu iptal
-            etmek istediğinize emin misiniz?
+            #{toCancel.id} numaralı ({toCancel.zoneCode} bölgesi, {formatDateTime(toCancel.startTime)}) rezervasyon
+            iptal edilecek.
             {toCancel.status === 'Confirmed' && ' İade koşulları işletme politikasına bağlıdır.'}
           </p>
         )}

@@ -358,8 +358,10 @@ body {
 .pm-slot-hi { animation: pm-bounce 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes pm-bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 .pm-slot-sel .pm-slot-rect { stroke: var(--ap-warning-fill); stroke-width: 6; stroke-dasharray: 8 5; }
-.pm-flash .pm-slot-rect { animation: pm-flash 1.2s ease-out 2; }
-@keyframes pm-flash { 0% { stroke: var(--ap-warning-fill); stroke-width: 8; } 100% { stroke: var(--ap-slot-outline); stroke-width: 3; } }
+.pm-flash-ring { fill: none; pointer-events: none; stroke: var(--ap-warning-fill); stroke-width: 7; opacity: 0; animation: pm-flash 0.9s ease-out; }
+@keyframes pm-flash { 0% { opacity: 1; stroke-width: 9; } 100% { opacity: 0; stroke-width: 3; } }
+.pm-car { animation: ap-fade-in 0.3s ease-out; }
+@media (prefers-reduced-motion: reduce) { .pm-flash-ring, .pm-car { animation: none; } .pm-slot-rect { transition: none; } }
 .pm-clickable { cursor: pointer; }
 .pm-clickable:hover .pm-slot-rect { filter: brightness(1.1); stroke: var(--ap-slot-focus); }
 .pm-clickable:focus { outline: none; }
@@ -606,10 +608,9 @@ body {
 .event-item.ev-Allowed { border-left-color: var(--ap-success); }
 .event-item.ev-Denied { border-left-color: var(--ap-danger); }
 .event-item.ev-PendingReview { border-left-color: var(--ap-warning-fill); }
-.event-item.ev-new { animation: ev-new 2.5s ease-out; }
+.event-item.ev-new { animation: ev-new 1.6s ease-out; }
 @keyframes ev-new {
-  0% { background: var(--ap-highlight); transform: translateX(-8px); }
-  20% { transform: translateX(0); }
+  0% { background: var(--ap-highlight); }
   100% { background: var(--ap-surface); }
 }
 .review-pill { font-size: 1rem; }
@@ -1162,3 +1163,215 @@ body, .app-footer, .form-control, .form-select, .dropdown-menu, .modal-content, 
 
 /* Her iki modda koyu kalan yüzeylerde başlıklar beyaz */
 .hero, .auth-side, .credit-card-preview, .app-navbar { --bs-heading-color: var(--ap-white); }
+
+/* ---------- Aşama 3: 3D kroki + park yeri detay kartı ---------- */
+.parking-view-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+@media (min-width: 992px) {
+  .parking-view-body.has-detail { grid-template-columns: minmax(0, 1fr) 300px; align-items: start; }
+}
+.parking-view-map { min-width: 0; }
+.pm3d {
+  position: relative;
+  height: clamp(340px, 52vw, 560px);
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--ap-map-ground);
+  touch-action: none;
+}
+.fullscreen-mode .pm3d { height: calc(100vh - 260px); }
+.pm3d-canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.pm3d-canvas:active { cursor: grabbing; }
+.pm3d-hint {
+  position: absolute; left: 10px; bottom: 10px; z-index: 2; pointer-events: none;
+  padding: 2px 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--ap-surface, #fff) 82%, transparent);
+  color: var(--ap-text-muted, #5b6474);
+}
+.pm3d-reset { position: absolute; right: 10px; top: 10px; z-index: 2; }
+.pm3d .pm-tooltip { z-index: 3; }
+.pv-rec { box-shadow: 0 0 0 2px var(--ap-accent, #d63a3a) inset; }
+.slot-detail-card { border-radius: 14px; }
+.slot-detail-dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 0.75rem; }
+.slot-detail-dl dt { font-weight: 500; color: var(--ap-text-muted, #5b6474); }
+.slot-detail-dl dd { margin: 0; min-width: 0; }
+@media (prefers-reduced-motion: reduce) { .pm3d-canvas { transition: none; } }
+
+/* ---------- Tanıtım: kaydırmalı giriş akışı (aşama 4) ---------- */
+.intro-hero { padding: 3rem 0 2.5rem; }
+.intro-lead { max-width: 38rem; }
+.intro-stage-wrap { min-height: 100vh; display: flex; align-items: center; }
+.intro-stage { display: grid; gap: 1.5rem; width: 100%; align-items: center; }
+@media (min-width: 992px) { .intro-stage { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+.intro-steps { display: grid; gap: 0.75rem; margin: 0; }
+.intro-step {
+  display: flex; gap: 0.85rem; align-items: flex-start; padding: 0.85rem 1rem;
+  border-radius: 0.9rem; border: 1px solid var(--ap-border); background: var(--ap-surface);
+  opacity: 0.55; transition: opacity var(--ap-dur-2) ease, border-color var(--ap-dur-2) ease, box-shadow var(--ap-dur-2) ease;
+}
+.intro-step.is-active { opacity: 1; border-color: var(--ap-accent); box-shadow: var(--ap-card-shadow); }
+.intro-step-icon {
+  flex-shrink: 0; width: 2.4rem; height: 2.4rem; border-radius: 0.7rem; display: grid; place-items: center;
+  background: var(--ap-accent-soft, var(--ap-surface-2)); color: var(--ap-accent); font-size: 1.2rem;
+}
+.intro-scene { position: relative; padding: 1rem; overflow: hidden; }
+.intro-svg { width: 100%; height: auto; display: block; }
+.intro-road { fill: var(--ap-map-road); }
+.intro-road-line { stroke: var(--ap-map-road-line); stroke-width: 3; stroke-dasharray: 22 16; }
+.intro-pole, .intro-post { fill: var(--ap-chrome-3, #3d4657); }
+.intro-cam { fill: var(--ap-chrome-1, #172033); }
+.intro-cam-lens { fill: var(--ap-accent); }
+.intro-cam-beam { fill: var(--ap-accent); fill-opacity: 0.16; }
+.intro-light { fill: var(--ap-danger); }
+.intro-pole-arm { fill: var(--ap-white, #fff); stroke: var(--ap-danger); stroke-width: 2; }
+.intro-car-body { fill: var(--ap-slot-occupied); }
+.intro-car-top { fill: color-mix(in srgb, var(--ap-slot-occupied) 70%, #fff); }
+.intro-wheel { fill: var(--ap-chrome-1, #172033); }
+.intro-plate { fill: #fff; stroke: #1c2433; stroke-width: 1.5; }
+.intro-scan { fill: var(--ap-success); }
+.intro-ocr { display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.75rem; }
+.intro-record { position: absolute; right: 1rem; top: 1rem; max-width: 15rem; }
+.intro-end { padding: 4rem 0 3rem; }
+.intro-cue { display: inline-block; margin-top: 1rem; }
+@media (prefers-reduced-motion: reduce) {
+  .intro-stage-wrap { min-height: 0; padding: 1rem 0 2rem; }
+  .intro-step { opacity: 1; transition: none; }
+  .intro-cam-beam { opacity: 1; }
+}
+@media (max-width: 575.98px) { .intro-record { position: static; margin-top: 0.75rem; max-width: none; } }
+
+/* ---------- Erişilebilirlik (aşama 5) ---------- */
+.skip-link {
+  position: absolute; left: 0.75rem; top: -3rem; z-index: 2000;
+  padding: 0.5rem 1rem; border-radius: 0.5rem;
+  background: var(--ap-surface); color: var(--ap-text); font-weight: 600;
+  box-shadow: var(--ap-card-shadow); text-decoration: none;
+}
+.skip-link:focus { top: 0.75rem; outline: 2px solid var(--ap-accent); outline-offset: 2px; }
+main:focus { outline: none; }
+/* Her etkileşimli öğede görünür odak (WCAG 2.4.7) */
+button:focus-visible, [role='button']:focus-visible, [role='tab']:focus-visible, [tabindex]:not([tabindex='-1']):focus-visible,
+summary:focus-visible, .nav-link:focus-visible, .btn-close:focus-visible, .dropdown-item:focus-visible, .page-link:focus-visible {
+  outline: 2px solid var(--ap-accent); outline-offset: 2px;
+}
+.app-navbar .nav-link:focus-visible, .app-navbar button:focus-visible { outline-color: var(--ap-accent-on-dark, #7fd8ea); }
+.pm-clickable:focus-visible .pm-slot-rect { stroke: var(--ap-slot-focus); stroke-width: 6; }
+.form-check-input:focus-visible { outline: 2px solid var(--ap-accent); outline-offset: 2px; }
+.pv-slot-picker { min-width: 12rem; max-width: 16rem; }
+/* Krokide rezerve ve kullanım dışı ceplerin sınırı zeminden ayrışsın (WCAG 1.4.11, 3:1) */
+.pm-reserved:not(.pm-disabled) .pm-slot-rect { stroke: var(--ap-slot-reserved-text); }
+.pm-inactive .pm-slot-rect { stroke: var(--ap-slot-inactive-fg); stroke-dasharray: 6 4; }
+.pm-inactive-x { stroke: var(--ap-slot-inactive-fg); }
+
+/* ---------- Web arayüz kuralları (aşama 6) ---------- */
+.modal, .slot-detail-card, .event-feed { overscroll-behavior: contain; }
+.btn, a, button, [role='button'], .nav-link { touch-action: manipulation; }
+.stat-value, .table td, .hero-occupancy, .animated-number { font-variant-numeric: tabular-nums; }
+h1, h2, h3, .h1, .h2, .h3, .display-6 { text-wrap: balance; }
+p, .lead { text-wrap: pretty; }
+tr[tabindex]:focus-visible { outline: 2px solid var(--ap-accent); outline-offset: -2px; }
+
+/* =====================================================================
+   "Nasıl çalışır?" — kaydırmalı 3D anlatım (Tanitim3D)
+   ===================================================================== */
+.i3d { position: relative; margin-top: -1.5rem; margin-bottom: -1.5rem; --i3d-nav: 62px; }
+.i3d-stage {
+  position: sticky;
+  top: var(--i3d-nav);
+  height: calc(100vh - var(--i3d-nav));
+  height: calc(100svh - var(--i3d-nav));
+  overflow: hidden;
+  background: #cfdbe6;
+}
+.i3d-canvas { display: block; width: 100%; height: 100%; }
+.i3d-loading {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #33404f; font-weight: 600; background: #cfdbe6;
+}
+.i3d-steps { position: relative; z-index: 2; margin-top: calc(-100vh + var(--i3d-nav)); pointer-events: none; }
+.i3d-step { position: relative; }
+.i3d-card {
+  position: sticky;
+  top: calc(var(--i3d-nav) + 18vh);
+  margin-left: clamp(1rem, 6vw, 6rem);
+  max-width: 26rem;
+  padding: 1.25rem 1.4rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  box-shadow: 0 12px 40px rgba(15, 28, 46, 0.18);
+  color: #172033;
+  pointer-events: auto;
+}
+.i3d-kicker { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; font-weight: 700; color: var(--ap-accent); margin-bottom: 0.35rem; }
+.i3d-title { font-size: clamp(1.4rem, 2.4vw, 2rem); font-weight: 800; line-height: 1.15; margin-bottom: 0.6rem; }
+.i3d-text { color: #3d4a5c; margin-bottom: 0; }
+.i3d-step-hero .i3d-card { top: calc(var(--i3d-nav) + 12vh); max-width: 32rem; }
+.i3d-step-hero .i3d-title { font-size: clamp(1.9rem, 4vw, 3.1rem); }
+.i3d-cue { display: inline-block; margin-top: 0.8rem; font-size: 1.6rem; color: var(--ap-accent); animation: i3d-bob 1.6s ease-in-out infinite; }
+@keyframes i3d-bob { 50% { transform: translateY(6px); } }
+.i3d-step-live { padding-bottom: 6vh; }
+
+/* HUD */
+.i3d-scan, .i3d-ocr, .i3d-record, .i3d-stats { position: absolute; top: 0; left: 0; opacity: 0; visibility: hidden; pointer-events: none; }
+.i3d-scan {
+  border: 2px solid #5ad6ef;
+  border-radius: 6px;
+  box-shadow: 0 0 0 9999px rgba(8, 16, 28, 0.18), 0 0 18px rgba(90, 214, 239, 0.8);
+  overflow: hidden;
+}
+.i3d-scan-line {
+  position: absolute; left: 0; right: 0; height: 2px; top: 0;
+  background: linear-gradient(90deg, transparent, #5ad6ef, transparent);
+  animation: i3d-scan 0.9s linear infinite;
+}
+@keyframes i3d-scan { from { top: 0; } to { top: 100%; } }
+.i3d-ocr {
+  min-width: 13rem; padding: 0.6rem 0.75rem; border-radius: 0.75rem;
+  background: rgba(15, 28, 46, 0.88); color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+.i3d-ocr-label { font-size: 0.75rem; color: #9fd8e6; margin-bottom: 0.35rem; }
+.i3d-plate {
+  display: flex; align-items: stretch; border: 2px solid #111; border-radius: 4px; overflow: hidden;
+  background: #fbfbf8; color: #111; font-weight: 800; font-size: 1.35rem; letter-spacing: 0.04em;
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+}
+.i3d-plate-tr { background: #1f4fa8; color: #fff; font-size: 0.6rem; padding: 0 0.3rem; display: flex; align-items: flex-end; padding-bottom: 0.2rem; }
+.i3d-plate > span:last-child { padding: 0.1rem 0.6rem; min-width: 9.5rem; }
+.i3d-conf { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.15); margin-top: 0.45rem; overflow: hidden; }
+.i3d-conf > span { display: block; height: 100%; background: #2bd576; transition: width 0.1s linear; }
+.i3d-record {
+  top: auto; left: auto; right: clamp(1rem, 4vw, 3rem); bottom: clamp(1rem, 6vh, 3rem);
+  min-width: 15rem; padding: 0.85rem 1rem; border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.92); color: #172033; box-shadow: 0 12px 34px rgba(15, 28, 46, 0.22);
+  transition: opacity 0.15s linear;
+}
+.i3d-row { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.9rem; color: #4a576a; }
+.i3d-row strong { color: #172033; }
+.i3d-gate { margin-top: 0.45rem; font-weight: 700; font-size: 0.9rem; color: #b26b00; }
+.i3d-gate.is-open { color: #12866a; }
+.i3d-stats {
+  top: 1rem; left: auto; right: clamp(1rem, 4vw, 3rem);
+  display: flex; gap: 1.1rem; align-items: center;
+  padding: 0.55rem 0.9rem; border-radius: 999px;
+  background: rgba(15, 28, 46, 0.85); color: #fff; font-variant-numeric: tabular-nums;
+}
+.i3d-free { font-weight: 800; font-size: 1.15rem; color: #5ad6ef; }
+.i3d-dots { position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.6rem; z-index: 3; }
+.i3d-dots button {
+  width: 10px; height: 10px; padding: 0; border-radius: 50%; border: 2px solid rgba(15, 28, 46, 0.55);
+  background: transparent; pointer-events: auto; cursor: pointer; transition: transform 0.2s, background 0.2s;
+}
+.i3d-dots button.is-active { background: var(--ap-accent); border-color: var(--ap-accent); transform: scale(1.35); }
+
+@media (max-width: 767.98px) {
+  .i3d-card { position: sticky; top: auto; bottom: 1rem; margin: 0 0.75rem; max-width: none; padding: 1rem; }
+  .i3d-step { display: flex; align-items: flex-end; }
+  .i3d-step-hero .i3d-card { top: auto; }
+  .i3d-record { left: 0.75rem; right: 0.75rem; top: 4rem; bottom: auto; min-width: 0; }
+  .i3d-stats { top: 0.6rem; right: 0.6rem; }
+  .i3d-dots { display: none; }
+}
+[data-bs-theme="dark"] .i3d-card { background: rgba(18, 26, 42, 0.82); color: #e8edf5; }
+[data-bs-theme="dark"] .i3d-text { color: #b5c0d0; }
+.i3d-canvas-host { position: absolute; inset: 0; }

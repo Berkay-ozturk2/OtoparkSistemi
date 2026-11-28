@@ -5,7 +5,7 @@ export default function PageHeader({ icon, title, subtitle, actions, badge }) {
       <div className="d-flex align-items-center gap-3 min-w-0">
         {icon && (
           <div className="page-header-icon flex-shrink-0">
-            <i className={`bi ${icon}`} />
+            <i aria-hidden="true" className={`bi ${icon}`} />
           </div>
         )}
         <div className="min-w-0">

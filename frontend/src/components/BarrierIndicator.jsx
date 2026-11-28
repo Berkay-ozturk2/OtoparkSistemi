@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react';
 import PlateBadge from './PlateBadge';
+import { DUR, EASE, dur, gsap } from '../utils/motion';
 import { decisionInfo, formatTime, gateLabel } from '../utils/format';
 
 /**
@@ -9,12 +11,21 @@ import { decisionInfo, formatTime, gateLabel } from '../utils/format';
  */
 export default function BarrierIndicator({ gate = 'Entry', open = false, event, size = 'md', className = '' }) {
   const info = event ? decisionInfo(event.decision) : null;
+  const readRef = useRef(null);
+  const eventKey = event ? `${event.id ?? ''}-${event.createdAt ?? ''}` : null;
+
+  // Yeni okuma: plaka satırı kısa bir kayma + belirme ile yenilenir
+  useEffect(() => {
+    if (!eventKey || !readRef.current) return undefined;
+    const t = gsap.fromTo(readRef.current, { autoAlpha: 0, y: 6 }, { autoAlpha: 1, y: 0, duration: dur(DUR.ui), ease: EASE.out, clearProps: 'transform,visibility' });
+    return () => t.progress(1).kill();
+  }, [eventKey]);
   return (
     <div className={`card barrier-card barrier-${size} ${open ? 'is-open' : 'is-closed'} ${className}`}>
       <div className="card-body">
         <div className="d-flex align-items-center justify-content-between mb-2">
           <div className="fw-semibold d-flex align-items-center gap-2">
-            <i className={`bi ${gate === 'Exit' ? 'bi-box-arrow-right' : 'bi-box-arrow-in-right'} text-primary`} />
+            <i aria-hidden="true" className={`bi ${gate === 'Exit' ? 'bi-box-arrow-right' : 'bi-box-arrow-in-right'} text-primary`} />
             {gateLabel(gate)} Bariyeri
           </div>
           <span className={`badge rounded-pill barrier-state ${open ? 'text-bg-success' : 'text-bg-secondary'}`}>
@@ -36,11 +47,11 @@ export default function BarrierIndicator({ gate = 'Entry', open = false, event, 
         </svg>
 
         {event ? (
-          <div className="mt-2">
+          <div className="mt-2" ref={readRef}>
             <div className="d-flex align-items-center gap-2 flex-wrap">
               <PlateBadge plate={event.plate} size="sm" />
               <span className={`badge text-bg-${info.variant}`}>
-                <i className={`bi ${info.icon} me-1`} />
+                <i aria-hidden="true" className={`bi ${info.icon} me-1`} />
                 {info.label}
               </span>
               <span className="text-secondary small ms-auto">{formatTime(event.createdAt, true)}</span>

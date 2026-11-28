@@ -117,6 +117,10 @@ public class ParkingSession
     public int? ReservationId { get; set; }
     public Reservation? Reservation { get; set; }
 
+    /// <summary>Aracın park ettiği cep (görevli krokiden atar). Engelli cebe yalnızca izinli araç atanabilir.</summary>
+    public int? SlotId { get; set; }
+    public ParkingSlot? Slot { get; set; }
+
     public DateTime EntryTime { get; set; }
     public DateTime? ExitTime { get; set; }
 
