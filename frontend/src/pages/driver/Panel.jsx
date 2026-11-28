@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/AuthContext';
 import PageHeader from '../../components/PageHeader';
 import PlateBadge from '../../components/PlateBadge';
 import StatCard from '../../components/StatCard';
+import RingMenu from '../../components/RingMenu';
 import Loading from '../../components/Loading';
 import ErrorAlert from '../../components/ErrorAlert';
 import EmptyState from '../../components/EmptyState';
@@ -78,6 +79,20 @@ export default function SurucuPanel() {
     .sort((a, b) => new Date(b.entryTime) - new Date(a.entryTime));
   const upcoming = reservations.filter((r) => ['PendingPayment', 'Confirmed', 'CheckedIn'].includes(r.status));
   const totalSpent = sessions.reduce((sum, s) => sum + (Number(s.paidAmount) || 0), 0);
+
+  // Dönen menü: sayfa içi bölümler + sürücünün diğer sayfaları
+  const goSection = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const menu = [
+    { key: 'araclarim', title: 'Araçlarım', text: 'Plakalarınızı ekleyin, izin durumunu görün', icon: 'bi-car-front', tone: 'accent', badge: vehicles.length, onSelect: () => goSection('araclarim') },
+    { key: 'aktif', title: 'Aktif park', text: 'İçerideki aracınız, süresi ve ücreti', icon: 'bi-p-circle', tone: 'teal', badge: active.length || null, onSelect: () => goSection('aktif-park') },
+    { key: 'rezervasyon', title: 'Rezervasyon', text: 'Yerinizi önceden ayırın', icon: 'bi-calendar-check', tone: 'violet', badge: upcoming.length || null, to: '/surucu/rezervasyon' },
+    { key: 'abonelik', title: 'Abonelik', text: 'Aylık ve yıllık paketler', icon: 'bi-person-vcard', tone: 'blue', to: '/surucu/abonelik' },
+    { key: 'aracim', title: 'Aracım nerede?', text: 'Park yerinizi haritada bulun', icon: 'bi-geo-alt', tone: 'rose', to: '/aracim-nerede' },
+    { key: 'ode', title: 'Ücret öde', text: 'Çıkıştan önce ödemenizi yapın', icon: 'bi-credit-card', tone: 'amber', to: '/ucret-ode' },
+    { key: 'yol', title: 'Yol tarifi', text: 'Otoparka en kısa yol', icon: 'bi-signpost-split', tone: 'green', to: '/yol-tarifi' },
+    { key: 'engelli', title: 'Engelli izni', text: 'Engelli park izni başvurusu', icon: 'bi-person-wheelchair', tone: 'slate', onSelect: () => goSection('engelli-izni') },
+    { key: 'gecmis', title: 'Park geçmişi', text: 'Geçmiş girişleriniz ve ödemeleriniz', icon: 'bi-clock-history', tone: 'graphite', badge: history.length || null, onSelect: () => goSection('park-gecmisi') },
+  ];
 
   const onAdd = async (e) => {
     e.preventDefault();
@@ -181,6 +196,8 @@ export default function SurucuPanel() {
 
       <ErrorAlert error={error} onRetry={load} className="mb-4" />
 
+      <RingMenu items={menu} label="Sürücü menüsü" initialKey={active.length ? 'aktif' : 'rezervasyon'} />
+
       <div className="row g-3 mb-4">
         <div className="col-6 col-lg-3">
           <StatCard icon="bi-car-front" label="Araçlarım" value={vehicles.length} variant="primary" />
@@ -199,7 +216,7 @@ export default function SurucuPanel() {
       <div className="row g-4">
         {/* Araçlarım */}
         <div className="col-lg-5">
-          <div className="card h-100">
+          <div className="card h-100 ring-anchor" id="araclarim">
             <div className="card-header">
               <i aria-hidden="true" className="bi bi-car-front me-2 text-accent" />
               Araçlarım
@@ -288,7 +305,7 @@ export default function SurucuPanel() {
 
         {/* Aktif oturumlar */}
         <div className="col-lg-7">
-          <div className="card h-100">
+          <div className="card h-100 ring-anchor" id="aktif-park">
             <div className="card-header d-flex justify-content-between align-items-center">
               <span>
                 <i aria-hidden="true" className="bi bi-p-circle me-2 text-accent" />
@@ -377,7 +394,7 @@ export default function SurucuPanel() {
 
         {/* Engelli park izni */}
         <div className="col-12">
-          <div className="card">
+          <div className="card ring-anchor" id="engelli-izni">
             <div className="card-header d-flex align-items-center justify-content-between">
               <span>
                 <i aria-hidden="true" className="bi bi-person-wheelchair me-2 text-accent" />
@@ -512,7 +529,7 @@ export default function SurucuPanel() {
 
         {/* Geçmiş */}
         <div className="col-12">
-          <div className="card">
+          <div className="card ring-anchor" id="park-gecmisi">
             <div className="card-header">
               <i aria-hidden="true" className="bi bi-clock-history me-2 text-accent" />
               Park Geçmişi

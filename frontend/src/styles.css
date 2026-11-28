@@ -1315,22 +1315,22 @@ tr[tabindex]:focus-visible { outline: 2px solid var(--ap-accent); outline-offset
 /* HUD */
 .i3d-scan, .i3d-ocr, .i3d-record, .i3d-stats { position: absolute; top: 0; left: 0; opacity: 0; visibility: hidden; pointer-events: none; }
 .i3d-scan {
-  border: 2px solid #5ad6ef;
+  border: 2px solid var(--ap-accent-on-dark);
   border-radius: 6px;
-  box-shadow: 0 0 0 9999px rgba(8, 16, 28, 0.18), 0 0 18px rgba(90, 214, 239, 0.8);
+  box-shadow: 0 0 0 9999px rgba(8, 8, 8, 0.18), 0 0 18px var(--ap-brand-glow);
   overflow: hidden;
 }
 .i3d-scan-line {
   position: absolute; left: 0; right: 0; height: 2px; top: 0;
-  background: linear-gradient(90deg, transparent, #5ad6ef, transparent);
+  background: linear-gradient(90deg, transparent, var(--ap-accent-on-dark), transparent);
   animation: i3d-scan 0.9s linear infinite;
 }
 @keyframes i3d-scan { from { top: 0; } to { top: 100%; } }
 .i3d-ocr {
   min-width: 13rem; padding: 0.6rem 0.75rem; border-radius: 0.75rem;
-  background: rgba(15, 28, 46, 0.88); color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  background: rgba(11, 11, 11, 0.9); color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 24px var(--ap-brand-glow);
 }
-.i3d-ocr-label { font-size: 0.75rem; color: #9fd8e6; margin-bottom: 0.35rem; }
+.i3d-ocr-label { font-size: 0.75rem; color: var(--ap-accent-on-dark); margin-bottom: 0.35rem; }
 .i3d-plate {
   display: flex; align-items: stretch; border: 2px solid #111; border-radius: 4px; overflow: hidden;
   background: #fbfbf8; color: #111; font-weight: 800; font-size: 1.35rem; letter-spacing: 0.04em;
@@ -1354,9 +1354,9 @@ tr[tabindex]:focus-visible { outline: 2px solid var(--ap-accent); outline-offset
   top: 1rem; left: auto; right: clamp(1rem, 4vw, 3rem);
   display: flex; gap: 1.1rem; align-items: center;
   padding: 0.55rem 0.9rem; border-radius: 999px;
-  background: rgba(15, 28, 46, 0.85); color: #fff; font-variant-numeric: tabular-nums;
+  background: rgba(11, 11, 11, 0.88); color: #fff; font-variant-numeric: tabular-nums;
 }
-.i3d-free { font-weight: 800; font-size: 1.15rem; color: #5ad6ef; }
+.i3d-free { font-weight: 800; font-size: 1.15rem; color: var(--ap-accent-on-dark); }
 .i3d-dots { position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.6rem; z-index: 3; }
 .i3d-dots button {
   width: 10px; height: 10px; padding: 0; border-radius: 50%; border: 2px solid rgba(15, 28, 46, 0.55);
@@ -1375,3 +1375,110 @@ tr[tabindex]:focus-visible { outline: 2px solid var(--ap-accent); outline-offset
 [data-bs-theme="dark"] .i3d-card { background: rgba(18, 26, 42, 0.82); color: #e8edf5; }
 [data-bs-theme="dark"] .i3d-text { color: #b5c0d0; }
 .i3d-canvas-host { position: absolute; inset: 0; }
+
+/* =====================================================================
+   Sürücü paneli — 3D dönen menü halkası (RingMenu)
+   ===================================================================== */
+.ring-menu {
+  position: relative;
+  margin-bottom: 1.5rem;
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(var(--ap-accent-rgb), 0.16), transparent 60%),
+    linear-gradient(180deg, var(--ap-surface), var(--ap-bg));
+  border: 1px solid rgba(var(--ap-accent-rgb), 0.15);
+  overflow: hidden;
+}
+.ring-stage {
+  --ring-w: 210px;
+  position: relative;
+  height: calc(var(--ring-w) * 1.5 + 5rem);
+  perspective: 1200px;
+  perspective-origin: 50% 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  outline: none;
+}
+.ring-stage:active { cursor: grabbing; }
+.ring-stage:focus-visible { box-shadow: inset 0 0 0 3px rgba(var(--ap-accent-rgb), 0.5); border-radius: 1.25rem; }
+.ring {
+  position: relative;
+  width: var(--ring-w);
+  height: calc(var(--ring-w) * 1.3);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.ring-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  padding: 1.1rem 1rem;
+  border: 0;
+  border-radius: 1.1rem;
+  color: #fff;
+  text-align: left;
+  backface-visibility: visible; /* boşluklardan halkanın içi görünsün */
+  background: linear-gradient(160deg, var(--ring-c1), var(--ring-c2));
+  box-shadow: 0 18px 40px rgba(15, 28, 46, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.25s;
+}
+.ring-panel.is-front { box-shadow: 0 24px 60px rgba(var(--ap-accent-rgb), 0.45), 0 0 0 2px rgba(255, 255, 255, 0.6) inset; }
+.ring-panel-glow {
+  position: absolute; inset: -40% -20% auto auto; width: 80%; aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 65%);
+  pointer-events: none;
+}
+.ring-panel-icon {
+  position: absolute; top: 1rem; left: 1rem;
+  width: 3rem; height: 3rem; border-radius: 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+}
+.ring-panel-badge {
+  position: absolute; top: 1.1rem; right: 1rem;
+  min-width: 1.8rem; padding: 0.15rem 0.55rem; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92); color: #172033; font-weight: 800; font-size: 0.85rem; text-align: center;
+}
+.ring-panel-title { position: relative; font-weight: 800; font-size: 1.15rem; line-height: 1.15; }
+.ring-panel-text { position: relative; font-size: 0.82rem; opacity: 0.88; line-height: 1.3; }
+.ring-tone-accent { --ring-c1: #f07a26; --ring-c2: #8f3606; }
+.ring-tone-graphite { --ring-c1: #3a3937; --ring-c2: #0b0b0b; }
+.ring-tone-teal { --ring-c1: #14a38b; --ring-c2: #0b6655; }
+.ring-tone-amber { --ring-c1: #e7a325; --ring-c2: #b0660d; }
+.ring-tone-violet { --ring-c1: #7d5cf0; --ring-c2: #4b2fb0; }
+.ring-tone-rose { --ring-c1: #e2566b; --ring-c2: #a3263d; }
+.ring-tone-blue { --ring-c1: #3a7bea; --ring-c2: #1f4fa8; }
+.ring-tone-slate { --ring-c1: #5d6b82; --ring-c2: #323c4f; }
+.ring-tone-green { --ring-c1: #4caf50; --ring-c2: #2c6e30; }
+.ring-footer {
+  display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+  padding: 0 1rem 1.25rem;
+}
+.ring-now { display: flex; flex-direction: column; align-items: center; min-width: 11rem; }
+.ring-now-kicker { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--ap-accent); }
+.ring-now-title { font-size: 1.15rem; font-weight: 800; }
+.ring-arrow { width: 2.25rem; height: 2.25rem; border-radius: 50%; padding: 0; }
+.ring-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+.ring-grid .ring-panel { position: relative; inset: auto; min-height: 170px; }
+@media (max-width: 575.98px) {
+  .ring-panel { padding: 0.8rem 0.75rem; }
+  .ring-panel-icon { width: 2.4rem; height: 2.4rem; font-size: 1.2rem; top: 0.75rem; left: 0.75rem; }
+  .ring-panel-title { font-size: 1rem; }
+  .ring-panel-text { font-size: 0.72rem; }
+}
+.ring-anchor { scroll-margin-top: 84px; }
+
+/* Koyu modda turuncu çağrı düğmelerine hafif ışıltı (paletin "glow" etkisi) */
+[data-bs-theme='dark'] .btn-accent { box-shadow: 0 0 22px rgba(var(--ap-accent-rgb), 0.35); }
+[data-bs-theme='dark'] .btn-accent:hover { box-shadow: 0 0 30px rgba(var(--ap-accent-rgb), 0.5); }

@@ -91,7 +91,7 @@ function signTexture(accent) {
  *  opts.onHud(state) : her karede HUD bilgisi (plaka ekran konumu, saat, boş yer…)
  * Dönüş: { ready: Promise, setProgress(p), resize(w,h), dispose() }
  */
-export function createIntroScene(canvas, { accent = '#0a7590', onHud } = {}) {
+export function createIntroScene(canvas, { accent = '#e2620e', onHud } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.shadowMap.enabled = true;
